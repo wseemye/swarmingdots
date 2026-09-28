@@ -12,6 +12,36 @@ npm run vectorize  # regenerate src/icons.ts from src/assets/*.svg
 npm run build
 ```
 
+## Morphing
+
+The landing screen holds five panels side by side. Each cycles through ten of
+the fifty shapes, so all fifty are on screen inside one 18-second loop, and the
+panels are staggered a fifth of a frame apart so the movement reads as a wave.
+
+The morph itself is deliberately plain: dot `i` of one shape is paired with dot
+`i` of the next and travels a straight line between them, eased with a quintic
+ease-in-out. Each frame holds for 0.6s and morphs for 1.2s. There is no path
+matching and no fading — dots never appear or disappear, they only move.
+
+That only works if every shape in a batch carries the same number of dots, and
+these do not: they run from 409 (hammer) to 3246 (bottle). Two things reconcile
+it:
+
+- A shape with fewer cells than its batch target puts **more than one dot on
+  some cells**, spread evenly across the silhouette, so the surplus blooms out
+  of the whole shape rather than out of one corner. Stacked dots are exactly
+  coincident, so a shape at rest is identical to the same icon in the gallery
+  below — nothing is dropped and nothing is invented.
+- Batches are cut by **dot count** rather than alphabetically, which keeps each
+  batch's target near its members' own counts: 26% padded slots and 6707 dots on
+  screen, against 55% and 11034 if the batches were alphabetical.
+
+Rendering is canvas rather than SVG — 6707 elements repositioned per frame is
+not something the DOM should be asked to do. Every dot is the same rounded
+square, so one sprite is pre-rendered at device resolution and stamped, and a
+held shape is not redrawn at all. `prefers-reduced-motion: reduce` shows the
+first shape of each batch and never animates.
+
 ## Fixed constants
 
 These never vary. They live in `src/DotMatrix.tsx`.
@@ -32,12 +62,15 @@ Mobile is detected with `window.matchMedia('(max-width: 600px)')` unless the
 
 ## Layout
 
-| file                   | role                                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------------------- |
-| `src/assets/*.svg`     | the raw vectors, one per shape, each carrying its provenance in an XML comment               |
-| `scripts/vectorize.ts` | build tool — reads every asset, regenerates `src/icons.ts`. Idempotent.                      |
-| `src/icons.ts`         | generated registry, `{ word: () => ({ cells, cols, rows }) }`. Never edited by hand.          |
-| `src/DotMatrix.tsx`    | the single renderer. Walks `cells`, draws one `<rect>` each.                                  |
+| file                   | role                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `src/assets/*.svg`     | the raw vectors, one per shape, each carrying its provenance in an XML comment       |
+| `scripts/vectorize.ts` | build tool — reads every asset, regenerates `src/icons.ts`. Idempotent.              |
+| `src/icons.ts`         | generated registry, `{ word: () => ({ cells, cols, rows }) }`. Never edited by hand. |
+| `src/DotMatrix.tsx`    | static renderer — walks `cells`, draws one `<rect>` each. Holds the constants.       |
+| `src/morph.ts`         | cuts the fifty into five batches and pads each shape to its batch's dot count.        |
+| `src/DotMorph.tsx`     | the animated panel: one canvas, one `requestAnimationFrame` loop.                    |
+| `src/Gallery.tsx`      | the static grid of all fifty, below the morphing row.                                |
 
 Nothing is fetched or rasterised at runtime — `src/icons.ts` is a static array
 of cell coordinates, and the grid is the only source of truth the renderer has.

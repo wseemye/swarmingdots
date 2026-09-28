@@ -1,15 +1,15 @@
 import { useSyncExternalStore } from 'react';
 import type { DotMatrixIcon } from './icons';
 
-const DESKTOP_DOT = 6;
-const DESKTOP_RADIUS = 2.4;
-const MOBILE_DOT = 3;
-const MOBILE_RADIUS = 1.2;
-const DOT_COLOR = '#111';
+export const DESKTOP_DOT = 6;
+export const DESKTOP_RADIUS = 2.4;
+export const MOBILE_DOT = 3;
+export const MOBILE_RADIUS = 1.2;
+export const DOT_COLOR = '#111';
 
-const MOBILE_QUERY = '(max-width: 600px)';
+export const MOBILE_QUERY = '(max-width: 600px)';
 
-function subscribe(onChange: () => void): () => void {
+function subscribeToViewport(onChange: () => void): () => void {
   const query = window.matchMedia(MOBILE_QUERY);
   query.addEventListener('change', onChange);
   return () => query.removeEventListener('change', onChange);
@@ -17,7 +17,7 @@ function subscribe(onChange: () => void): () => void {
 
 function useMobileViewport(): boolean {
   return useSyncExternalStore(
-    subscribe,
+    subscribeToViewport,
     () => window.matchMedia(MOBILE_QUERY).matches,
     () => false,
   );
