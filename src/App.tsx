@@ -1,36 +1,39 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import DotMorph from './DotMorph';
-import Gallery from './Gallery';
-import { BATCH_COUNT, buildBatches } from './morph';
-import { iconNames } from './icons';
+import { buildField } from './morph';
 
 export default function App() {
-  const batches = useMemo(() => buildBatches(), []);
+  const field = useMemo(() => buildField(), []);
+  const [selected, setSelected] = useState(field.names[0]);
 
   return (
-    <main className="page">
-      <section className="stage">
-        <header className="stage-header">
-          <h1>Dot Matrix</h1>
-          <p>
-            {iconNames.length} silhouettes, {BATCH_COUNT} batches of{' '}
-            {iconNames.length / BATCH_COUNT}, morphing in place
-          </p>
-        </header>
-
-        <div className="morph-row">
-          {batches.map((batch, i) => (
-            <DotMorph key={batch.frames[0].name} batch={batch} phase={i / BATCH_COUNT} />
-          ))}
+    <main className="app">
+      <section className="display">
+        <div className="display-frame">
+          <DotMorph field={field} target={selected} />
         </div>
+        <p className="display-name">{selected}</p>
       </section>
 
-      <section className="gallery">
-        <header className="gallery-header">
-          <h2>Every shape, at rest</h2>
-          <p>Each one is a 40-cell grid, drawn edge to edge.</p>
+      <section className="picker">
+        <header className="picker-header">
+          <h1>Dot Matrix</h1>
+          <p>Pick a shape and the dots travel to it.</p>
         </header>
-        <Gallery />
+
+        <div className="picker-grid">
+          {field.names.map((name) => (
+            <button
+              key={name}
+              type="button"
+              className="picker-button"
+              aria-pressed={name === selected}
+              onClick={() => setSelected(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
       </section>
     </main>
   );
