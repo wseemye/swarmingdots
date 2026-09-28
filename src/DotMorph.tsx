@@ -64,10 +64,32 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
     // from the positions on screen instead of snapping back to a whole shape.
     const current = new Float32Array(shapes[target]);
     const origin = new Float32Array(current);
-    let destination = shapes[target];
+    const destination = new Float32Array(shapes[target]);
+    let destinationName = target;
     let startedAt: number | null = null;
     let frameId = 0;
     let running = false;
+
+    // Which cell of the target each dot is sent to. Pairing dot i with dot i
+    // would send every dot to its own neighbourhood — the cells come out of the
+    // vectoriser row by row — and the shape would slide into place in one
+    // orderly sweep. Reshuffling on every morph instead sends each dot to an
+    // arbitrary cell, so they cross the field and reassemble.
+    const order = new Int32Array(dotCount);
+
+    function scatterInto(out: Float32Array, src: Float32Array) {
+      for (let i = 0; i < dotCount; i++) order[i] = i;
+      for (let i = dotCount - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const swap = order[i];
+        order[i] = order[j];
+        order[j] = swap;
+      }
+      for (let i = 0; i < dotCount; i++) {
+        out[i * 2] = src[order[i] * 2];
+        out[i * 2 + 1] = src[order[i] * 2 + 1];
+      }
+    }
 
     let sprite = document.createElement('canvas');
 
@@ -134,13 +156,14 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
     controlRef.current = {
       morphTo(name: string) {
         const next = shapes[name];
-        if (!next || next === destination) return;
+        if (!next || name === destinationName) return;
         origin.set(current);
-        destination = next;
+        scatterInto(destination, next);
+        destinationName = name;
         startedAt = null;
 
         if (instant) {
-          current.set(next);
+          current.set(destination);
           render();
           return;
         }
