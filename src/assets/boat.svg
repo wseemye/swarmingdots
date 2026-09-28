@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  boat
+  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "motorboat"
+  obtained from: @iconify-json/pinhead@1.2.33
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M14 7c0 2-2.5 4-4.5 4h-7L1 7h9.5l-2-2l1-.5l3 2.5zm-9-.5H1v-2h3c.55 0 1 .45 1 1z"/></svg>

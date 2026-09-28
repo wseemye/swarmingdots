@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  bridge
+  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "bridge"
+  obtained from: @iconify-json/pinhead@1.2.33
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M15 6c-1.1 0-2 .9-2 2v4H9.5V8c0-1.1-.9-2-2-2s-2 .9-2 2v4H2V8c0-1.1-.9-2-2-2V3h15z"/></svg>

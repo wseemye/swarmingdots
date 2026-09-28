@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  rope
+  source: original artwork drawn for this repository (no third-party source)
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+  note: authored for this repository because no CC0 silhouette of this object was
+        available in the public-domain vector libraries reachable here
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fff"/>
+    <circle cx="50" cy="42" r="33" fill="#000"/>
+    <circle cx="50" cy="42" r="16" fill="#fff"/>
+    <g stroke="#fff" stroke-width="3.5" stroke-linecap="round"><path d="M70.70 38.45 L78.09 46.82"/><path d="M68.14 52.58 L68.42 63.75"/><path d="M57.09 61.77 L50.13 70.50"/><path d="M42.73 61.70 L31.78 63.92"/><path d="M31.77 52.42 L21.96 47.08"/><path d="M29.34 38.26 L25.25 27.86"/><path d="M36.57 25.85 L40.13 15.26"/><path d="M50.10 21.00 L59.63 15.17"/><path d="M63.57 25.97 L74.62 27.64"/></g>
+    <path d="M34 68 Q24 84 20 96" fill="none" stroke="#000" stroke-width="11" stroke-linecap="round"/>
+    <path d="M66 68 Q76 84 80 96" fill="none" stroke="#000" stroke-width="11" stroke-linecap="round"/>
+</svg>

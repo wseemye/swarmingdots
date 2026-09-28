@@ -1,23 +1,24 @@
-import { useMemo } from 'react';
-import DotSkeleton from './DotSkeleton';
-import { skeletons } from './skeletons';
-import './App.css';
+import DotMatrix from './DotMatrix';
+import { iconNames, icons } from './icons';
 
-function App() {
-  const bonsai = useMemo(() => skeletons.bonsai(), []);
-
+export default function App() {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        background: '#fafaf7',
-      }}
-    >
-      <DotSkeleton skeleton={bonsai} />
-    </div>
+    <main className="gallery">
+      <header className="gallery-header">
+        <h1>Dot Matrix</h1>
+        <p>{iconNames.length} silhouettes on a 40-cell grid</p>
+      </header>
+
+      <ul className="gallery-grid">
+        {iconNames.map((name) => (
+          <li className="gallery-item" key={name}>
+            <div className="gallery-art">
+              <DotMatrix icon={icons[name]()} />
+            </div>
+            <span className="gallery-label">{name}</span>
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }
-
-export default App;

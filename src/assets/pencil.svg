@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pencil
+  source: original artwork drawn for this repository (no third-party source)
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+  note: authored for this repository because no CC0 silhouette of this object was
+        available in the public-domain vector libraries reachable here
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fff"/>
+    <g transform="rotate(-40 50 50)">
+      <path d="M50 4 L64 30 L36 30 Z" fill="#000"/>
+      <path d="M50 4 L55 13 L45 13 Z" fill="#fff"/>
+      <rect x="36" y="32" width="28" height="44" fill="#000"/>
+      <rect x="36" y="78" width="28" height="9" fill="#000"/>
+      <rect x="36" y="89" width="28" height="11" rx="5" fill="#000"/>
+    </g>
+</svg>

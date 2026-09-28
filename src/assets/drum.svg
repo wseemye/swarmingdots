@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  drum
+  source: original artwork drawn for this repository (no third-party source)
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+  note: authored for this repository because no CC0 silhouette of this object was
+        available in the public-domain vector libraries reachable here
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fff"/>
+    <rect x="17" y="30" width="66" height="34" fill="#000"/>
+    <ellipse cx="50" cy="64" rx="33" ry="11" fill="#000"/>
+    <ellipse cx="50" cy="30" rx="33" ry="11" fill="#000"/>
+    <ellipse cx="50" cy="30" rx="26" ry="7" fill="#fff"/>
+    <path d="M22 38 L34 56 L46 38 L58 56 L70 38 L79 52" fill="none" stroke="#fff" stroke-width="4"/>
+</svg>

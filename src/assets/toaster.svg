@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  toaster
+  source: original artwork drawn for this repository (no third-party source)
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+  note: authored for this repository because no CC0 silhouette of this object was
+        available in the public-domain vector libraries reachable here
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fff"/>
+    <rect x="14" y="36" width="72" height="44" rx="12" fill="#000"/>
+    <rect x="27" y="44" width="20" height="7" rx="3.5" fill="#fff"/>
+    <rect x="53" y="44" width="20" height="7" rx="3.5" fill="#fff"/>
+    <rect x="22" y="66" width="56" height="4" fill="#fff"/>
+    <rect x="84" y="48" width="12" height="8" rx="4" fill="#000"/>
+    <rect x="24" y="80" width="10" height="8" rx="2" fill="#000"/>
+    <rect x="66" y="80" width="10" height="8" rx="2" fill="#000"/>
+</svg>

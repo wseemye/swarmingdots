@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  tent
+  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "a-frame-tent"
+  obtained from: @iconify-json/pinhead@1.2.33
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M7.06.82L0 14h1.6c2.29 0 4.29-1.56 4.85-3.79L7.5 6L9 14h6L7.94.82a.504.504 0 0 0-.68-.2c-.08.04-.15.12-.2.2"/></svg>
