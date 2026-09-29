@@ -18,7 +18,7 @@ export default function App() {
       <section className="picker">
         <header className="picker-header">
           <h1>Dot Matrix</h1>
-          <p>Pick a shape and the dots travel to it.</p>
+          <p>Pick a shape, or tab through the list, and the dots travel to it.</p>
         </header>
 
         <div className="picker-grid">
@@ -29,6 +29,7 @@ export default function App() {
               className="picker-button"
               aria-pressed={name === selected}
               onClick={() => setSelected(name)}
+              onFocus={() => setSelected(name)}
             >
               {name}
             </button>

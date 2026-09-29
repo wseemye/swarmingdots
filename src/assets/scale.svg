@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  scale
+  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "bathroom-scale"
+  obtained from: @iconify-json/pinhead@1.2.33
+  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
+  license text: "CC0 1.0 Universal Public Domain Dedication"
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M2.45 1h10.1c.82 0 1.47.67 1.45 1.48l-.28 10.12c-.03.78-.67 1.4-1.46 1.4H2.74c-.79 0-1.43-.62-1.46-1.4L1 2.48C.98 1.67 1.63 1 2.45 1m1.57 1.44l.36 3.63c.77-.19 1.56-.31 2.37-.35l.58-2.32A.56.56 0 0 1 8 3c.29.07.47.37.39.66L7.88 5.7c.94.03 1.85.15 2.74.37l.36-3.63z"/></svg>

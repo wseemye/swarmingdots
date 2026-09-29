@@ -1,46 +1,52 @@
 # Dot Matrix
 
-Fifty everyday objects drawn as dot-matrix icons. Each one starts as a
+Eighty everyday objects drawn as dot-matrix icons. Each one starts as a
 public-domain vector, gets rasterised to a fixed 40-cell grid at build time, and
 is rendered as a lattice of small rounded squares — one grid cell, one dot,
 nothing else.
 
 ```sh
 npm install
-npm run dev        # gallery on http://localhost:5173
+npm run dev        # picker on http://localhost:5173
 npm run vectorize  # regenerate src/icons.ts from src/assets/*.svg
 npm run build
 ```
 
 ## Morphing
 
-The landing screen holds five panels side by side. Each cycles through ten of
-the fifty shapes, so all fifty are on screen inside one 18-second loop, and the
-panels are staggered a fifth of a frame apart so the movement reads as a wave.
+One display, eighty word buttons. Click a word, or tab to it with the
+keyboard, and the dots on the left travel to that shape — click or tab to
+another and they redirect from wherever they currently are.
 
-The morph itself is deliberately plain: dot `i` of one shape is paired with dot
-`i` of the next and travels a straight line between them, eased with a quintic
-ease-in-out. Each frame holds for 0.6s and morphs for 1.2s. There is no path
-matching and no fading — dots never appear or disappear, they only move.
+The motion has two parts. Cell `j` of the target is where dot `j` would land
+if paired by index, but the vectoriser emits cells row by row, so that pairing
+sweeps across the field in one direction. Each morph instead reshuffles the
+target's cells with a Fisher–Yates pass, so dot `i` is sent to an arbitrary
+cell of the shape it's heading for — the source shape dissolves into a loose
+cloud and reassembles, rather than sliding into place. The path itself stays a
+straight line, eased with a quintic ease-in-out over 900ms; nothing fades in or
+out, dots only move.
 
-That only works if every shape in a batch carries the same number of dots, and
-these do not: they run from 409 (hammer) to 3246 (bottle). Two things reconcile
-it:
+Pairing dot `i` with dot `i` needs both shapes to carry the same number of
+dots, and these run from 409 (hammer) to 3246 (bottle). Padding every shape up
+to the heaviest one seems like the obvious fix, but it isn't: a
+hammer(409)-to-fork(416) transition would then drag 3246 dots through a
+~4000-cell field, over 80% full, and a random reassignment in that little
+space has nowhere empty to scatter into — it reads as fog, not a scatter.
+Instead, each **transition** sizes itself to `max(source dots, target dots)`,
+padding only the lighter shape (spreading the surplus evenly across its own
+cells, so it blooms out of the whole silhouette rather than one corner) and
+collapsing back to the target's real count once it lands. A light pair now
+moves through roughly 6% of the field instead of 80%; a genuinely heavy target
+like bottle still gets the density it needs, but only when it's actually
+involved.
 
-- A shape with fewer cells than its batch target puts **more than one dot on
-  some cells**, spread evenly across the silhouette, so the surplus blooms out
-  of the whole shape rather than out of one corner. Stacked dots are exactly
-  coincident, so a shape at rest is identical to the same icon in the gallery
-  below — nothing is dropped and nothing is invented.
-- Batches are cut by **dot count** rather than alphabetically, which keeps each
-  batch's target near its members' own counts: 26% padded slots and 6707 dots on
-  screen, against 55% and 11034 if the batches were alphabetical.
-
-Rendering is canvas rather than SVG — 6707 elements repositioned per frame is
-not something the DOM should be asked to do. Every dot is the same rounded
-square, so one sprite is pre-rendered at device resolution and stamped, and a
-held shape is not redrawn at all. `prefers-reduced-motion: reduce` shows the
-first shape of each batch and never animates.
+Rendering is canvas rather than SVG — repositioning thousands of elements a
+frame is not something the DOM should be asked to do. Every dot is the same
+rounded square, so one sprite is pre-rendered at device resolution and
+stamped, and scratch buffers are sized once to the heaviest icon so no
+transition allocates. `prefers-reduced-motion: reduce` jumps straight to the
+picked shape.
 
 ## Fixed constants
 
@@ -62,15 +68,15 @@ Mobile is detected with `window.matchMedia('(max-width: 600px)')` unless the
 
 ## Layout
 
-| file                   | role                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------- |
+| file                   | role                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------- |
 | `src/assets/*.svg`     | the raw vectors, one per shape, each carrying its provenance in an XML comment       |
 | `scripts/vectorize.ts` | build tool — reads every asset, regenerates `src/icons.ts`. Idempotent.              |
 | `src/icons.ts`         | generated registry, `{ word: () => ({ cells, cols, rows }) }`. Never edited by hand. |
 | `src/DotMatrix.tsx`    | static renderer — walks `cells`, draws one `<rect>` each. Holds the constants.       |
-| `src/morph.ts`         | cuts the fifty into five batches and pads each shape to its batch's dot count.        |
-| `src/DotMorph.tsx`     | the animated panel: one canvas, one `requestAnimationFrame` loop.                    |
-| `src/Gallery.tsx`      | the static grid of all fifty, below the morphing row.                                |
+| `src/morph.ts`         | exposes each icon's own unpadded cells, plus the shared field size.                  |
+| `src/DotMorph.tsx`     | the animated display: one canvas, sized-per-transition scatter, one rAF loop.        |
+| `src/App.tsx`          | the picker — eighty buttons, click or focus to morph.                               |
 
 Nothing is fetched or rasterised at runtime — `src/icons.ts` is a static array
 of cell coordinates, and the grid is the only source of truth the renderer has.
@@ -94,15 +100,15 @@ of cell coordinates, and the grid is the only source of truth the renderer has.
 5. Cells are written to `src/icons.ts` in row-major order.
 
 A vector taller than 2.5:1 would overflow the 600px canvas at 40 cells wide, so
-the script scales it to fit instead of keeping the column count. None of the
-current fifty need it — `bottle` sits exactly at the 100-row limit.
+the script scales it to fit instead of keeping the column count. `bottle` sits
+exactly at the 100-row limit; nothing in the current eighty exceeds it.
 
 ## Adding a shape
 
 1. Put a CC0 or public-domain SVG at `src/assets/<word>.svg`, with a comment
    recording the source URL, the licence URL, and the exact licence string.
 2. `npm run vectorize`.
-3. The gallery picks up the new key automatically.
+3. The picker grows a button automatically.
 
 If the result does not read as the named object at 40 cells wide, swap the
 source vector rather than tuning the renderer.
@@ -112,7 +118,7 @@ source vector rather than tuning the renderer.
 Every asset is CC0 1.0 Universal or an equivalent public-domain dedication, with
 its source recorded in a comment at the top of the file.
 
-Thirty-five come from CC0 icon sets:
+Sixty-five come from CC0 icon sets:
 
 - [Pinhead Map Icons](https://github.com/waysidemapping/pinhead) by Quincy Morgan — CC0-1.0
 - [Temaki](https://github.com/rapideditor/temaki) by Bryan Housel — CC0-1.0
@@ -121,6 +127,7 @@ Thirty-five come from CC0 icon sets:
 The other fifteen — backpack, broom, drum, guitar, headphones, magnet, mirror,
 notebook, pencil, plate, refrigerator, rope, sword, toaster, umbrella — are
 original artwork drawn for this repository and dedicated to the public domain
-under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). No CC0
+under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). No CC0
 silhouette of those objects existed in the public-domain vector libraries
 reachable from the environment this was built in.
