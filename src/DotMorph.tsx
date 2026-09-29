@@ -7,7 +7,7 @@ import {
   MOBILE_QUERY,
   MOBILE_RADIUS,
 } from './DotMatrix';
-import type { MorphField } from './morph';
+import { spreadCells, type MorphField } from './morph';
 
 const MORPH_MS = 900;
 
@@ -52,7 +52,7 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
     if (!context) return;
     const ctx: CanvasRenderingContext2D = context;
 
-    const { dotCount, shapes } = field;
+    const { cells, counts, maxDotCount } = field;
     const instant = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let dot = DESKTOP_DOT;
@@ -60,36 +60,23 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
     let width = 0;
     let height = 0;
 
-    // Where the dots are right now, so a click part-way through a morph starts
-    // from the positions on screen instead of snapping back to a whole shape.
-    const current = new Float32Array(shapes[target]);
-    const origin = new Float32Array(current);
-    const destination = new Float32Array(shapes[target]);
+    // Scratch buffers sized once to the heaviest icon in the set, so no
+    // transition allocates. Only the first `activeLen` entries of each are
+    // meaningful at any moment — a light pair (hammer, 409 dots) animates far
+    // fewer than a heavy one (bottle, 3246), which is the point: padding every
+    // shape up to one global count packed the field so densely that a random
+    // scatter had nowhere empty to cross into and just looked like fog.
+    const origin = new Float32Array(maxDotCount * 2);
+    const current = new Float32Array(maxDotCount * 2);
+    const destination = new Float32Array(maxDotCount * 2);
+
+    let activeLen = counts[target];
+    current.set(cells[target].subarray(0, activeLen * 2));
+
     let destinationName = target;
     let startedAt: number | null = null;
     let frameId = 0;
     let running = false;
-
-    // Which cell of the target each dot is sent to. Pairing dot i with dot i
-    // would send every dot to its own neighbourhood — the cells come out of the
-    // vectoriser row by row — and the shape would slide into place in one
-    // orderly sweep. Reshuffling on every morph instead sends each dot to an
-    // arbitrary cell, so they cross the field and reassemble.
-    const order = new Int32Array(dotCount);
-
-    function scatterInto(out: Float32Array, src: Float32Array) {
-      for (let i = 0; i < dotCount; i++) order[i] = i;
-      for (let i = dotCount - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const swap = order[i];
-        order[i] = order[j];
-        order[j] = swap;
-      }
-      for (let i = 0; i < dotCount; i++) {
-        out[i * 2] = src[order[i] * 2];
-        out[i * 2 + 1] = src[order[i] * 2 + 1];
-      }
-    }
 
     let sprite = document.createElement('canvas');
 
@@ -110,7 +97,7 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
     // beats building a path per dot.
     function render() {
       ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < dotCount; i++) {
+      for (let i = 0; i < activeLen; i++) {
         ctx.drawImage(sprite, current[i * 2] * dot, current[i * 2 + 1] * dot, dot, dot);
       }
     }
@@ -141,29 +128,70 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
       const t = Math.min(1, (now - startedAt) / MORPH_MS);
       const e = ease(t);
 
-      for (let i = 0; i < current.length; i++) {
-        current[i] = origin[i] + (destination[i] - origin[i]) * e;
+      for (let i = 0; i < activeLen; i++) {
+        current[i * 2] = origin[i * 2] + (destination[i * 2] - origin[i * 2]) * e;
+        current[i * 2 + 1] = origin[i * 2 + 1] + (destination[i * 2 + 1] - origin[i * 2 + 1]) * e;
       }
       render();
 
       if (t < 1) {
         frameId = requestAnimationFrame(step);
-      } else {
-        running = false;
+        return;
       }
+
+      running = false;
+      // Drop back to the target's own dot count. The next transition's size
+      // comes from whatever is actually on screen, not from however many dots
+      // this one needed to borrow from a heavier neighbour.
+      const realLen = counts[destinationName];
+      current.set(cells[destinationName].subarray(0, realLen * 2));
+      activeLen = realLen;
+      render();
     }
 
     controlRef.current = {
       morphTo(name: string) {
-        const next = shapes[name];
-        if (!next || name === destinationName) return;
-        origin.set(current);
-        scatterInto(destination, next);
+        if (!(name in counts) || name === destinationName) return;
+
+        const targetLen = counts[name];
+        const sourceLen = activeLen;
+        const n = Math.max(sourceLen, targetLen);
+
+        // Origin: wherever the dots are right now — settled or mid-flight —
+        // padded with duplicates of themselves if the target needs more dots
+        // than are currently on screen. A click part-way through a morph
+        // continues from there instead of snapping back to a whole shape.
+        origin.set(current.subarray(0, sourceLen * 2));
+        for (let i = sourceLen; i < n; i++) {
+          const r = Math.floor(Math.random() * sourceLen);
+          origin[i * 2] = current[r * 2];
+          origin[i * 2 + 1] = current[r * 2 + 1];
+        }
+
+        // Destination: the target's own cells, padded to n if it has fewer,
+        // then reshuffled. Cell j of the target is where dot j would land if
+        // paired by index — the vectoriser emits cells row by row, so that
+        // pairing sweeps in one direction. Shuffling sends dot i to an
+        // arbitrary cell instead, so dots cross the field and reassemble.
+        const spread = spreadCells(cells[name], targetLen, n);
+        for (let i = n - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const sx = spread[i * 2];
+          const sy = spread[i * 2 + 1];
+          spread[i * 2] = spread[j * 2];
+          spread[i * 2 + 1] = spread[j * 2 + 1];
+          spread[j * 2] = sx;
+          spread[j * 2 + 1] = sy;
+        }
+        destination.set(spread);
+
+        activeLen = n;
         destinationName = name;
         startedAt = null;
 
         if (instant) {
-          current.set(destination);
+          current.set(cells[name].subarray(0, targetLen * 2));
+          activeLen = targetLen;
           render();
           return;
         }
