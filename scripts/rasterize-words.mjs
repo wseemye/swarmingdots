@@ -36,24 +36,28 @@ const out = WORDS.map((text) => {
   // Dots sit exactly where the font's own advances put each glyph, so the real
   // text, set as one plain string, lands on them with no per-letter placement.
   const cells = [];
+  const glyphIndex = []; // which letter each dot belongs to, so letter spacing can shift it
   let origin = 0;
   let inkLeft = Infinity;
   let inkRight = -Infinity;
-  glyphs.forEach((g) => {
-    for (const [px, py] of g.pixels) cells.push(origin + px, top - py);
+  glyphs.forEach((g, gi) => {
+    for (const [px, py] of g.pixels) {
+      cells.push(origin + px, top - py);
+      glyphIndex.push(gi);
+    }
     inkLeft = Math.min(inkLeft, origin + g.bbox.minX / PIXEL);
     inkRight = Math.max(inkRight, origin + g.bbox.maxX / PIXEL);
     origin += g.advance;
   });
   for (let i = 0; i < cells.length; i += 2) cells[i] -= inkLeft;
 
-  return { text, cols: inkRight - inkLeft, rows: top - bottom, baseline: top, inkLeft, cells };
+  return { text, cols: inkRight - inkLeft, rows: top - bottom, baseline: top, inkLeft, cells, glyphIndex };
 });
 
 const body = out
   .map(
     (w) =>
-      `  {\n    text: '${w.text}',\n    cols: ${w.cols},\n    rows: ${w.rows},\n    baseline: ${w.baseline},\n    inkLeft: ${w.inkLeft},\n    cells: [${w.cells.join(',')}],\n  },`,
+      `  {\n    text: '${w.text}',\n    cols: ${w.cols},\n    rows: ${w.rows},\n    baseline: ${w.baseline},\n    inkLeft: ${w.inkLeft},\n    cells: [${w.cells.join(',')}],\n    glyphs: [${w.glyphIndex.join(',')}],\n  },`,
   )
   .join('\n');
 
@@ -72,6 +76,8 @@ export type WordData = {
   inkLeft: number;
   /** Flat [x, y, x, y, …] lattice coordinates of every dot in the word. */
   cells: number[];
+  /** For each dot, the index of the letter it belongs to. */
+  glyphs: number[];
 };
 
 export const BOX_ROWS = 10;

@@ -7,12 +7,18 @@
 .minc {
   position: fixed;
   inset: 0;
-  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  background: #fff;
+  color: #111;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+
+.minc-stage {
   display: grid;
   place-items: center;
+  overflow: auto;
   padding: 48px 24px;
-  background: #fff;
-  color: #000;
 }
 
 .minc-sentence {
@@ -42,5 +48,192 @@
   white-space: pre;
   font-kerning: none;
   font-variant-ligatures: none;
-  color: #000;
+}
+
+/* ── Customize panel ── */
+.minc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+  border-left: 1px solid #e5e5e5;
+  background: #fafafa;
+  font-size: 13px;
+}
+
+.minc-panel h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label,
+.picker-label {
+  font-weight: 500;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-row input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: #111;
+}
+
+.num,
+.picker-hex {
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.num {
+  width: 52px;
+}
+
+.num-out {
+  width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  width: 32px;
+  color: #666;
+}
+
+.hint {
+  margin: 0;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* ── Colour picker ── */
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.picker-label {
+  flex: 1;
+}
+
+.picker-swatch {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #d4d4d4;
+  border-radius: 5px;
+}
+
+.picker-hex {
+  width: 84px;
+  text-transform: lowercase;
+}
+
+.picker-sv,
+.picker-hue {
+  position: relative;
+  border-radius: 6px;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.picker-sv {
+  height: 132px;
+  background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+}
+
+.picker-hue {
+  height: 14px;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+}
+
+.picker-thumb {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.picker-sv:focus-visible,
+.picker-hue:focus-visible,
+.minc-panel button:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+/* ── Buttons ── */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  flex: 1;
+  height: 32px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  border-color: #999;
+}
+
+.actions button.primary {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .minc {
+    position: static;
+    display: block;
+    min-height: 100%;
+  }
+
+  .minc-stage {
+    min-height: 60vh;
+  }
+
+  .minc-panel {
+    border-left: 0;
+    border-top: 1px solid #e5e5e5;
+  }
 }

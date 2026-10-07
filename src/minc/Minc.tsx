@@ -1,34 +1,149 @@
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import ColorPicker from './ColorPicker';
 import Word from './Word';
+import { buildPrompt, buildSnippet, dotPx, DEFAULT_SETTINGS, type Settings } from './snippet';
 import { WORDS } from './words';
 import './minc.css';
 
-// The one size knob. A dot is 0.038em, so 26px gives ~1px dots and 16px gives
-// ~0.6px dots; the dot count never changes, only how large each one is drawn.
-// `/minc?size=16` previews another size without editing this.
-const FONT_SIZE = 26;
+const MIN_SIZE = 1;
+const MAX_SIZE = 72;
+const MIN_SPACING = -2;
+const MAX_SPACING = 12;
 
 // The skeletons sit for a beat, then every word morphs at the same time.
 const INTRO_MS = 800;
 
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Clipboard API is unavailable on insecure origins; fall back to a selection.
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand('copy');
+    area.remove();
+    return ok;
+  }
+}
+
 export default function Minc() {
   const [params] = useSearchParams();
-  const requested = Number(params.get('size'));
-  const fontSize = requested > 0 ? requested : FONT_SIZE;
+  const fromUrl = Number(params.get('size'));
+  const [settings, setSettings] = useState<Settings>({
+    ...DEFAULT_SETTINGS,
+    fontSize: fromUrl > 0 ? clamp(fromUrl, MIN_SIZE, MAX_SIZE) : DEFAULT_SETTINGS.fontSize,
+  });
+  const [run, setRun] = useState(0);
+  const [copied, setCopied] = useState<'prompt' | 'code' | 'failed' | null>(null);
+
+  const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
+
+  async function copy(kind: 'prompt' | 'code') {
+    const ok = await copyText(kind === 'prompt' ? buildPrompt(settings) : buildSnippet(settings));
+    setCopied(ok ? kind : 'failed');
+    window.setTimeout(() => setCopied(null), 1800);
+  }
 
   return (
     <main className="minc">
-      <h1 className="minc-sentence">
-        {WORDS.map((word, i) => (
-          <Word
-            key={i}
-            word={word}
-            fontSize={fontSize}
-            delay={INTRO_MS}
-            trailingSpace={i < WORDS.length - 1}
-          />
-        ))}
-      </h1>
+      <div className="minc-stage" style={{ background: settings.background }}>
+        <h1 className="minc-sentence">
+          {WORDS.map((word, i) => (
+            <Word
+              key={`${run}-${i}`}
+              word={word}
+              fontSize={settings.fontSize}
+              letterSpacing={settings.letterSpacing}
+              color={settings.color}
+              delay={INTRO_MS}
+              trailingSpace={i < WORDS.length - 1}
+            />
+          ))}
+        </h1>
+      </div>
+
+      <aside className="minc-panel" aria-label="Customize">
+        <h2>Customize</h2>
+
+        <div className="field">
+          <label htmlFor="size">Font size</label>
+          <div className="field-row">
+            <input
+              id="size"
+              type="range"
+              min={MIN_SIZE}
+              max={MAX_SIZE}
+              step={1}
+              value={settings.fontSize}
+              onChange={(e) => set({ fontSize: Number(e.target.value) })}
+            />
+            <input
+              className="num"
+              aria-label="Font size in px"
+              type="number"
+              min={MIN_SIZE}
+              max={MAX_SIZE}
+              value={settings.fontSize}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (e.target.value !== '' && Number.isFinite(n)) set({ fontSize: clamp(n, MIN_SIZE, MAX_SIZE) });
+              }}
+            />
+            <span className="unit">px</span>
+          </div>
+          <p className="hint">Each dot is {dotPx(settings.fontSize).toFixed(2)}px. The dot count stays the same at any size.</p>
+        </div>
+
+        <div className="field">
+          <label htmlFor="spacing">Letter spacing</label>
+          <div className="field-row">
+            <input
+              id="spacing"
+              type="range"
+              min={MIN_SPACING}
+              max={MAX_SPACING}
+              step={0.5}
+              value={settings.letterSpacing}
+              onChange={(e) => set({ letterSpacing: Number(e.target.value) })}
+            />
+            <output className="num-out">{settings.letterSpacing}</output>
+            <span className="unit">dots</span>
+          </div>
+        </div>
+
+        <ColorPicker label="Background" value={settings.background} onChange={(background) => set({ background })} />
+        <ColorPicker label="Text color" value={settings.color} onChange={(color) => set({ color })} />
+
+        <div className="actions">
+          <button type="button" onClick={() => setRun((r) => r + 1)}>
+            Replay
+          </button>
+          <button type="button" onClick={() => setSettings(DEFAULT_SETTINGS)}>
+            Reset
+          </button>
+        </div>
+
+        <div className="actions copy">
+          <button type="button" className="primary" onClick={() => copy('prompt')}>
+            {copied === 'prompt' ? 'Copied prompt' : 'Copy prompt'}
+          </button>
+          <button type="button" className="primary" onClick={() => copy('code')}>
+            {copied === 'code' ? 'Copied code' : 'Copy code'}
+          </button>
+        </div>
+        <p className="hint" role="status">
+          {copied === 'failed'
+            ? 'Copy was blocked by the browser.'
+            : 'The code is one standalone HTML file with these settings. The prompt describes the same effect for an AI to rebuild.'}
+        </p>
+      </aside>
     </main>
   );
 }
