@@ -4,7 +4,7 @@ import ColorPicker from './ColorPicker';
 import Word from './Word';
 import { buildPrompt, buildSnippet, dotPx, DEFAULT_SETTINGS, type Settings } from './snippet';
 import { layoutText, type TextLayout } from './rasterize';
-import './text-morph.css';
+import './text-swarm.css';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 72;
@@ -13,7 +13,7 @@ const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 240;
 
-// The skeletons sit for a beat, then every word morphs at the same time.
+// The skeletons sit for a beat, then every word swarms at the same time.
 const INTRO_MS = 800;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
@@ -35,7 +35,7 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-export default function TextMorph() {
+export default function TextSwarm() {
   const [params] = useSearchParams();
   const fromUrl = Number(params.get('size'));
   const [settings, setSettings] = useState<Settings>({
@@ -44,7 +44,7 @@ export default function TextMorph() {
   });
   const [run, setRun] = useState(0);
   // What the page is showing. It trails the textarea so typing does not restart
-  // the morph on every keystroke.
+  // the swarm on every keystroke.
   const [shown, setShown] = useState(settings.text);
   const [layout, setLayout] = useState<(TextLayout & { version: number }) | null>(null);
 
@@ -75,9 +75,9 @@ export default function TextMorph() {
   }
 
   return (
-    <main className="text-morph">
-      <div className="text-morph-stage" style={{ background: settings.background }}>
-        <h1 className="text-morph-sentence">
+    <main className="text-swarm">
+      <div className="text-swarm-stage" style={{ background: settings.background }}>
+        <h1 className="text-swarm-sentence">
           {layout?.lines.map((line, li) => (
             <Fragment key={`${layout.version}-${li}`}>
               {li > 0 && <br />}
@@ -98,7 +98,7 @@ export default function TextMorph() {
         </h1>
       </div>
 
-      <aside className="text-morph-panel" aria-label="Customize">
+      <aside className="text-swarm-panel" aria-label="Customize">
         <h2>Customize</h2>
 
         <div className="field">

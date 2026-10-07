@@ -44,7 +44,7 @@ export function buildSnippet(s: Settings): string {
       letterSpacing: s.letterSpacing,
       lineSpacing: s.lineSpacing,
       introMs: 800,
-      morphMs: 1100,
+      swarmMs: 1100,
       fadeMs: 350,
     },
     null,
@@ -56,7 +56,7 @@ export function buildSnippet(s: Settings): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dot matrix text</title>
+<title>Dot swarm text</title>
 <style>
   @font-face {
     font-family: "Geist Pixel Circle";
@@ -215,7 +215,7 @@ function build(w, host, isLast) {
     var t0 = null;
     function frame(now) {
       if (t0 === null) t0 = now;
-      var t = Math.min(1, (now - t0) / CONFIG.morphMs);
+      var t = Math.min(1, (now - t0) / CONFIG.swarmMs);
       draw(ease(t));
       if (t < 1) return requestAnimationFrame(frame);
       // The text fades in over the settled dots; only then do the dots leave.
@@ -250,7 +250,7 @@ export function buildPrompt(s: Settings): string {
   return `Build a single self-contained HTML page (no build step, no framework) that shows this text: """
 ${s.text}
 """
-as an animated dot-matrix text effect.
+as an animated dot-swarm text effect.
 
 Visual settings:
 - Font size: ${s.fontSize}px (one dot = font size × 0.038 = ${dot.toFixed(3)}px)
@@ -263,10 +263,10 @@ The font is Geist Pixel Circle (weight 400), loaded with @font-face from ${FONT_
 
 Behaviour:
 1. Each word starts as a skeleton box: a solid block of dots, always 10 rows tall, with just as many dots as the word itself will need (so the dots map one-to-one), filled row by row with any extra dots going to the top rows. Boxes sit left-aligned on a shared horizontal band and are spaced by their own widths.
-2. After 800ms, all words morph at the same time over 1100ms. Each dot travels from its place in the box to an arbitrary dot of the word (shuffle the targets so dots cross the field and reassemble), using a quintic ease-in-out. While morphing, each word's slot in the line grows from its box width to its final word width.
+2. After 800ms, all words swarm at the same time over 1100ms. Each dot travels from its place in the box to an arbitrary dot of the word (shuffle the targets so dots cross the field and reassemble), using a quintic ease-in-out. While swarming, each word's slot in the line grows from its box width to its final word width.
 3. Once the dots have settled, fade the real text in over the dots (350ms), then remove the dots. Each word is one plain text node in Geist Pixel Circle at the chosen size, so it stays selectable and copyable as a normal sentence. Position it so its baseline lands on the dots' baseline: measure the real baseline offset with a zero-height inline-block probe, because browsers round font ascent to whole pixels.
 4. Dots are rounded squares (corner radius 0.4 of a dot) drawn as vector paths on a canvas with a backing store of at least 3x, so they stay crisp at ~1px.
-5. Words flow and wrap like inline text, aligned on their baselines (descenders hang below), with a gap of max(4, 8 + 2 × letter spacing) dots between words, so words stay clearly apart when letters are spaced out. Respect prefers-reduced-motion by skipping the morph.
+5. Words flow and wrap like inline text, aligned on their baselines (descenders hang below), with a gap of max(4, 8 + 2 × letter spacing) dots between words, so words stay clearly apart when letters are spaced out. Respect prefers-reduced-motion by skipping the swarm.
 
 To get each word's dots without a data file, rasterise it from the font at load: draw each letter on an offscreen canvas (tall enough for 26 rows above the baseline and 8 below) at font size ${(8 / 0.038).toFixed(3)}px (8 canvas px per lattice step), advance by each letter's measured width, and keep a lattice cell if the pixel at its centre is inked. Letters with no ink (not in the font) are dropped. Newlines in the text start a new line; words are split on whitespace.`;
 }

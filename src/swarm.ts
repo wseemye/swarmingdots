@@ -1,6 +1,6 @@
 import { icons, iconNames } from './icons';
 
-export type MorphField = {
+export type SwarmField = {
   cols: number;
   rows: number;
   /** Largest per-icon dot count, for sizing scratch buffers — never the count
@@ -12,7 +12,7 @@ export type MorphField = {
   counts: Record<string, number>;
 };
 
-export function buildField(): MorphField {
+export function buildField(): SwarmField {
   const all = iconNames.map((name) => icons[name]());
   const cols = Math.max(...all.map((i) => i.cols));
   const rows = Math.max(...all.map((i) => i.rows));

@@ -28,7 +28,7 @@ const OPAQUE_ARTWORK_RATIO = 0.98;
 const FILL_THRESHOLD = 0.34;
 
 type Cell = { x: number; y: number };
-type Matrix = { cells: Cell[]; cols: number; rows: number };
+type Grid = { cells: Cell[]; cols: number; rows: number };
 
 function intrinsicAspect(svg: string): number {
   const viewBox = /viewBox\s*=\s*["']\s*([-\d.eE]+)[\s,]+([-\d.eE]+)[\s,]+([-\d.eE]+)[\s,]+([-\d.eE]+)\s*["']/.exec(svg);
@@ -112,7 +112,7 @@ function rectSum(sum: Int32Array, width: number, x0: number, y0: number, x1: num
   );
 }
 
-async function vectorize(svgPath: string): Promise<Matrix> {
+async function vectorize(svgPath: string): Promise<Grid> {
   const svg = readFileSync(svgPath, 'utf8');
   const rasterHeight = Math.max(1, Math.round(RASTER_WIDTH * intrinsicAspect(svg)));
 
@@ -168,7 +168,7 @@ async function vectorize(svgPath: string): Promise<Matrix> {
   return { cells, cols, rows };
 }
 
-function serialize(entries: [string, Matrix][]): string {
+function serialize(entries: [string, Grid][]): string {
   const body = entries
     .map(([word, m]) => {
       const cells = m.cells.map((c) => `{ x: ${c.x}, y: ${c.y} }`).join(', ');
@@ -180,13 +180,13 @@ function serialize(entries: [string, Matrix][]): string {
 
 export type Cell = { x: number; y: number };
 
-export type DotMatrixIcon = {
+export type DotSwarmIcon = {
   cells: Cell[];
   cols: number;
   rows: number;
 };
 
-export const icons: Record<string, () => DotMatrixIcon> = {
+export const icons: Record<string, () => DotSwarmIcon> = {
 ${body}
 };
 
@@ -199,13 +199,13 @@ async function main(): Promise<void> {
     .filter((f) => f.endsWith('.svg'))
     .sort();
 
-  const entries: [string, Matrix][] = [];
+  const entries: [string, Grid][] = [];
   for (const file of files) {
     const word = basename(file, '.svg');
-    const matrix = await vectorize(join(ASSET_DIR, file));
-    entries.push([word, matrix]);
+    const grid = await vectorize(join(ASSET_DIR, file));
+    entries.push([word, grid]);
     process.stdout.write(
-      `${word.padEnd(14)} ${String(matrix.cols).padStart(2)}x${String(matrix.rows).padStart(3)}  ${String(matrix.cells.length).padStart(4)} dots\n`,
+      `${word.padEnd(14)} ${String(grid.cols).padStart(2)}x${String(grid.rows).padStart(3)}  ${String(grid.cells.length).padStart(4)} dots\n`,
     );
   }
 

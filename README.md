@@ -1,6 +1,6 @@
-# Dot Matrix
+# Dot Swarm
 
-Eighty everyday objects drawn as dot-matrix icons. Each one starts as a
+Eighty everyday objects drawn as dot-swarm icons. Each one starts as a
 public-domain vector, gets rasterised to a fixed 40-cell grid at build time, and
 is rendered as a lattice of small rounded squares — one grid cell, one dot,
 nothing else.
@@ -12,7 +12,7 @@ npm run vectorize  # regenerate src/icons.ts from src/assets/*.svg
 npm run build
 ```
 
-## Morphing
+## Swarming
 
 One display, eighty word buttons. Click a word, or tab to it with the
 keyboard, and the dots on the left travel to that shape — click or tab to
@@ -20,7 +20,7 @@ another and they redirect from wherever they currently are.
 
 The motion has two parts. Cell `j` of the target is where dot `j` would land
 if paired by index, but the vectoriser emits cells row by row, so that pairing
-sweeps across the field in one direction. Each morph instead reshuffles the
+sweeps across the field in one direction. Each swarm instead reshuffles the
 target's cells with a Fisher–Yates pass, so dot `i` is sent to an arbitrary
 cell of the shape it's heading for — the source shape dissolves into a loose
 cloud and reassembles, rather than sliding into place. The path itself stays a
@@ -50,7 +50,7 @@ picked shape.
 
 ## Fixed constants
 
-These never vary. They live in `src/DotMatrix.tsx`.
+These never vary. They live in `src/DotSwarmStatic.tsx`.
 
 |                | desktop     | mobile      |
 | -------------- | ----------- | ----------- |
@@ -73,10 +73,10 @@ Mobile is detected with `window.matchMedia('(max-width: 600px)')` unless the
 | `src/assets/*.svg`     | the raw vectors, one per shape, each carrying its provenance in an XML comment       |
 | `scripts/vectorize.ts` | build tool — reads every asset, regenerates `src/icons.ts`. Idempotent.              |
 | `src/icons.ts`         | generated registry, `{ word: () => ({ cells, cols, rows }) }`. Never edited by hand. |
-| `src/DotMatrix.tsx`    | static renderer — walks `cells`, draws one `<rect>` each. Holds the constants.       |
-| `src/morph.ts`         | exposes each icon's own unpadded cells, plus the shared field size.                  |
-| `src/DotMorph.tsx`     | the animated display: one canvas, sized-per-transition scatter, one rAF loop.        |
-| `src/App.tsx`          | the picker — eighty buttons, click or focus to morph.                               |
+| `src/DotSwarmStatic.tsx`| static renderer — walks `cells`, draws one `<rect>` each. Holds the constants.       |
+| `src/swarm.ts`         | exposes each icon's own unpadded cells, plus the shared field size.                  |
+| `src/DotSwarm.tsx`     | the animated display: one canvas, sized-per-transition scatter, one rAF loop.        |
+| `src/App.tsx`          | the picker — eighty buttons, click or focus to swarm.                               |
 
 Nothing is fetched or rasterised at runtime — `src/icons.ts` is a static array
 of cell coordinates, and the grid is the only source of truth the renderer has.

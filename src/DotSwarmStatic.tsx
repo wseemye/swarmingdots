@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { DotMatrixIcon } from './icons';
+import type { DotSwarmIcon } from './icons';
 
 export const DESKTOP_DOT = 6;
 export const DESKTOP_RADIUS = 2.4;
@@ -24,12 +24,12 @@ function useMobileViewport(): boolean {
 }
 
 type Props = {
-  icon: DotMatrixIcon;
+  icon: DotSwarmIcon;
   mobile?: boolean;
   color?: string;
 };
 
-export default function DotMatrix({ icon, mobile, color = DOT_COLOR }: Props) {
+export default function DotSwarmStatic({ icon, mobile, color = DOT_COLOR }: Props) {
   const viewportIsMobile = useMobileViewport();
   const half = mobile ?? viewportIsMobile;
 
@@ -41,7 +41,7 @@ export default function DotMatrix({ icon, mobile, color = DOT_COLOR }: Props) {
 
   return (
     <svg
-      className="dot-matrix"
+      className="dot-swarm-static"
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}

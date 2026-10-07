@@ -4,7 +4,7 @@
   font-display: block;
 }
 
-.text-morph {
+.text-swarm {
   position: fixed;
   inset: 0;
   display: grid;
@@ -14,14 +14,14 @@
   font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
 }
 
-.text-morph-stage {
+.text-swarm-stage {
   display: grid;
   place-items: center;
   overflow: auto;
   padding: 48px 24px;
 }
 
-.text-morph-sentence {
+.text-swarm-sentence {
   max-width: 100%;
   margin: 0;
   font-size: 0;
@@ -29,18 +29,18 @@
   font-weight: 400;
 }
 
-.text-morph-word {
+.text-swarm-word {
   position: relative;
   display: inline-block;
 }
 
-.text-morph-dots {
+.text-swarm-dots {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.text-morph-text {
+.text-swarm-text {
   position: absolute;
   font-family: 'Geist Pixel Circle', monospace;
   font-weight: 400;
@@ -51,7 +51,7 @@
 }
 
 /* ── Customize panel ── */
-.text-morph-panel {
+.text-swarm-panel {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -62,7 +62,7 @@
   font-size: 13px;
 }
 
-.text-morph-panel h2 {
+.text-swarm-panel h2 {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
@@ -188,7 +188,7 @@
 
 .picker-sv:focus-visible,
 .picker-hue:focus-visible,
-.text-morph-panel button:focus-visible {
+.text-swarm-panel button:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
@@ -222,17 +222,17 @@
 }
 
 @media (max-width: 760px) {
-  .text-morph {
+  .text-swarm {
     position: static;
     display: block;
     min-height: 100%;
   }
 
-  .text-morph-stage {
+  .text-swarm-stage {
     min-height: 60vh;
   }
 
-  .text-morph-panel {
+  .text-swarm-panel {
     border-left: 0;
     border-top: 1px solid #e5e5e5;
   }
@@ -255,6 +255,6 @@
   outline-offset: 1px;
 }
 
-.text-morph-panel > * {
+.text-swarm-panel > * {
   flex-shrink: 0;
 }

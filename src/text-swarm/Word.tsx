@@ -2,11 +2,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ease } from '../dotCanvas';
 import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
-const MORPH_MS = 1100;
+const SWARM_MS = 1100;
 const TEXT_FADE_MS = 350;
 const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
 
-type Phase = 'box' | 'morph' | 'text' | 'done';
+type Phase = 'box' | 'swarm' | 'text' | 'done';
 
 // The skeleton: the word's own dots packed into BOX_ROWS rows, extra dots going
 // to the top rows, so it is a full block with a ragged last column. It starts at
@@ -62,7 +62,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   const redrawRef = useRef<() => void>(() => {});
 
   // The slot a word takes in the line grows from its box to its full width as
-  // it morphs, so the boxes are spaced by their own widths, not the words'.
+  // it swarms, so the boxes are spaced by their own widths, not the words'.
   function applySlot() {
     const { dot: d, wordCols: wc } = live.current;
     if (wrapRef.current) {
@@ -115,7 +115,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       tg[i] = glyphs[i];
     }
     // Scatter: dot i goes to an arbitrary cell instead of its row-order partner,
-    // so dots cross the field and reassemble (same method as the shape morph).
+    // so dots cross the field and reassemble (same method as the shape swarm).
     for (let i = n - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [tx[i], tx[j]] = [tx[j], tx[i]];
@@ -162,7 +162,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
     function step(now: number) {
       if (startedAt === null) startedAt = now;
-      t = Math.min(1, (now - startedAt) / MORPH_MS);
+      t = Math.min(1, (now - startedAt) / SWARM_MS);
       render();
       if (t < 1) {
         frame = requestAnimationFrame(step);
@@ -183,7 +183,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
         setPhase('done');
         return;
       }
-      setPhase('morph');
+      setPhase('swarm');
       frame = requestAnimationFrame(step);
     }, delay);
 
@@ -201,7 +201,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   return (
     <span
       ref={wrapRef}
-      className="text-morph-word"
+      className="text-swarm-word"
       style={{
         height: rows * dot,
         verticalAlign: -(rows - baseline) * dot,
@@ -212,14 +212,14 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       {phase !== 'done' && (
         <canvas
           ref={canvasRef}
-          className="text-morph-dots"
+          className="text-swarm-dots"
           aria-hidden="true"
           style={{ width: wordCols * dot, height: rows * dot }}
         />
       )}
       <span
         ref={textRef}
-        className="text-morph-text"
+        className="text-swarm-text"
         style={{
           fontSize,
           left: -inkLeft * dot,

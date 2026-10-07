@@ -6,21 +6,21 @@ import {
   MOBILE_DOT,
   MOBILE_QUERY,
   MOBILE_RADIUS,
-} from './DotMatrix';
+} from './DotSwarmStatic';
 import { ease, traceDot } from './dotCanvas';
-import { spreadCells, type MorphField } from './morph';
+import { spreadCells, type SwarmField } from './swarm';
 
-const MORPH_MS = 900;
+const SWARM_MS = 900;
 
-type Controller = { morphTo: (name: string) => void };
+type Controller = { swarmTo: (name: string) => void };
 
 type Props = {
-  field: MorphField;
+  field: SwarmField;
   target: string;
   color?: string;
 };
 
-export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
+export default function DotSwarm({ field, target, color = DOT_COLOR }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const controlRef = useRef<Controller | null>(null);
 
@@ -104,7 +104,7 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
 
     function step(now: number) {
       if (startedAt === null) startedAt = now;
-      const t = Math.min(1, (now - startedAt) / MORPH_MS);
+      const t = Math.min(1, (now - startedAt) / SWARM_MS);
       const e = ease(t);
 
       for (let i = 0; i < activeLen; i++) {
@@ -129,7 +129,7 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
     }
 
     controlRef.current = {
-      morphTo(name: string) {
+      swarmTo(name: string) {
         if (!(name in counts) || name === destinationName) return;
 
         const targetLen = counts[name];
@@ -138,7 +138,7 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
 
         // Origin: wherever the dots are right now — settled or mid-flight —
         // padded with duplicates of themselves if the target needs more dots
-        // than are currently on screen. A click part-way through a morph
+        // than are currently on screen. A click part-way through a swarm
         // continues from there instead of snapping back to a whole shape.
         origin.set(current.subarray(0, sourceLen * 2));
         for (let i = sourceLen; i < n; i++) {
@@ -194,7 +194,7 @@ export default function DotMorph({ field, target, color = DOT_COLOR }: Props) {
   }, [field, color]);
 
   useEffect(() => {
-    controlRef.current?.morphTo(target);
+    controlRef.current?.swarmTo(target);
   }, [target]);
 
   return <canvas ref={canvasRef} className="display-canvas" />;

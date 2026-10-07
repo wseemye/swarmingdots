@@ -2,13 +2,13 @@
 
 export type Cell = { x: number; y: number };
 
-export type DotMatrixIcon = {
+export type DotSwarmIcon = {
   cells: Cell[];
   cols: number;
   rows: number;
 };
 
-export const icons: Record<string, () => DotMatrixIcon> = {
+export const icons: Record<string, () => DotSwarmIcon> = {
   airplane: () => ({
     cols: 32,
     rows: 32,

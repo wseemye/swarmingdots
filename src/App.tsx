@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import DotMorph from './DotMorph';
-import { buildField } from './morph';
+import DotSwarm from './DotSwarm';
+import { buildField } from './swarm';
 
 const PAGE_SIZE = 20;
 
@@ -22,9 +22,9 @@ export default function App() {
 
   return (
     <main className="app">
-      <section className="display" aria-label="Dot matrix preview">
+      <section className="display" aria-label="Dot swarm preview">
         <div className="display-frame">
-          <DotMorph field={field} target={selected} color="#ededed" />
+          <DotSwarm field={field} target={selected} color="#ededed" />
         </div>
         <p className="display-name" aria-live="polite" aria-atomic="true">
           {selected}
@@ -33,7 +33,7 @@ export default function App() {
 
       <section className="picker" aria-label="Shape picker">
         <header className="picker-header">
-          <h1>Dot Matrix</h1>
+          <h1>Dot Swarm</h1>
           <p>Pick a shape and watch the dots travel to it.</p>
         </header>
 
