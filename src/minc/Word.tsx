@@ -45,7 +45,7 @@ export default function Word({ word, dot, delay, trailingSpace }: Props) {
   const dotRef = useRef(dot);
   const redrawRef = useRef<() => void>(() => {});
 
-  const { cols, rows, baseline, letters, cells } = word;
+  const { cols, rows, baseline, inkLeft, cells } = word;
   const width = cols * dot;
   const height = rows * dot;
   const fontSize = dot / PIXEL_EM;
@@ -172,19 +172,13 @@ export default function Word({ word, dot, delay, trailingSpace }: Props) {
         className="minc-text"
         style={{
           fontSize,
+          left: -inkLeft * dot,
+          top: baseline * dot - BASELINE_EM * fontSize,
           opacity: showText ? 1 : 0,
           transition: `opacity ${TEXT_FADE_MS}ms ease-out`,
         }}
       >
-        {[...word.text].map((ch, i) => (
-          <span
-            key={i}
-            style={{ left: letters[i] * dot, top: baseline * dot - BASELINE_EM * fontSize }}
-          >
-            {ch}
-          </span>
-        ))}
-        {trailingSpace && <span style={{ left: width, top: 0 }}> </span>}
+        {trailingSpace ? `${word.text} ` : word.text}
       </span>
     </span>
   );

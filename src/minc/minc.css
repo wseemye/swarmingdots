@@ -36,7 +36,6 @@
 
 .minc-text {
   position: absolute;
-  inset: 0;
   font-family: 'Geist Pixel Circle', monospace;
   font-weight: 400;
   line-height: 1;
@@ -44,8 +43,4 @@
   font-kerning: none;
   font-variant-ligatures: none;
   color: #000;
-}
-
-.minc-text > span {
-  position: absolute;
 }

@@ -5,7 +5,6 @@ import * as fontkit from 'fontkit';
 import { writeFileSync } from 'node:fs';
 
 const PIXEL = 38;
-const GAP = 3; // dots between glyph ink boxes, matching the Paper layout
 const WORDS = ['the', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog'];
 
 const font = fontkit.openSync('public/fonts/GeistPixel-Circle.woff2');
@@ -26,7 +25,7 @@ function glyphPixels(ch) {
     cur.push(...c.args);
   }
   flush();
-  return { pixels, bbox: g.bbox };
+  return { pixels, bbox: g.bbox, advance: g.advanceWidth / PIXEL };
 }
 
 const out = WORDS.map((text) => {
@@ -34,24 +33,27 @@ const out = WORDS.map((text) => {
   const top = Math.max(...glyphs.map((g) => Math.round(g.bbox.maxY / PIXEL)));
   const bottom = Math.min(...glyphs.map((g) => Math.round(g.bbox.minY / PIXEL)));
 
+  // Dots sit exactly where the font's own advances put each glyph, so the real
+  // text, set as one plain string, lands on them with no per-letter placement.
   const cells = [];
-  const letters = []; // where each glyph's origin sits, in dots from the footprint's left edge
-  let cursor = 0; // ink-left of the next glyph, in dots
+  let origin = 0;
+  let inkLeft = Infinity;
+  let inkRight = -Infinity;
   glyphs.forEach((g) => {
-    const inkLeft = Math.round(g.bbox.minX / PIXEL);
-    const inkRight = Math.round(g.bbox.maxX / PIXEL);
-    letters.push(cursor - inkLeft);
-    for (const [px, py] of g.pixels) cells.push(cursor + (px - inkLeft), top - py);
-    cursor += inkRight - inkLeft + GAP;
+    for (const [px, py] of g.pixels) cells.push(origin + px, top - py);
+    inkLeft = Math.min(inkLeft, origin + g.bbox.minX / PIXEL);
+    inkRight = Math.max(inkRight, origin + g.bbox.maxX / PIXEL);
+    origin += g.advance;
   });
+  for (let i = 0; i < cells.length; i += 2) cells[i] -= inkLeft;
 
-  return { text, cols: cursor - GAP, rows: top - bottom, baseline: top, letters, cells };
+  return { text, cols: inkRight - inkLeft, rows: top - bottom, baseline: top, inkLeft, cells };
 });
 
 const body = out
   .map(
     (w) =>
-      `  {\n    text: '${w.text}',\n    cols: ${w.cols},\n    rows: ${w.rows},\n    baseline: ${w.baseline},\n    letters: [${w.letters.join(',')}],\n    cells: [${w.cells.join(',')}],\n  },`,
+      `  {\n    text: '${w.text}',\n    cols: ${w.cols},\n    rows: ${w.rows},\n    baseline: ${w.baseline},\n    inkLeft: ${w.inkLeft},\n    cells: [${w.cells.join(',')}],\n  },`,
   )
   .join('\n');
 
@@ -66,8 +68,8 @@ export type WordData = {
   rows: number;
   /** Dots from the top of the footprint down to the baseline. */
   baseline: number;
-  /** Where each glyph's origin sits, in dots from the footprint's left edge. */
-  letters: number[];
+  /** Dots between the text's origin and the first ink, i.e. how far left to pull the text. */
+  inkLeft: number;
   /** Flat [x, y, x, y, …] lattice coordinates of every dot in the word. */
   cells: number[];
 };
