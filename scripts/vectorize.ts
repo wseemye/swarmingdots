@@ -5,11 +5,11 @@ import sharp from 'sharp';
 const ASSET_DIR = join(process.cwd(), 'src', 'assets');
 const OUTPUT = join(process.cwd(), 'src', 'icons.ts');
 
-const COLS = 40;
+const COLS = 32;
 
-// 600px canvas / 6px dot. A vector taller than 2.5:1 is scaled to fit this
-// instead of keeping 40 columns, so no icon can exceed the canvas.
-const MAX_ROWS = 100;
+// 300px canvas / 6px dot. A vector taller than ~1.56:1 is scaled to fit this
+// instead of keeping 32 columns, so no icon can exceed the canvas.
+const MAX_ROWS = 50;
 
 // Each grid cell averages (RASTER_WIDTH / COLS)^2 = 900 source pixels, enough
 // that a cell's ink coverage is exact to ~0.1% before it is thresholded.

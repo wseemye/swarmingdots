@@ -7,7 +7,7 @@ export const MOBILE_DOT = 3;
 export const MOBILE_RADIUS = 1.2;
 export const DOT_COLOR = '#111';
 
-export const MOBILE_QUERY = '(max-width: 600px)';
+export const MOBILE_QUERY = '(max-width: 400px)';
 
 function subscribeToViewport(onChange: () => void): () => void {
   const query = window.matchMedia(MOBILE_QUERY);
