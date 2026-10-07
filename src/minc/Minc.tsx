@@ -8,10 +8,8 @@ import './minc.css';
 // `/minc?size=16` previews another size without editing this.
 const FONT_SIZE = 26;
 
-// The skeletons sit for a beat before the first word moves, then each word
-// starts 500ms after the one before it.
+// The skeletons sit for a beat, then every word morphs at the same time.
 const INTRO_MS = 800;
-const STAGGER_MS = 500;
 
 export default function Minc() {
   const [params] = useSearchParams();
@@ -26,7 +24,7 @@ export default function Minc() {
             key={i}
             word={word}
             fontSize={fontSize}
-            delay={INTRO_MS + i * STAGGER_MS}
+            delay={INTRO_MS}
             trailingSpace={i < WORDS.length - 1}
           />
         ))}
