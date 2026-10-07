@@ -76,6 +76,9 @@ export type WordData = {
 
 export const BOX_ROWS = 10;
 
+/** One dot in em: Geist Pixel's lattice step is 38/1000 em, so a 26px font has ~1px dots. */
+export const PIXEL_EM = 0.038;
+
 export const WORDS: WordData[] = [
 ${body}
 ];

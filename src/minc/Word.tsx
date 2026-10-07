@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ease, traceDot } from '../dotCanvas';
-import { BOX_ROWS, type WordData } from './words';
+import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
 const MORPH_MS = 1100;
 const TEXT_FADE_MS = 350;
 const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
-const PIXEL_EM = 0.038; // Geist Pixel: one lattice step is 38/1000 em
 // With line-height 1 the baseline sits this far down the line box:
 // half the line + half the (ascent - descent) of the font's 1005/-295 metrics.
 const BASELINE_EM = 0.855;
@@ -33,13 +32,15 @@ function boxCells(count: number, cols: number, rows: number): Float32Array {
 
 type Props = {
   word: WordData;
-  dot: number;
+  /** Font size in px; one dot is one lattice step of the font, so the dots scale with it. */
+  fontSize: number;
   /** ms from page load until this word's dots start to move. */
   delay: number;
   trailingSpace: boolean;
 };
 
-export default function Word({ word, dot, delay, trailingSpace }: Props) {
+export default function Word({ word, fontSize, delay, trailingSpace }: Props) {
+  const dot = fontSize * PIXEL_EM;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [phase, setPhase] = useState<Phase>('box');
   const dotRef = useRef(dot);
@@ -48,7 +49,6 @@ export default function Word({ word, dot, delay, trailingSpace }: Props) {
   const { cols, rows, baseline, inkLeft, cells } = word;
   const width = cols * dot;
   const height = rows * dot;
-  const fontSize = dot / PIXEL_EM;
 
   useEffect(() => {
     dotRef.current = dot;
@@ -82,10 +82,10 @@ export default function Word({ word, dot, delay, trailingSpace }: Props) {
 
     function render() {
       const d = dotRef.current;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
       const w = cols * d;
       const h = rows * d;
-      const px = Math.max(1, Math.round(d * dpr));
+      const px = Math.max(8, Math.ceil(d * dpr * 4));
       if (px !== spritePx || canvas!.width !== Math.round(w * dpr)) {
         spritePx = px;
         canvas!.width = Math.round(w * dpr);
@@ -102,6 +102,7 @@ export default function Word({ word, dot, delay, trailingSpace }: Props) {
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
+      ctx.imageSmoothingQuality = 'high';
       const e = ease(t);
       for (let i = 0; i < n; i++) {
         const x = origin[i * 2] + (target[i * 2] - origin[i * 2]) * e;
