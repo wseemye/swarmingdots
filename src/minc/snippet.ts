@@ -1,6 +1,6 @@
-import { WORDS } from './words';
-
 export type Settings = {
+  /** What to show. Newlines start a new line; words are split on whitespace. */
+  text: string;
   /** Font size in px; a dot is 0.038 of it. */
   fontSize: number;
   /** Page background, `#rrggbb`. */
@@ -9,16 +9,20 @@ export type Settings = {
   color: string;
   /** Extra space after every letter, in dots. */
   letterSpacing: number;
+  /** Gap between one line and the next, in dots. */
+  lineSpacing: number;
 };
 
+export const DEFAULT_TEXT = 'the quick brown fox jumps over the lazy dog';
+
 export const DEFAULT_SETTINGS: Settings = {
+  text: DEFAULT_TEXT,
   fontSize: 26,
   background: '#ffffff',
   color: '#000000',
   letterSpacing: 0,
+  lineSpacing: 6,
 };
-
-export const SENTENCE = WORDS.map((w) => w.text).join(' ');
 
 const FONT_URL = 'https://cdn.jsdelivr.net/npm/geist@1.7.2/dist/fonts/geist-pixel/GeistPixel-Circle.woff2';
 
@@ -34,10 +38,11 @@ export function dotPx(fontSize: number): number {
 export function buildSnippet(s: Settings): string {
   const config = JSON.stringify(
     {
-      text: SENTENCE,
+      text: s.text,
       fontSize: s.fontSize,
       color: s.color,
       letterSpacing: s.letterSpacing,
+      lineSpacing: s.lineSpacing,
       introMs: 800,
       morphMs: 1100,
       fadeMs: 350,
@@ -74,40 +79,48 @@ export function buildSnippet(s: Settings): string {
 <script>
 // Change these. Everything else is derived from fontSize: one dot is 0.038em, so
 // 26px gives ~1px dots and 16px gives ~0.6px dots. The dot count never changes.
-// letterSpacing is in dots.
+// letterSpacing is in dots, and so is lineSpacing (the gap between lines).
 var CONFIG = ${config};
 
 var PIXEL_EM = 0.038;   // one lattice step of Geist Pixel, in em
 var BOX_ROWS = 10;      // the skeleton box is always 10 dots tall
 var CELL = 8;           // canvas px per lattice step while sampling the font
-var ASC = 19, DESC = 4; // rows above and below the baseline that any letter can use
+var ASC = 26, DESC = 8; // rows above and below the baseline that any letter can use
 var FONT = '"Geist Pixel Circle"';
 
 function ease(t) { return t < 0.5 ? 16 * Math.pow(t, 5) : 1 - Math.pow(-2 * t + 2, 5) / 2; }
 
 // Reads a word's dots out of the font: draw each letter, keep a cell if its centre is inked.
+// Letters the font cannot draw come back blank and are dropped.
 function rasterize(word) {
-  var size = CELL / PIXEL_EM;
-  var probe = document.createElement('canvas').getContext('2d');
-  probe.font = size + 'px ' + FONT;
-  var letters = word.split('');
-  var adv = letters.map(function (ch) { return Math.round(probe.measureText(ch).width / CELL); });
-  var total = adv.reduce(function (a, b) { return a + b; }, 0);
-  var pad = 2, cols = total + pad * 2, rows = ASC + DESC;
+  var size = CELL / PIXEL_EM, PAD = 2, COLS = 48, ROWS = ASC + DESC;
   var c = document.createElement('canvas');
-  c.width = cols * CELL; c.height = rows * CELL;
+  c.width = COLS * CELL; c.height = ROWS * CELL;
   var g = c.getContext('2d', { willReadFrequently: true });
-  g.font = probe.font;
-  var cells = [], origin = pad;
-  letters.forEach(function (ch, gi) {
+  g.font = size + 'px ' + FONT;
+  var cells = [], kept = '', origin = 0;
+  Array.from(word).forEach(function (ch) {
+    var adv = Math.round(g.measureText(ch).width / CELL);
     g.clearRect(0, 0, c.width, c.height);
-    g.fillText(ch, origin * CELL, ASC * CELL);
-    var data = g.getImageData(0, 0, c.width, c.height).data;
-    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
-      if (data[((y * CELL + CELL / 2) * c.width + x * CELL + CELL / 2) * 4 + 3] > 128) cells.push([x, y, gi]);
+    g.fillText(ch, PAD * CELL, ASC * CELL);
+    var data = g.getImageData(0, 0, c.width, c.height).data, found = [], on = [], x, y;
+    for (y = 0; y < ROWS; y++) for (x = 0; x < COLS; x++) {
+      if (data[((y * CELL + CELL / 2) * c.width + x * CELL + CELL / 2) * 4 + 3] > 128) on.push([x, y]);
     }
-    origin += adv[gi];
+    // A letter the font lacks gets drawn in some other font. Real glyphs ink whole cells only,
+    // so drop a glyph whose ink mostly lies outside the cells it inks.
+    var ink = 0, inCells = 0, i;
+    for (i = 3; i < data.length; i += 4) if (data[i] > 128) ink++;
+    on.forEach(function (p) {
+      for (var dy = 0; dy < CELL; dy++) for (var dx = 0; dx < CELL; dx++) {
+        if (data[((p[1] * CELL + dy) * c.width + p[0] * CELL + dx) * 4 + 3] > 128) inCells++;
+      }
+    });
+    if (!on.length || inCells < ink * 0.98) return;
+    on.forEach(function (p) { found.push([origin + p[0] - PAD, p[1], kept.length]); });
+    cells = cells.concat(found); kept += ch; origin += adv;
   });
+  if (!cells.length) return null;
   var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   cells.forEach(function (p) {
     minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
@@ -117,8 +130,8 @@ function rasterize(word) {
     cells: cells.map(function (p) { return [p[0] - minX, p[1] - minY, p[2]]; }),
     cols: maxX - minX + 1, rows: maxY - minY + 1,
     baseline: ASC - minY,   // rows from the top of the word down to the baseline
-    inkLeft: minX - pad,    // dots between the text origin and the first ink
-    length: letters.length
+    inkLeft: minX,          // dots between the text origin and the first ink
+    kept: kept, length: kept.length
   };
 }
 
@@ -132,8 +145,7 @@ function boxCells(count, baseline) {
   return out;
 }
 
-function build(wordText, isLast) {
-  var w = rasterize(wordText);
+function build(w, host, isLast) {
   var fs = CONFIG.fontSize, dot = fs * PIXEL_EM, ls = CONFIG.letterSpacing;
   var n = w.cells.length;
   var boxCols = Math.ceil(n / BOX_ROWS);
@@ -144,7 +156,7 @@ function build(wordText, isLast) {
   wrap.style.height = w.rows * dot + 'px';
   wrap.style.verticalAlign = -(w.rows - w.baseline) * dot + 'px';
   wrap.style.marginRight = isLast ? '0' : Math.max(4, 8 + 2 * ls) * dot + 'px';
-  wrap.style.marginBottom = 6 * dot + 'px';
+  wrap.style.marginBottom = CONFIG.lineSpacing * dot + 'px';
   wrap.style.width = boxCols * dot + 'px';
 
   var canvas = document.createElement('canvas');
@@ -156,7 +168,7 @@ function build(wordText, isLast) {
 
   var text = document.createElement('span');
   text.className = 't';
-  text.textContent = isLast ? wordText : wordText + ' ';
+  text.textContent = isLast ? w.kept : w.kept + ' ';
   text.style.fontSize = fs + 'px';
   text.style.left = -w.inkLeft * dot + 'px';
   text.style.color = CONFIG.color;
@@ -166,7 +178,7 @@ function build(wordText, isLast) {
 
   wrap.appendChild(canvas);
   wrap.appendChild(text);
-  document.getElementById('sentence').appendChild(wrap);
+  host.appendChild(wrap);
 
   // Browsers round a font's ascent to whole pixels, so measure where the baseline
   // really falls and put it on the word's baseline row.
@@ -215,8 +227,13 @@ function build(wordText, isLast) {
 }
 
 document.fonts.load(CONFIG.fontSize + 'px ' + FONT).then(function () {
-  var words = CONFIG.text.split(' ');
-  var parts = words.map(function (word, i) { return build(word, i === words.length - 1); });
+  var host = document.getElementById('sentence'), parts = [];
+  CONFIG.text.split('\\n').forEach(function (line, li) {
+    var words = line.split(/\\s+/).filter(Boolean).map(rasterize).filter(Boolean);
+    if (!words.length) return;
+    if (parts.length) host.appendChild(document.createElement('br'));
+    words.forEach(function (w, i) { parts.push(build(w, host, i === words.length - 1)); });
+  });
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   setTimeout(function () {
     parts.forEach(function (p) { p.start(); });
@@ -230,13 +247,17 @@ document.fonts.load(CONFIG.fontSize + 'px ' + FONT).then(function () {
 
 export function buildPrompt(s: Settings): string {
   const dot = dotPx(s.fontSize);
-  return `Build a single self-contained HTML page (no build step, no framework) that shows the sentence "${SENTENCE}" as an animated dot-matrix text effect.
+  return `Build a single self-contained HTML page (no build step, no framework) that shows this text: """
+${s.text}
+"""
+as an animated dot-matrix text effect.
 
 Visual settings:
 - Font size: ${s.fontSize}px (one dot = font size × 0.038 = ${dot.toFixed(3)}px)
 - Background: ${s.background}
 - Dot and text colour: ${s.color}
 - Letter spacing: ${s.letterSpacing} dots (${(s.letterSpacing * dot).toFixed(3)}px) added after every letter
+- Line spacing: ${s.lineSpacing} dots (${(s.lineSpacing * dot).toFixed(3)}px) of empty space between one line and the next
 
 The font is Geist Pixel Circle (weight 400), loaded with @font-face from ${FONT_URL}. It is a pixel font on a lattice of 38/1000 em, so one dot is exactly one lattice step, and the dot count never changes when the font size does: only the size each dot is drawn at.
 
@@ -247,5 +268,5 @@ Behaviour:
 4. Dots are rounded squares (corner radius 0.4 of a dot) drawn as vector paths on a canvas with a backing store of at least 3x, so they stay crisp at ~1px.
 5. Words flow and wrap like inline text, aligned on their baselines (descenders hang below), with a gap of max(4, 8 + 2 × letter spacing) dots between words, so words stay clearly apart when letters are spaced out. Respect prefers-reduced-motion by skipping the morph.
 
-To get each word's dots without a data file, rasterise it from the font at load: draw each letter on an offscreen canvas at font size ${(8 / 0.038).toFixed(3)}px (8 canvas px per lattice step), advance by each letter's measured width, and keep a lattice cell if the pixel at its centre is inked.`;
+To get each word's dots without a data file, rasterise it from the font at load: draw each letter on an offscreen canvas (tall enough for 26 rows above the baseline and 8 below) at font size ${(8 / 0.038).toFixed(3)}px (8 canvas px per lattice step), advance by each letter's measured width, and keep a lattice cell if the pixel at its centre is inked. Letters with no ink (not in the font) are dropped. Newlines in the text start a new line; words are split on whitespace.`;
 }

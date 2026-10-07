@@ -34,6 +34,8 @@ type Props = {
   fontSize: number;
   /** Extra space after every letter, in dots. */
   letterSpacing: number;
+  /** Gap below the word, in dots; this is what spaces one line from the next. */
+  lineSpacing: number;
   /** Colour of both the dots and the text. */
   color: string;
   /** ms from page load until this word's dots start to move. */
@@ -41,11 +43,11 @@ type Props = {
   trailingSpace: boolean;
 };
 
-export default function Word({ word, fontSize, letterSpacing, color, delay, trailingSpace }: Props) {
+export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, delay, trailingSpace }: Props) {
   const dot = fontSize * PIXEL_EM;
   const { cols, rows, baseline, inkLeft, cells, glyphs } = word;
   const boxCols = Math.ceil(cells.length / 2 / BOX_ROWS);
-  const wordCols = cols + (word.text.length - 1) * letterSpacing;
+  const wordCols = cols + (Array.from(word.text).length - 1) * letterSpacing;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
@@ -106,7 +108,7 @@ export default function Word({ word, fontSize, letterSpacing, color, delay, trai
     const origin = boxCells(n, baseline);
     const tx = new Float32Array(n);
     const ty = new Float32Array(n);
-    const tg = new Uint8Array(n);
+    const tg = new Uint16Array(n);
     for (let i = 0; i < n; i++) {
       tx[i] = cells[i * 2];
       ty[i] = cells[i * 2 + 1];
@@ -204,7 +206,7 @@ export default function Word({ word, fontSize, letterSpacing, color, delay, trai
         height: rows * dot,
         verticalAlign: -(rows - baseline) * dot,
         marginRight: trailingSpace ? Math.max(4, 8 + 2 * letterSpacing) * dot : 0,
-        marginBottom: 6 * dot,
+        marginBottom: lineSpacing * dot,
       }}
     >
       {phase !== 'done' && (

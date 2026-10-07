@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ColorPicker from './ColorPicker';
 import Word from './Word';
 import { buildPrompt, buildSnippet, dotPx, DEFAULT_SETTINGS, type Settings } from './snippet';
-import { WORDS } from './words';
+import { layoutText, type TextLayout } from './rasterize';
 import './minc.css';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 72;
 const MIN_SPACING = -2;
 const MAX_SPACING = 12;
+const MAX_LINE_SPACING = 60;
+const MAX_CHARS = 240;
 
 // The skeletons sit for a beat, then every word morphs at the same time.
 const INTRO_MS = 800;
@@ -41,6 +43,27 @@ export default function Minc() {
     fontSize: fromUrl > 0 ? clamp(fromUrl, MIN_SIZE, MAX_SIZE) : DEFAULT_SETTINGS.fontSize,
   });
   const [run, setRun] = useState(0);
+  // What the page is showing. It trails the textarea so typing does not restart
+  // the morph on every keystroke.
+  const [shown, setShown] = useState(settings.text);
+  const [layout, setLayout] = useState<(TextLayout & { version: number }) | null>(null);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setShown(settings.text), 450);
+    return () => window.clearTimeout(id);
+  }, [settings.text]);
+
+  // Re-read the dots from the font whenever the text changes or Replay is pressed;
+  // a new version remounts every word, so they all start as boxes together.
+  useEffect(() => {
+    let alive = true;
+    layoutText(shown).then((next) => {
+      if (alive) setLayout((prev) => ({ ...next, version: (prev?.version ?? 0) + 1 }));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [shown, run]);
   const [copied, setCopied] = useState<'prompt' | 'code' | 'failed' | null>(null);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
@@ -55,22 +78,47 @@ export default function Minc() {
     <main className="minc">
       <div className="minc-stage" style={{ background: settings.background }}>
         <h1 className="minc-sentence">
-          {WORDS.map((word, i) => (
-            <Word
-              key={`${run}-${i}`}
-              word={word}
-              fontSize={settings.fontSize}
-              letterSpacing={settings.letterSpacing}
-              color={settings.color}
-              delay={INTRO_MS}
-              trailingSpace={i < WORDS.length - 1}
-            />
+          {layout?.lines.map((line, li) => (
+            <Fragment key={`${layout.version}-${li}`}>
+              {li > 0 && <br />}
+              {line.map((word, i) => (
+                <Word
+                  key={i}
+                  word={word}
+                  fontSize={settings.fontSize}
+                  letterSpacing={settings.letterSpacing}
+                  lineSpacing={settings.lineSpacing}
+                  color={settings.color}
+                  delay={INTRO_MS}
+                  trailingSpace={i < line.length - 1}
+                />
+              ))}
+            </Fragment>
           ))}
         </h1>
       </div>
 
       <aside className="minc-panel" aria-label="Customize">
         <h2>Customize</h2>
+
+        <div className="field">
+          <label htmlFor="text">Your text</label>
+          <textarea
+            id="text"
+            rows={3}
+            maxLength={MAX_CHARS}
+            spellCheck={false}
+            placeholder="Type something…"
+            value={settings.text}
+            onChange={(e) => set({ text: e.target.value })}
+          />
+          <p className="hint">
+            {settings.text.length}/{MAX_CHARS}. Enter starts a new line.
+            {layout && layout.skipped.length > 0 && (
+              <> The font has no glyph for {layout.skipped.map((c) => `“${c}”`).join(' ')}, so {layout.skipped.length === 1 ? 'it was' : 'they were'} left out.</>
+            )}
+          </p>
+        </div>
 
         <div className="field">
           <label htmlFor="size">Font size</label>
@@ -118,6 +166,23 @@ export default function Minc() {
           </div>
         </div>
 
+        <div className="field">
+          <label htmlFor="line-spacing">Line spacing</label>
+          <div className="field-row">
+            <input
+              id="line-spacing"
+              type="range"
+              min={0}
+              max={MAX_LINE_SPACING}
+              step={1}
+              value={settings.lineSpacing}
+              onChange={(e) => set({ lineSpacing: Number(e.target.value) })}
+            />
+            <output className="num-out">{settings.lineSpacing}</output>
+            <span className="unit">dots</span>
+          </div>
+        </div>
+
         <ColorPicker label="Background" value={settings.background} onChange={(background) => set({ background })} />
         <ColorPicker label="Text color" value={settings.color} onChange={(color) => set({ color })} />
 
@@ -125,7 +190,7 @@ export default function Minc() {
           <button type="button" onClick={() => setRun((r) => r + 1)}>
             Replay
           </button>
-          <button type="button" onClick={() => setSettings(DEFAULT_SETTINGS)}>
+          <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
         </div>
