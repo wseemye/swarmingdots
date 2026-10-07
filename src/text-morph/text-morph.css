@@ -4,7 +4,7 @@
   font-display: block;
 }
 
-.minc {
+.text-morph {
   position: fixed;
   inset: 0;
   display: grid;
@@ -14,14 +14,14 @@
   font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
 }
 
-.minc-stage {
+.text-morph-stage {
   display: grid;
   place-items: center;
   overflow: auto;
   padding: 48px 24px;
 }
 
-.minc-sentence {
+.text-morph-sentence {
   max-width: 100%;
   margin: 0;
   font-size: 0;
@@ -29,18 +29,18 @@
   font-weight: 400;
 }
 
-.minc-word {
+.text-morph-word {
   position: relative;
   display: inline-block;
 }
 
-.minc-dots {
+.text-morph-dots {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.minc-text {
+.text-morph-text {
   position: absolute;
   font-family: 'Geist Pixel Circle', monospace;
   font-weight: 400;
@@ -51,7 +51,7 @@
 }
 
 /* ── Customize panel ── */
-.minc-panel {
+.text-morph-panel {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -62,7 +62,7 @@
   font-size: 13px;
 }
 
-.minc-panel h2 {
+.text-morph-panel h2 {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
@@ -188,7 +188,7 @@
 
 .picker-sv:focus-visible,
 .picker-hue:focus-visible,
-.minc-panel button:focus-visible {
+.text-morph-panel button:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
@@ -222,17 +222,17 @@
 }
 
 @media (max-width: 760px) {
-  .minc {
+  .text-morph {
     position: static;
     display: block;
     min-height: 100%;
   }
 
-  .minc-stage {
+  .text-morph-stage {
     min-height: 60vh;
   }
 
-  .minc-panel {
+  .text-morph-panel {
     border-left: 0;
     border-top: 1px solid #e5e5e5;
   }
@@ -255,6 +255,6 @@
   outline-offset: 1px;
 }
 
-.minc-panel > * {
+.text-morph-panel > * {
   flex-shrink: 0;
 }

@@ -201,7 +201,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   return (
     <span
       ref={wrapRef}
-      className="minc-word"
+      className="text-morph-word"
       style={{
         height: rows * dot,
         verticalAlign: -(rows - baseline) * dot,
@@ -212,14 +212,14 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       {phase !== 'done' && (
         <canvas
           ref={canvasRef}
-          className="minc-dots"
+          className="text-morph-dots"
           aria-hidden="true"
           style={{ width: wordCols * dot, height: rows * dot }}
         />
       )}
       <span
         ref={textRef}
-        className="minc-text"
+        className="text-morph-text"
         style={{
           fontSize,
           left: -inkLeft * dot,

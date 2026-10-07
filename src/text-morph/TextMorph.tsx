@@ -4,7 +4,7 @@ import ColorPicker from './ColorPicker';
 import Word from './Word';
 import { buildPrompt, buildSnippet, dotPx, DEFAULT_SETTINGS, type Settings } from './snippet';
 import { layoutText, type TextLayout } from './rasterize';
-import './minc.css';
+import './text-morph.css';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 72;
@@ -35,7 +35,7 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-export default function Minc() {
+export default function TextMorph() {
   const [params] = useSearchParams();
   const fromUrl = Number(params.get('size'));
   const [settings, setSettings] = useState<Settings>({
@@ -75,9 +75,9 @@ export default function Minc() {
   }
 
   return (
-    <main className="minc">
-      <div className="minc-stage" style={{ background: settings.background }}>
-        <h1 className="minc-sentence">
+    <main className="text-morph">
+      <div className="text-morph-stage" style={{ background: settings.background }}>
+        <h1 className="text-morph-sentence">
           {layout?.lines.map((line, li) => (
             <Fragment key={`${layout.version}-${li}`}>
               {li > 0 && <br />}
@@ -98,7 +98,7 @@ export default function Minc() {
         </h1>
       </div>
 
-      <aside className="minc-panel" aria-label="Customize">
+      <aside className="text-morph-panel" aria-label="Customize">
         <h2>Customize</h2>
 
         <div className="field">
