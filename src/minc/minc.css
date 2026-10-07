@@ -1,0 +1,51 @@
+@font-face {
+  font-family: 'Geist Pixel Circle';
+  src: url('/fonts/GeistPixel-Circle.woff2') format('woff2');
+  font-display: block;
+}
+
+.minc {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  background: #fff;
+  color: #000;
+}
+
+.minc-sentence {
+  max-width: 100%;
+  margin: 0;
+  font-size: 0;
+  line-height: 0;
+  font-weight: 400;
+}
+
+.minc-word {
+  position: relative;
+  display: inline-block;
+}
+
+.minc-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.minc-text {
+  position: absolute;
+  inset: 0;
+  font-family: 'Geist Pixel Circle', monospace;
+  font-weight: 400;
+  line-height: 1;
+  white-space: pre;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  color: #000;
+}
+
+.minc-text > span {
+  position: absolute;
+}
