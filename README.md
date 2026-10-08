@@ -12,6 +12,18 @@ npm run vectorize  # regenerate src/icons.ts from src/assets/*.svg
 npm run build
 ```
 
+## Routes
+
+The site opens on the text swarm, with a two-button nav to switch pages.
+
+| route    | page                                             |
+| -------- | ------------------------------------------------ |
+| `/text`  | type anything and watch its dots swarm into text |
+| `/icons` | the eighty icons, one display, one picker        |
+
+`/` and any unknown path redirect to `/text`. `vercel.json` rewrites every path
+to `index.html` so the routes also work on a direct load or refresh.
+
 ## Swarming
 
 One display, eighty word buttons. Click a word, or tab to it with the
