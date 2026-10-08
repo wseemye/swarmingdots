@@ -4,6 +4,7 @@ import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
 const SWARM_MS = 1100;
 const TEXT_FADE_MS = 350;
+const GAP_MS = 300; // letters already in the word slide apart to make room before the new one swarms in
 const DROP_MS = 200; // an edit that adds no letters only slides the rest into place
 const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
 
@@ -74,7 +75,13 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     tx: Float32Array;
     ty: Float32Array;
     tg: Uint16Array;
+    /** 1 for dots of a new letter, 0 for dots that were already in the word. */
+    mv: Uint8Array;
   } | null>(null);
+  // Progress of the dots already in the word, and of the new ones, as last drawn.
+  const eStay = useRef(0);
+  const eNew = useRef(0);
+  const gapRef = useRef(0);
   const timers = useRef({ begin: 0, fade: 0, frame: 0 });
   const beginAt = useRef<number | null>(null);
   // The slot a word takes in the line grows from where it was to its full width
@@ -114,13 +121,22 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = fill;
     ctx.beginPath();
-    const e = ease(t);
-    progressRef.current = e;
+    // With a gap stage, the old dots move first and the new ones wait; the
+    // slot follows the old dots, so the room opens before the letter arrives.
+    const gap = gapRef.current;
+    const total = durationRef.current;
+    const elapsed = t * total;
+    const eR = gap > 0 ? ease(Math.min(1, elapsed / gap)) : ease(t);
+    const eM = total > gap ? ease(Math.min(1, Math.max(0, (elapsed - gap) / (total - gap)))) : 1;
+    eStay.current = eR;
+    eNew.current = eM;
+    progressRef.current = eR;
     applySlot();
-    const { n, ox, oy, tx, ty, tg } = dots;
+    const { n, ox, oy, tx, ty, tg, mv } = dots;
     for (let i = 0; i < n; i++) {
-      const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * e;
-      const y = oy[i] + (ty[i] - oy[i]) * e;
+      const k = mv[i] ? eM : eR;
+      const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * k;
+      const y = oy[i] + (ty[i] - oy[i]) * k;
       ctx.roundRect(x * d, y * d, d, d, d * RADIUS);
     }
     ctx.fill();
@@ -151,6 +167,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
     const chars = Array.from(word.text);
     const moving: number[] = [];
+    let shifted = false;
     if (prev) {
       // Match the unchanged letters at the start and end of the word; whatever
       // is left in between is new.
@@ -162,7 +179,6 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       while (sfx < oldLen - p && sfx < newLen - p && prev.chars[oldLen - 1 - sfx] === chars[newLen - 1 - sfx]) sfx++;
 
       // Where each old dot is on screen right now, mid-flight or settled.
-      const e = progressRef.current;
       const byGlyph: number[][] = prev.chars.map(() => []);
       for (let i = 0; i < prev.n; i++) byGlyph[prev.tg[i]].push(i);
       const taken = new Array<number>(newLen).fill(0);
@@ -174,8 +190,10 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
           moving.push(i);
           continue;
         }
+        const e = prev.mv[src] ? eNew.current : eStay.current;
         ox[i] = prev.ox[src] + (prev.tx[src] + prev.tg[src] * old.letterSpacing - prev.ox[src]) * e;
         oy[i] = prev.oy[src] + (prev.ty[src] - prev.oy[src]) * e;
+        if (Math.abs(ox[i] - (tx[i] + tg[i] * letterSpacing)) > 0.01 || Math.abs(oy[i] - ty[i]) > 0.01) shifted = true;
       }
     } else {
       for (let i = 0; i < n; i++) moving.push(i);
@@ -204,10 +222,16 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       [tg[i], tg[j]] = [tg[j], tg[i]];
     }
 
-    dotsRef.current = { n, chars, ox, oy, tx, ty, tg };
+    const mv = new Uint8Array(n);
+    for (const i of moving) mv[i] = 1;
+    dotsRef.current = { n, chars, ox, oy, tx, ty, tg, mv };
     live.current = { dot, wordCols, letterSpacing, color, rows };
     slotFrom.current = prev ? slotNow.current : boxCols;
-    durationRef.current = moving.length > 0 ? SWARM_MS : DROP_MS;
+    // Room first, then the letter: only when something has to move aside.
+    gapRef.current = prev && moving.length > 0 && shifted ? GAP_MS : 0;
+    durationRef.current = moving.length > 0 ? gapRef.current + SWARM_MS : DROP_MS;
+    eStay.current = 0;
+    eNew.current = 0;
     progressRef.current = 0;
     timeRef.current = 0;
 
