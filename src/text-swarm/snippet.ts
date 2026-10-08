@@ -13,7 +13,7 @@ export type Settings = {
   lineSpacing: number;
 };
 
-export const DEFAULT_TEXT = 'the quick brown fox jumps over the lazy dog';
+export const DEFAULT_TEXT = 'enter your text';
 
 export const DEFAULT_SETTINGS: Settings = {
   text: DEFAULT_TEXT,

@@ -43,27 +43,20 @@ export default function TextSwarm() {
     fontSize: fromUrl > 0 ? clamp(fromUrl, MIN_SIZE, MAX_SIZE) : DEFAULT_SETTINGS.fontSize,
   });
   const [run, setRun] = useState(0);
-  // What the page is showing. It trails the textarea so typing does not restart
-  // the swarm on every keystroke.
-  const [shown, setShown] = useState(settings.text);
-  const [layout, setLayout] = useState<(TextLayout & { version: number }) | null>(null);
+  const [layout, setLayout] = useState<(TextLayout & { run: number; intro: boolean }) | null>(null);
 
-  useEffect(() => {
-    const id = window.setTimeout(() => setShown(settings.text), 450);
-    return () => window.clearTimeout(id);
-  }, [settings.text]);
-
-  // Re-read the dots from the font whenever the text changes or Replay is pressed;
-  // a new version remounts every word, so they all start as boxes together.
+  // Re-read the dots from the font whenever the text changes. Words keep their
+  // identity across edits, so only the letters that were typed swarm; Replay
+  // bumps `run`, which remounts every word so they all start as boxes together.
   useEffect(() => {
     let alive = true;
-    layoutText(shown).then((next) => {
-      if (alive) setLayout((prev) => ({ ...next, version: (prev?.version ?? 0) + 1 }));
+    layoutText(settings.text).then((next) => {
+      if (alive) setLayout((prev) => ({ ...next, run, intro: !prev || prev.run !== run }));
     });
     return () => {
       alive = false;
     };
-  }, [shown, run]);
+  }, [settings.text, run]);
   const [copied, setCopied] = useState<'prompt' | 'code' | 'failed' | null>(null);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
@@ -79,7 +72,7 @@ export default function TextSwarm() {
       <div className="text-swarm-stage" style={{ background: settings.background }}>
         <h1 className="text-swarm-sentence">
           {layout?.lines.map((line, li) => (
-            <Fragment key={`${layout.version}-${li}`}>
+            <Fragment key={`${layout.run}-${li}`}>
               {li > 0 && <br />}
               {line.map((word, i) => (
                 <Word
@@ -89,7 +82,7 @@ export default function TextSwarm() {
                   letterSpacing={settings.letterSpacing}
                   lineSpacing={settings.lineSpacing}
                   color={settings.color}
-                  delay={INTRO_MS}
+                  delay={layout.intro ? INTRO_MS : 0}
                   trailingSpace={i < line.length - 1}
                 />
               ))}
