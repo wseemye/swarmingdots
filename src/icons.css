@@ -1,8 +1,8 @@
-/* The icons page. It always sits on the dark theme (see shell.css). */
+/* The icons page sits on the light theme (see shell.css). */
 .icons {
-  --surface: #0a0a0a;
-  --surface-2: #111;
-  --border-hover: #333;
+  --surface: #fff;
+  --surface-2: #f4f4f5;
+  --border-hover: #d4d4d8;
   --subtle: #8a8a8a;
 
   display: grid;
@@ -27,7 +27,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgb(255 255 255 / 0.03) 0%, transparent 70%);
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgb(0 0 0 / 0.03) 0%, transparent 70%);
   pointer-events: none;
 }
 

@@ -14,7 +14,7 @@ export default function Shell() {
     0,
     PAGES.findIndex((p) => pathname === p.to || pathname.startsWith(`${p.to}/`)),
   );
-  const theme = active === 1 ? 'dark' : 'light';
+  const theme = 'light';
 
   useEffect(() => {
     document.title = `${PAGES[active].label} · Dot Swarm`;

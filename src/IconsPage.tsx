@@ -24,7 +24,7 @@ export default function IconsPage() {
     <div className="icons">
       <section className="icons-display" aria-label="Dot swarm preview">
         <div className="icons-frame">
-          <DotSwarm field={field} target={selected} color="#ededed" />
+          <DotSwarm field={field} target={selected} color="#111" />
         </div>
         <p className="icons-name" aria-live="polite" aria-atomic="true">
           {selected}
