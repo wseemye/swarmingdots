@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   suitcase
-  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "suitcase"
-  obtained from: @iconify-json/pinhead@1.2.33
+  source: original artwork drawn for this repository (no third-party source)
   license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
   license text: "CC0 1.0 Universal Public Domain Dedication"
+  note: authored for this repository because no CC0 silhouette of this object was
+        available in the public-domain vector libraries reachable here
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M10 1c.55 0 1 .45 1 1v1h1v11H3V3h1V2c0-.55.45-1 1-1zM2 3v11H1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1zm11 0h1c.55 0 1 .45 1 1v9c0 .55-.45 1-1 1h-1zm-3-1H5v1h5z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fff"/>
+    <path d="M38 25 V16 Q38 8 45 8 H55 Q62 8 62 16 V25" fill="none" stroke="#000" stroke-width="6"/>
+    <rect x="8" y="24" width="84" height="58" rx="10" fill="#000"/>
+    <rect x="30" y="34" width="5" height="38" rx="2.5" fill="#fff"/>
+    <rect x="65" y="34" width="5" height="38" rx="2.5" fill="#fff"/>
+    <circle cx="28" cy="88" r="5.5" fill="#000"/>
+    <circle cx="72" cy="88" r="5.5" fill="#000"/>
+</svg>

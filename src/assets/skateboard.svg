@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   skateboard
-  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "skateboard-deck"
-  obtained from: @iconify-json/pinhead@1.2.33
+  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "skateboard-profile"
+  obtained from: @iconify-json/pinhead@1.2.34
   license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
   license text: "CC0 1.0 Universal Public Domain Dedication"
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="m1.61 10.9l8.82-8.79s.75-1.42 1.1-1.74c.34-.32.43-.31.67-.35c.24-.05.44.01.71.08c.26.06.58.14.86.31s.55.43.75.71c.2.29.37.63.43.95s.03.53-.04.92c-.03.19-.06.43-.12.67c-.05.25-.14.51-.27.71c-.26.4-9.27 9.6-9.69 9.94c-.41.34-.62.48-.98.59c-.36.12-.73.11-1.1.08s-.79-.16-1.1-.28c-.32-.11-.55-.22-.79-.39c-.24-.18-.5-.42-.63-.64c-.13-.21-.16-.35-.2-.59s-.04-.58 0-.83c.05-.25 0-.36.24-.63c.24-.28 1.34-.72 1.34-.72"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M1.25 5.25V5h1.5v.25c0 .69.56 1.25 1.25 1.25h7c.69 0 1.25-.56 1.25-1.25V5h1.5v.25C13.75 6.77 12.52 8 11 8H4C2.48 8 1.25 6.77 1.25 5.25M5 10c0 .55-.45 1-1 1s-1-.45-1-1s.45-1 1-1s1 .45 1 1m7 0c0 .55-.45 1-1 1s-1-.45-1-1s.45-1 1-1s1 .45 1 1"/></svg>

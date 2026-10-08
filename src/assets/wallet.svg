@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   wallet
-  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "purse"
-  obtained from: @iconify-json/pinhead@1.2.33
+  source: original artwork drawn for this repository (no third-party source)
   license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
   license text: "CC0 1.0 Universal Public Domain Dedication"
+  note: authored for this repository because no CC0 silhouette of this object was
+        available in the public-domain vector libraries reachable here
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M14.5 6.5c0 2.5-.5 4.5-2 4.5h-10c-1.5 0-2-2-2-4.5c6 3 8 3 14 0m-7-1c.38 0 .75.38.75.75c0 .38-.37.75-.75.75c-.37 0-.75-.37-.75-.75c0-.37.38-.75.75-.75m5.5-1H2Q.5 4.5.5 6c6 3 8 3 14 0q0-1.5-1.5-1.5"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fff"/>
+    <rect x="6" y="18" width="88" height="66" rx="11" fill="#000"/>
+    <path d="M6 40 H66" stroke="#fff" stroke-width="5"/>
+    <rect x="66" y="32" width="32" height="26" rx="8" fill="#fff"/>
+    <rect x="70" y="36" width="28" height="18" rx="6" fill="#000"/>
+    <circle cx="84" cy="45" r="3.8" fill="#fff"/>
+</svg>

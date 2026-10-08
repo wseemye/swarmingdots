@@ -9,11 +9,11 @@
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" fill="#fff"/>
-    <g transform="rotate(-40 50 50)">
-      <path d="M50 4 L64 30 L36 30 Z" fill="#000"/>
-      <path d="M50 4 L55 13 L45 13 Z" fill="#fff"/>
-      <rect x="36" y="32" width="28" height="44" fill="#000"/>
-      <rect x="36" y="78" width="28" height="9" fill="#000"/>
-      <rect x="36" y="89" width="28" height="11" rx="5" fill="#000"/>
+    <g transform="rotate(45 50 50)" fill="#000">
+      <rect x="40" y="0" width="20" height="15" rx="6"/>
+      <rect x="40" y="19" width="20" height="11"/>
+      <rect x="40" y="34" width="20" height="38"/>
+      <path d="M40 76 H60 L54.5 88 H45.5 Z"/>
+      <path d="M46.5 91 H53.5 L50 99 Z"/>
     </g>
 </svg>

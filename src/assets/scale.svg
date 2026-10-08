@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   scale
-  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "bathroom-scale"
-  obtained from: @iconify-json/pinhead@1.2.33
+  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "balance-scales"
+  obtained from: @iconify-json/pinhead@1.2.34
   license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
   license text: "CC0 1.0 Universal Public Domain Dedication"
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M2.45 1h10.1c.82 0 1.47.67 1.45 1.48l-.28 10.12c-.03.78-.67 1.4-1.46 1.4H2.74c-.79 0-1.43-.62-1.46-1.4L1 2.48C.98 1.67 1.63 1 2.45 1m1.57 1.44l.36 3.63c.77-.19 1.56-.31 2.37-.35l.58-2.32A.56.56 0 0 1 8 3c.29.07.47.37.39.66L7.88 5.7c.94.03 1.85.15 2.74.37l.36-3.63z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M7.5 0C6.43 0 6.43 1.07 6.43 1.07L2.41 2.14v1.07L0 8.57c0 1.07.85 2.14 2.68 2.14s2.68-1.07 2.68-2.14L2.95 3.21h3.48v10.72H2.14L1.07 15h12.86l-1.07-1.07H8.57V3.21h3.48L9.64 8.57c0 1.07.83 2.14 2.68 2.14S15 9.64 15 8.57l-2.41-5.36V2.14L8.57 1.07S8.57 0 7.5 0M2.68 4.29l1.87 4.28H.8zm9.64 0l1.88 4.28h-3.75z"/></svg>

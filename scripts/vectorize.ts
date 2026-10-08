@@ -5,15 +5,19 @@ import sharp from 'sharp';
 const ASSET_DIR = join(process.cwd(), 'src', 'assets');
 const OUTPUT = join(process.cwd(), 'src', 'icons.ts');
 
-const COLS = 32;
+// Source art is drawn on a 15px grid, so a 32-column lattice samples it at a
+// non-integer ratio (~2.1 cells per source pixel): symmetric details like the
+// plus on a battery come out lopsided. 48 cells gives ~3.2 per source pixel and
+// keeps those details even.
+const COLS = 48;
 
-// 300px canvas / 6px dot. A vector taller than ~1.56:1 is scaled to fit this
-// instead of keeping 32 columns, so no icon can exceed the canvas.
+// 300px canvas / 6px dot. A vector taller than ~1.04:1 is scaled to fit this
+// instead of keeping 48 columns, so no icon can exceed the canvas.
 const MAX_ROWS = 50;
 
 // Each grid cell averages (RASTER_WIDTH / COLS)^2 = 900 source pixels, enough
 // that a cell's ink coverage is exact to ~0.1% before it is thresholded.
-const RASTER_WIDTH = 1200;
+const RASTER_WIDTH = 1440;
 
 // A pixel counts as ink above half alpha, and — on artwork drawn over an opaque
 // background — once it is this far from the background colour in RGB space.
@@ -23,9 +27,9 @@ const OPAQUE_ARTWORK_RATIO = 0.98;
 
 // A cell is filled when ink covers at least this much of it. 0.5 (strict
 // majority) drops one-pixel features — bicycle spokes, a lamp cord, the legs of
-// a chair — and the silhouette stops reading. 0.34 keeps them while leaving
+// a chair — and the silhouette stops reading. 0.42 keeps them while leaving
 // antialiasing haloes, which sit well under a third of a cell, switched off.
-const FILL_THRESHOLD = 0.34;
+const FILL_THRESHOLD = 0.42;
 
 type Cell = { x: number; y: number };
 type Grid = { cells: Cell[]; cols: number; rows: number };
