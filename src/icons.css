@@ -3,7 +3,7 @@
   --surface: #fff;
   --surface-2: #f4f4f5;
   --border-hover: #d4d4d8;
-  --subtle: #8a8a8a;
+  --subtle: #6b6b6b;
 
   display: grid;
   grid-template-columns: 1fr 1fr;
