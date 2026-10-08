@@ -141,3 +141,49 @@ export async function layoutText(text: string): Promise<TextLayout> {
     .filter((line) => line.length > 0);
   return { lines, skipped: [...skipped] };
 }
+
+/** A word, or one piece of a word that was too wide to sit on a line by itself. */
+export type Piece = {
+  word: WordData;
+  /** Stable across re-fits, so a word that did not change keeps its animation. */
+  key: string;
+  /** Whether a space follows, i.e. this is the end of a word, not a break inside one. */
+  gap: boolean;
+};
+
+/**
+ * Breaks any word wider than `maxCols` dots into the fewest pieces that each fit,
+ * cutting between letters. Words that already fit are passed through untouched,
+ * the same object, so their swarm is not restarted when the width changes.
+ */
+export function fitLines(lines: WordData[][], maxCols: number, letterSpacing: number): Piece[][] {
+  return lines.map((line) =>
+    line.flatMap((word, wi) => {
+      const gap = wi < line.length - 1;
+      const letters = Array.from(word.text);
+      const wordCols = word.cols + (letters.length - 1) * letterSpacing;
+      if (wordCols <= maxCols || letters.length < 2) return [{ word, key: `${wi}`, gap }];
+
+      // Where each letter's ink starts and ends, in dots from the word's left edge.
+      const lo = new Array<number>(letters.length).fill(Infinity);
+      const hi = new Array<number>(letters.length).fill(-Infinity);
+      for (let i = 0; i < word.glyphs.length; i++) {
+        const x = word.cells[i * 2];
+        lo[word.glyphs[i]] = Math.min(lo[word.glyphs[i]], x);
+        hi[word.glyphs[i]] = Math.max(hi[word.glyphs[i]], x);
+      }
+
+      const pieces: Piece[] = [];
+      for (let a = 0; a < letters.length; ) {
+        let b = a;
+        while (b + 1 < letters.length && hi[b + 1] - lo[a] + 1 + (b + 1 - a) * letterSpacing <= maxCols) b++;
+        const text = letters.slice(a, b + 1).join('');
+        const data = rasterizeWord(text).data;
+        if (data) pieces.push({ word: data, key: `${wi}.${a}`, gap: false });
+        a = b + 1;
+      }
+      if (pieces.length) pieces[pieces.length - 1].gap = gap;
+      return pieces;
+    }),
+  );
+}

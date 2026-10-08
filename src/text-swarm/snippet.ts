@@ -64,8 +64,8 @@ export function buildSnippet(s: Settings): string {
     font-display: block;
   }
   html, body { height: 100%; margin: 0; }
-  body { display: grid; place-items: center; background: ${s.background}; }
-  h1 { margin: 0; padding: 24px; max-width: 100%; font-size: 0; line-height: 0; font-weight: 400; }
+  body { display: flex; background: ${s.background}; }
+  h1 { box-sizing: border-box; margin: auto; padding: 24px; min-width: 0; max-width: 100%; font-size: 0; line-height: 0; font-weight: 400; }
   .w { position: relative; display: inline-block; }
   .w canvas { position: absolute; left: 0; top: 0; pointer-events: none; }
   .w .t {
@@ -133,6 +133,28 @@ function rasterize(word) {
     inkLeft: minX,          // dots between the text origin and the first ink
     kept: kept, length: kept.length
   };
+}
+
+// A word wider than the page is cut between letters into the fewest pieces that each fit,
+// so the text wraps inside the page instead of scrolling sideways.
+function split(w, maxCols) {
+  var ls = CONFIG.letterSpacing;
+  if (w.length < 2 || w.cols + (w.length - 1) * ls <= maxCols) return [w];
+  var lo = [], hi = [];
+  w.cells.forEach(function (p) {
+    var g = p[2];
+    lo[g] = lo[g] === undefined ? p[0] : Math.min(lo[g], p[0]);
+    hi[g] = hi[g] === undefined ? p[0] : Math.max(hi[g], p[0]);
+  });
+  var letters = Array.from(w.kept), out = [];
+  for (var a = 0; a < letters.length; ) {
+    var b = a;
+    while (b + 1 < letters.length && hi[b + 1] - lo[a] + 1 + (b + 1 - a) * ls <= maxCols) b++;
+    var piece = rasterize(letters.slice(a, b + 1).join(''));
+    if (piece) out.push(piece);
+    a = b + 1;
+  }
+  return out.length ? out : [w];
 }
 
 // The skeleton: the word's own dots packed into 10 rows, sitting on the x-height band.
@@ -228,11 +250,17 @@ function build(w, host, isLast) {
 
 document.fonts.load(CONFIG.fontSize + 'px ' + FONT).then(function () {
   var host = document.getElementById('sentence'), parts = [];
+  var maxCols = Math.floor((document.documentElement.clientWidth - 48) / (CONFIG.fontSize * PIXEL_EM));
   CONFIG.text.split('\\n').forEach(function (line, li) {
     var words = line.split(/\\s+/).filter(Boolean).map(rasterize).filter(Boolean);
     if (!words.length) return;
     if (parts.length) host.appendChild(document.createElement('br'));
-    words.forEach(function (w, i) { parts.push(build(w, host, i === words.length - 1)); });
+    words.forEach(function (w, i) {
+      var pieces = split(w, maxCols);
+      pieces.forEach(function (piece, k) {
+        parts.push(build(piece, host, i === words.length - 1 && k === pieces.length - 1));
+      });
+    });
   });
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   setTimeout(function () {
@@ -266,7 +294,7 @@ Behaviour:
 2. After 800ms, all words swarm at the same time over 1100ms. Each dot travels from its place in the box to an arbitrary dot of the word (shuffle the targets so dots cross the field and reassemble), using a quintic ease-in-out. While swarming, each word's slot in the line grows from its box width to its final word width.
 3. Once the dots have settled, fade the real text in over the dots (350ms), then remove the dots. Each word is one plain text node in Geist Pixel Circle at the chosen size, so it stays selectable and copyable as a normal sentence. Position it so its baseline lands on the dots' baseline: measure the real baseline offset with a zero-height inline-block probe, because browsers round font ascent to whole pixels.
 4. Dots are rounded squares (corner radius 0.4 of a dot) drawn as vector paths on a canvas with a backing store of at least 3x, so they stay crisp at ~1px.
-5. Words flow and wrap like inline text, aligned on their baselines (descenders hang below), with a gap of max(4, 8 + 2 × letter spacing) dots between words, so words stay clearly apart when letters are spaced out. Respect prefers-reduced-motion by skipping the swarm.
+5. Words flow and wrap like inline text, aligned on their baselines (descenders hang below), with a gap of max(4, 8 + 2 × letter spacing) dots between words, so words stay clearly apart when letters are spaced out. A word wider than the page is cut between letters into the fewest pieces that each fit, so nothing ever scrolls sideways. Respect prefers-reduced-motion by skipping the swarm.
 
 To get each word's dots without a data file, rasterise it from the font at load: draw each letter on an offscreen canvas (tall enough for 26 rows above the baseline and 8 below) at font size ${(8 / 0.038).toFixed(3)}px (8 canvas px per lattice step), advance by each letter's measured width, and keep a lattice cell if the pixel at its centre is inked. Letters with no ink (not in the font) are dropped. Newlines in the text start a new line; words are split on whitespace.`;
 }

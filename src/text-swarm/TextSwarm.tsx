@@ -1,9 +1,9 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ColorPicker from './ColorPicker';
 import Word from './Word';
 import { buildPrompt, buildSnippet, dotPx, DEFAULT_SETTINGS, type Settings } from './snippet';
-import { layoutText, type TextLayout } from './rasterize';
+import { fitLines, layoutText, type TextLayout } from './rasterize';
 import './text-swarm.css';
 
 const MIN_SIZE = 1;
@@ -59,6 +59,29 @@ export default function TextSwarm() {
   }, [settings.text, run]);
   const [copied, setCopied] = useState<'prompt' | 'code' | 'failed' | null>(null);
 
+  // The room the text has, so a word wider than the canvas can be broken to fit
+  // it instead of stretching the stage past the edge.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [room, setRoom] = useState(0);
+  useLayoutEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const measure = () => {
+      const style = getComputedStyle(el);
+      setRoom(el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const maxCols = room > 0 ? Math.floor(room / dotPx(settings.fontSize)) : Infinity;
+  const pieces = useMemo(
+    () => (layout ? fitLines(layout.lines, maxCols, settings.letterSpacing) : []),
+    [layout, maxCols, settings.letterSpacing],
+  );
+
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
 
   async function copy(kind: 'prompt' | 'code') {
@@ -69,21 +92,21 @@ export default function TextSwarm() {
 
   return (
     <div className="text-swarm">
-      <div className="text-swarm-stage" style={{ background: settings.background }}>
+      <div ref={stageRef} className="text-swarm-stage" style={{ background: settings.background }}>
         <h1 className="text-swarm-sentence">
-          {layout?.lines.map((line, li) => (
-            <Fragment key={`${layout.run}-${li}`}>
+          {pieces.map((line, li) => (
+            <Fragment key={`${layout?.run}-${li}`}>
               {li > 0 && <br />}
-              {line.map((word, i) => (
+              {line.map((piece) => (
                 <Word
-                  key={i}
-                  word={word}
+                  key={piece.key}
+                  word={piece.word}
                   fontSize={settings.fontSize}
                   letterSpacing={settings.letterSpacing}
                   lineSpacing={settings.lineSpacing}
                   color={settings.color}
-                  delay={layout.intro ? INTRO_MS : 0}
-                  trailingSpace={i < line.length - 1}
+                  delay={layout?.intro ? INTRO_MS : 0}
+                  trailingSpace={piece.gap}
                 />
               ))}
             </Fragment>

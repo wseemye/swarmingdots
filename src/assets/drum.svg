@@ -9,9 +9,8 @@
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" fill="#fff"/>
-    <rect x="17" y="30" width="66" height="34" fill="#000"/>
-    <ellipse cx="50" cy="64" rx="33" ry="11" fill="#000"/>
-    <ellipse cx="50" cy="30" rx="33" ry="11" fill="#000"/>
-    <ellipse cx="50" cy="30" rx="26" ry="7" fill="#fff"/>
-    <path d="M22 38 L34 56 L46 38 L58 56 L70 38 L79 52" fill="none" stroke="#fff" stroke-width="4"/>
+    <path d="M12 34 V70 A38 13 0 0 0 88 70 V34 Z" fill="#000"/>
+    <ellipse cx="50" cy="34" rx="38" ry="14" fill="#000"/>
+    <ellipse cx="50" cy="34" rx="30" ry="8" fill="#fff"/>
+    <path d="M17 50 L34 74 L50 50 L66 74 L83 50" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="miter"/>
 </svg>

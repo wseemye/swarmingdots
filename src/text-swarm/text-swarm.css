@@ -18,15 +18,21 @@
 }
 
 .text-swarm-stage {
-  display: grid;
-  place-items: center;
-  overflow: auto;
+  display: flex;
+  /* The text wraps inside the canvas; it never scrolls sideways. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Reserve the scrollbar so it appearing cannot change the width the text wraps to. */
+  scrollbar-gutter: stable;
   padding: 48px 24px;
 }
 
 .text-swarm-sentence {
+  /* auto margins centre the text, and fall back to the start when it overflows
+     so the top is never cut off. */
+  margin: auto;
+  min-width: 0;
   max-width: 100%;
-  margin: 0;
   font-size: 0;
   line-height: 0;
   font-weight: 400;
