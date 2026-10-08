@@ -4,8 +4,6 @@ import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
 const SWARM_MS = 1100;
 const TEXT_FADE_MS = 350;
-const GAP_MS = 300; // letters already in the word slide apart to make room before the new one swarms in
-const DROP_MS = 200; // an edit that adds no letters only slides the rest into place
 const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
 
 type Phase = 'box' | 'swarm' | 'text' | 'done';
@@ -65,23 +63,15 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   const redrawRef = useRef<() => void>(() => {});
 
   // Every dot: where it started this transition (o), where it is going (t), and
-  // which letter it belongs to (g). The word keeps these between edits, so a
-  // letter typed into it adds dots instead of rebuilding the whole word.
+  // which letter it belongs to (g).
   const dotsRef = useRef<{
     n: number;
-    chars: string[];
     ox: Float32Array;
     oy: Float32Array;
     tx: Float32Array;
     ty: Float32Array;
     tg: Uint16Array;
-    /** 1 for dots of a new letter, 0 for dots that were already in the word. */
-    mv: Uint8Array;
   } | null>(null);
-  // Progress of the dots already in the word, and of the new ones, as last drawn.
-  const eStay = useRef(0);
-  const eNew = useRef(0);
-  const gapRef = useRef(0);
   const timers = useRef({ begin: 0, fade: 0, frame: 0 });
   const beginAt = useRef<number | null>(null);
   // The slot a word takes in the line grows from where it was to its full width
@@ -121,39 +111,29 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = fill;
     ctx.beginPath();
-    // With a gap stage, the old dots move first and the new ones wait; the
-    // slot follows the old dots, so the room opens before the letter arrives.
-    const gap = gapRef.current;
-    const total = durationRef.current;
-    const elapsed = t * total;
-    const eR = gap > 0 ? ease(Math.min(1, elapsed / gap)) : ease(t);
-    const eM = total > gap ? ease(Math.min(1, Math.max(0, (elapsed - gap) / (total - gap)))) : 1;
-    eStay.current = eR;
-    eNew.current = eM;
-    progressRef.current = eR;
+    const e = ease(t);
+    progressRef.current = e;
     applySlot();
-    const { n, ox, oy, tx, ty, tg, mv } = dots;
+    const { n, ox, oy, tx, ty, tg } = dots;
     for (let i = 0; i < n; i++) {
-      const k = mv[i] ? eM : eR;
-      const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * k;
-      const y = oy[i] + (ty[i] - oy[i]) * k;
+      const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * e;
+      const y = oy[i] + (ty[i] - oy[i]) * e;
       ctx.roundRect(x * d, y * d, d, d, d * RADIUS);
     }
     ctx.fill();
   }
 
-  // Runs whenever the word's letters change, including the first time. Letters
-  // that were already there stay where they are on screen; only the dots of
-  // letters that are new fly in from a small box.
+  // Runs whenever the word's letters change, including the first time. The
+  // whole word starts over as a box and swarms into its new letters; other
+  // words are untouched.
   useLayoutEffect(() => {
-    const prev = dotsRef.current;
+    const hadWord = dotsRef.current !== null;
     const t = timers.current;
     window.clearTimeout(t.begin);
     window.clearTimeout(t.fade);
     cancelAnimationFrame(t.frame);
 
     const n = cells.length / 2;
-    const old = live.current;
     const ox = new Float32Array(n);
     const oy = new Float32Array(n);
     const tx = new Float32Array(n);
@@ -165,73 +145,26 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       tg[i] = glyphs[i];
     }
 
-    const chars = Array.from(word.text);
-    const moving: number[] = [];
-    let shifted = false;
-    if (prev) {
-      // Match the unchanged letters at the start and end of the word; whatever
-      // is left in between is new.
-      const oldLen = prev.chars.length;
-      const newLen = chars.length;
-      let p = 0;
-      while (p < oldLen && p < newLen && prev.chars[p] === chars[p]) p++;
-      let sfx = 0;
-      while (sfx < oldLen - p && sfx < newLen - p && prev.chars[oldLen - 1 - sfx] === chars[newLen - 1 - sfx]) sfx++;
-
-      // Where each old dot is on screen right now, mid-flight or settled.
-      const byGlyph: number[][] = prev.chars.map(() => []);
-      for (let i = 0; i < prev.n; i++) byGlyph[prev.tg[i]].push(i);
-      const taken = new Array<number>(newLen).fill(0);
-      for (let i = 0; i < n; i++) {
-        const g = tg[i];
-        const og = g < p ? g : g >= newLen - sfx ? g - (newLen - oldLen) : -1;
-        const src = og >= 0 ? byGlyph[og][taken[g]++] : undefined;
-        if (src === undefined) {
-          moving.push(i);
-          continue;
-        }
-        const e = prev.mv[src] ? eNew.current : eStay.current;
-        ox[i] = prev.ox[src] + (prev.tx[src] + prev.tg[src] * old.letterSpacing - prev.ox[src]) * e;
-        oy[i] = prev.oy[src] + (prev.ty[src] - prev.oy[src]) * e;
-        if (Math.abs(ox[i] - (tx[i] + tg[i] * letterSpacing)) > 0.01 || Math.abs(oy[i] - ty[i]) > 0.01) shifted = true;
-      }
-    } else {
-      for (let i = 0; i < n; i++) moving.push(i);
+    // The word starts as a block, then scatters: dot i goes to an arbitrary cell
+    // instead of its row-order partner, so dots cross and reassemble (same
+    // method as the shape swarm).
+    const box = boxCells(n, baseline);
+    for (let i = 0; i < n; i++) {
+      ox[i] = box[i * 2];
+      oy[i] = box[i * 2 + 1];
     }
-
-    // The new dots start as a block sitting where their letter will be, then
-    // scatter: dot i goes to an arbitrary cell of the new letter instead of its
-    // row-order partner, so dots cross and reassemble (same method as the shape
-    // swarm).
-    const box = boxCells(moving.length, baseline);
-    let shift = 0;
-    if (prev) {
-      shift = Infinity;
-      for (const i of moving) shift = Math.min(shift, tx[i] + tg[i] * letterSpacing);
-      if (!Number.isFinite(shift)) shift = 0;
-    }
-    moving.forEach((i, j) => {
-      ox[i] = box[j * 2] + shift;
-      oy[i] = box[j * 2 + 1];
-    });
-    for (let a = moving.length - 1; a > 0; a--) {
-      const i = moving[a];
-      const j = moving[Math.floor(Math.random() * (a + 1))];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
       [tx[i], tx[j]] = [tx[j], tx[i]];
       [ty[i], ty[j]] = [ty[j], ty[i]];
       [tg[i], tg[j]] = [tg[j], tg[i]];
     }
 
-    const mv = new Uint8Array(n);
-    for (const i of moving) mv[i] = 1;
-    dotsRef.current = { n, chars, ox, oy, tx, ty, tg, mv };
+    dotsRef.current = { n, ox, oy, tx, ty, tg };
     live.current = { dot, wordCols, letterSpacing, color, rows };
-    slotFrom.current = prev ? slotNow.current : boxCols;
-    // Room first, then the letter: only when something has to move aside.
-    gapRef.current = prev && moving.length > 0 && shifted ? GAP_MS : 0;
-    durationRef.current = moving.length > 0 ? gapRef.current + SWARM_MS : DROP_MS;
-    eStay.current = 0;
-    eNew.current = 0;
+    // An edited word's slot eases from the width it had to its new width.
+    slotFrom.current = hadWord ? slotNow.current : boxCols;
+    durationRef.current = SWARM_MS;
     progressRef.current = 0;
     timeRef.current = 0;
 
