@@ -1,0 +1,264 @@
+/* The icons page. It always sits on the dark theme (see shell.css). */
+.icons {
+  --surface: #0a0a0a;
+  --surface-2: #111;
+  --border-hover: #333;
+  --subtle: #8a8a8a;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Left: display ── */
+.icons-display {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.icons-display::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgb(255 255 255 / 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.icons-frame {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.icons-canvas {
+  display: block;
+}
+
+.icons-name {
+  padding-bottom: 32px;
+  color: var(--subtle);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── Right: picker ── */
+.icons-picker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.icons-header {
+  flex: none;
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.icons-header h1 {
+  margin: 0;
+  color: var(--fg);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.icons-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Pagination ── */
+.icons-pager {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.icons-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.icons-pager-btn,
+.icons-chip {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+.icons-pager-btn {
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.icons-pager-btn:active:not(:disabled),
+.icons-chip:active {
+  transform: scale(0.97);
+}
+
+.icons-pager-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.icons-pager-btn:focus-visible,
+.icons-chip:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icons-pager-btn:hover:not(:disabled),
+  .icons-chip:hover {
+    background: var(--surface-2);
+    border-color: var(--border-hover);
+    color: var(--fg);
+  }
+}
+
+/* ── Grid of names ── */
+.icons-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  align-content: start;
+  padding: 16px 28px;
+  overflow: hidden;
+}
+
+.icons-chip {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  text-align: center;
+  /* Names fade up in a short cascade when the page turns. */
+  animation: chip-in 280ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 12ms);
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.icons-chip[aria-pressed='true'] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+  font-weight: 500;
+}
+
+/* ── Mobile: stacked ── */
+@media (max-width: 720px) {
+  .icons {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .icons-display {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .icons-frame {
+    min-height: 0;
+  }
+
+  .icons-name {
+    padding-bottom: 16px;
+  }
+
+  .icons-picker {
+    flex: none;
+    height: auto;
+    max-height: 55dvh;
+  }
+
+  .icons-header {
+    padding: 16px 16px 12px;
+  }
+
+  .icons-header h1 {
+    font-size: 15px;
+  }
+
+  .icons-header p {
+    display: none;
+  }
+
+  .icons-pager {
+    padding: 8px 16px;
+  }
+
+  .icons-grid {
+    gap: 6px;
+    padding: 10px 16px 12px;
+    overflow-y: auto;
+  }
+
+  .icons-chip {
+    min-height: 40px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .icons-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icons-chip {
+    animation: none;
+  }
+
+  .icons-pager-btn,
+  .icons-chip {
+    transition: none;
+  }
+}

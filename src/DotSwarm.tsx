@@ -197,5 +197,5 @@ export default function DotSwarm({ field, target, color = DOT_COLOR }: Props) {
     controlRef.current?.swarmTo(target);
   }, [target]);
 
-  return <canvas ref={canvasRef} className="display-canvas" />;
+  return <canvas ref={canvasRef} className="icons-canvas" />;
 }

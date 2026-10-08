@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import DotSwarm from './DotSwarm';
 import { buildField } from './swarm';
 
 const PAGE_SIZE = 20;
 
-export default function App() {
+export default function IconsPage() {
   const field = useMemo(() => buildField(), []);
   const [selected, setSelected] = useState(field.names[0]);
   const [page, setPage] = useState(0);
@@ -21,38 +21,38 @@ export default function App() {
   }
 
   return (
-    <main className="app">
-      <section className="display" aria-label="Dot swarm preview">
-        <div className="display-frame">
+    <div className="icons">
+      <section className="icons-display" aria-label="Dot swarm preview">
+        <div className="icons-frame">
           <DotSwarm field={field} target={selected} color="#ededed" />
         </div>
-        <p className="display-name" aria-live="polite" aria-atomic="true">
+        <p className="icons-name" aria-live="polite" aria-atomic="true">
           {selected}
         </p>
       </section>
 
-      <section className="picker" aria-label="Shape picker">
-        <header className="picker-header">
+      <section className="icons-picker" aria-label="Shape picker">
+        <header className="icons-header">
           <h1>Dot Swarm</h1>
           <p>Pick a shape and watch the dots travel to it.</p>
         </header>
 
-        <nav className="picker-nav" aria-label="Page navigation">
+        <nav className="icons-pager" aria-label="Page navigation">
           <button
             type="button"
-            className="nav-btn"
+            className="icons-pager-btn"
             aria-label="Previous page"
             onClick={() => goTo(page - 1)}
             disabled={page === 0}
           >
             ←
           </button>
-          <span className="nav-label" aria-live="polite" aria-atomic="true">
+          <span className="icons-count" aria-live="polite" aria-atomic="true">
             {page + 1} / {totalPages}
           </span>
           <button
             type="button"
-            className="nav-btn"
+            className="icons-pager-btn"
             aria-label="Next page"
             onClick={() => goTo(page + 1)}
             disabled={page === totalPages - 1}
@@ -62,15 +62,16 @@ export default function App() {
         </nav>
 
         <div
-          className="picker-grid"
+          className="icons-grid"
           role="group"
           aria-label={`Shapes page ${page + 1} of ${totalPages}`}
         >
-          {pageNames.map((name) => (
+          {pageNames.map((name, i) => (
             <button
-              key={name}
+              key={`${page}-${name}`}
+              style={{ '--i': i } as CSSProperties}
               type="button"
-              className="picker-button"
+              className="icons-chip"
               aria-pressed={name === selected}
               onClick={() => pick(name)}
               onFocus={() => pick(name)}
@@ -80,6 +81,6 @@ export default function App() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

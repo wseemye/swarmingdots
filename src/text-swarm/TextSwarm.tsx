@@ -75,7 +75,7 @@ export default function TextSwarm() {
   }
 
   return (
-    <main className="text-swarm">
+    <div className="text-swarm">
       <div className="text-swarm-stage" style={{ background: settings.background }}>
         <h1 className="text-swarm-sentence">
           {layout?.lines.map((line, li) => (
@@ -209,6 +209,6 @@ export default function TextSwarm() {
             : 'The code is one standalone HTML file with these settings. The prompt describes the same effect for an AI to rebuild.'}
         </p>
       </aside>
-    </main>
+    </div>
   );
 }
