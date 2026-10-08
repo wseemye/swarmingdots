@@ -21,6 +21,12 @@ The site opens on the text swarm, with a two-button nav to switch pages.
 | `/text`  | type anything and watch its dots swarm into text |
 | `/icons` | the eighty icons, one display, one picker        |
 
+On `/text` the sentence wraps inside the canvas and never scrolls sideways. A
+word wider than the canvas (a long URL, a row of dashes) is cut between letters
+into the fewest pieces that fit, and re-cut live as the window or the font size
+changes; words that already fit keep their swarm. The exported HTML and the
+copied prompt do the same.
+
 `/` and any unknown path redirect to `/text`. `vercel.json` rewrites every path
 to `index.html` so the routes also work on a direct load or refresh.
 
