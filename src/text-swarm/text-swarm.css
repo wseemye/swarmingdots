@@ -59,16 +59,20 @@
   font-variant-ligatures: none;
 }
 
-/* ── Customize panel ── */
+/* ── Customize panel: sized to fit one screen without scrolling ── */
 .text-swarm-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px 20px;
+  gap: 12px;
+  padding: 16px 20px;
   overflow-y: auto;
   border-left: 1px solid #e5e5e5;
   background: #fafafa;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.text-swarm-panel > * {
+  flex-shrink: 0;
 }
 
 .text-swarm-panel h2 {
@@ -83,24 +87,70 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .field label,
-.picker-label {
+.picker-label,
+.row label {
   font-weight: 500;
 }
 
-.field-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.hint {
+  margin: 0;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
-.field-row input[type='range'] {
-  flex: 1;
+.field textarea {
+  resize: vertical;
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  line-height: 1.4;
+  color: inherit;
+}
+
+/* ── Sliders: label, track and value share one row ── */
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.row input[type='range'] {
   min-width: 0;
+  margin: 0;
   accent-color: #111;
+}
+
+.row-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row-value output {
+  font-weight: 500;
+}
+
+.unit {
+  color: #666;
+  font-size: 12px;
 }
 
 .num,
@@ -116,74 +166,99 @@
   transition: border-color 160ms var(--ease-out);
 }
 
-.num:focus-visible,
-.picker-hex:focus-visible {
-  border-color: #111;
-  outline: 2px solid #111;
-  outline-offset: 1px;
-}
-
 .num {
-  width: 52px;
-}
-
-.num-out {
-  width: 36px;
+  width: 44px;
+  padding: 0 4px;
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
-.unit {
-  width: 32px;
-  color: #666;
+/* ── Colours: two side by side, each opening a picker above it ── */
+.colors {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.hint {
-  margin: 0;
-  color: #666;
-  line-height: 1.4;
-}
-
-/* ── Colour picker ── */
 .picker {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
 }
 
-.picker-head {
+.picker-field {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.picker-label {
-  flex: 1;
+  gap: 6px;
 }
 
 .picker-swatch {
-  width: 20px;
-  height: 20px;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: 1px solid #d4d4d4;
-  border-radius: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+
+.picker-swatch:active {
+  transform: scale(0.94);
+}
+
+.picker-swatch[aria-expanded='true'] {
+  border-color: #111;
 }
 
 .picker-hex {
-  width: 84px;
+  flex: 1;
+  min-width: 0;
   text-transform: lowercase;
+}
+
+.picker-pop {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.12);
+  /* Grows out of the swatch that opened it, never from nothing. */
+  transform-origin: 25% 100%;
+  animation: picker-in 160ms var(--ease-out);
+}
+
+.picker:nth-child(2) .picker-pop {
+  transform-origin: 75% 100%;
+}
+
+@keyframes picker-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
 }
 
 .picker-sv,
 .picker-hue {
   position: relative;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: crosshair;
   touch-action: none;
   user-select: none;
 }
 
 .picker-sv {
-  height: 132px;
+  height: 128px;
   background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
 }
 
@@ -203,21 +278,32 @@
   pointer-events: none;
 }
 
+/* ── Focus ── */
+.num:focus-visible,
+.picker-hex:focus-visible,
+.field textarea:focus-visible {
+  border-color: #111;
+  outline: 2px solid #111;
+  outline-offset: 1px;
+}
+
 .picker-sv:focus-visible,
 .picker-hue:focus-visible,
+.picker-swatch:focus-visible,
+.row input[type='range']:focus-visible,
 .text-swarm-panel button:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
 
-/* ── Buttons ── */
-.actions {
-  display: flex;
+/* ── Buttons: all four in one block ── */
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.actions button {
-  flex: 1;
+.buttons button {
   height: 36px;
   border: 1px solid #d4d4d4;
   border-radius: 8px;
@@ -232,24 +318,24 @@
     transform 160ms var(--ease-out);
 }
 
-.actions button:active {
+.buttons button:active {
   transform: scale(0.97);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .actions button:hover {
-    border-color: #999;
-  }
-
-  .actions button.primary:hover {
-    background: #333;
-  }
-}
-
-.actions button.primary {
+.buttons button.primary {
   border-color: #111;
   background: #111;
   color: #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .buttons button:hover {
+    border-color: #999;
+  }
+
+  .buttons button.primary:hover {
+    background: #333;
+  }
 }
 
 @media (max-width: 760px) {
@@ -269,31 +355,15 @@
   }
 }
 
-.field textarea {
-  resize: vertical;
-  min-height: 72px;
-  padding: 10px;
-  border: 1px solid #d4d4d4;
-  border-radius: 8px;
-  background: #fff;
-  font: inherit;
-  line-height: 1.4;
-  color: inherit;
-}
-
-.field textarea:focus-visible {
-  outline: 2px solid #111;
-  outline-offset: 1px;
-}
-
-.text-swarm-panel > * {
-  flex-shrink: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .actions button,
+  .buttons button,
   .num,
-  .picker-hex {
+  .picker-hex,
+  .picker-swatch {
     transition: none;
+  }
+
+  .picker-pop {
+    animation: none;
   }
 }

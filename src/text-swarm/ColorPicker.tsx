@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 
 type Hsv = { h: number; s: number; v: number };
 
@@ -50,6 +50,33 @@ export default function ColorPicker({ label, value, onChange }: Props) {
   // and the picker would snap back to red whenever the colour touched them.
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value));
   const [draft, setDraft] = useState<string | null>(null);
+  // The square and the hue bar live in a popover, so the panel stays short.
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const squareRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    squareRef.current?.focus({ preventScroll: true });
+    const outside = (e: Event) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const escape = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('focusin', outside);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('focusin', outside);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [open]);
 
   // The value can also change from outside (reset); follow it.
   if (hsvToHex(hsv) !== value) setHsv(hexToHsv(value));
@@ -101,10 +128,19 @@ export default function ColorPicker({ label, value, onChange }: Props) {
   }
 
   return (
-    <div className="picker">
-      <div className="picker-head">
-        <span className="picker-label">{label}</span>
-        <span className="picker-swatch" style={{ background: value }} />
+    <div className="picker" ref={rootRef}>
+      <span className="picker-label">{label}</span>
+      <div className="picker-field">
+        <button
+          ref={triggerRef}
+          type="button"
+          className="picker-swatch"
+          aria-label={`${label} colour ${value}, open picker`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          style={{ background: value }}
+          onClick={() => setOpen((o) => !o)}
+        />
         <input
           className="picker-hex"
           aria-label={`${label} hex`}
@@ -121,32 +157,37 @@ export default function ColorPicker({ label, value, onChange }: Props) {
           onBlur={() => setDraft(null)}
         />
       </div>
-      <div
-        className="picker-sv"
-        role="slider"
-        tabIndex={0}
-        aria-label={`${label} saturation and brightness`}
-        aria-valuetext={`saturation ${Math.round(hsv.s * 100)}%, brightness ${Math.round(hsv.v * 100)}%`}
-        aria-valuenow={Math.round(hsv.s * 100)}
-        style={{ backgroundColor: `hsl(${hsv.h} 100% 50%)` }}
-        onKeyDown={svKeys}
-        {...drag(pickSv)}
-      >
-        <span className="picker-thumb" style={{ left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`, background: value }} />
-      </div>
-      <div
-        className="picker-hue"
-        role="slider"
-        tabIndex={0}
-        aria-label={`${label} hue`}
-        aria-valuemin={0}
-        aria-valuemax={360}
-        aria-valuenow={Math.round(hsv.h)}
-        onKeyDown={hueKeys}
-        {...drag(pickHue)}
-      >
-        <span className="picker-thumb" style={{ left: `${(hsv.h / 360) * 100}%`, top: '50%', background: `hsl(${hsv.h} 100% 50%)` }} />
-      </div>
+      {open && (
+        <div className="picker-pop" role="dialog" aria-label={`${label} picker`}>
+          <div
+            ref={squareRef}
+            className="picker-sv"
+            role="slider"
+            tabIndex={0}
+            aria-label={`${label} saturation and brightness`}
+            aria-valuetext={`saturation ${Math.round(hsv.s * 100)}%, brightness ${Math.round(hsv.v * 100)}%`}
+            aria-valuenow={Math.round(hsv.s * 100)}
+            style={{ backgroundColor: `hsl(${hsv.h} 100% 50%)` }}
+            onKeyDown={svKeys}
+            {...drag(pickSv)}
+          >
+            <span className="picker-thumb" style={{ left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`, background: value }} />
+          </div>
+          <div
+            className="picker-hue"
+            role="slider"
+            tabIndex={0}
+            aria-label={`${label} hue`}
+            aria-valuemin={0}
+            aria-valuemax={360}
+            aria-valuenow={Math.round(hsv.h)}
+            onKeyDown={hueKeys}
+            {...drag(pickHue)}
+          >
+            <span className="picker-thumb" style={{ left: `${(hsv.h / 360) * 100}%`, top: '50%', background: `hsl(${hsv.h} 100% 50%)` }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

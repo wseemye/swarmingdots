@@ -121,7 +121,7 @@ export default function TextSwarm() {
           <label htmlFor="text">Your text</label>
           <textarea
             id="text"
-            rows={3}
+            rows={2}
             maxLength={MAX_CHARS}
             spellCheck={false}
             placeholder="Type something…"
@@ -136,9 +136,9 @@ export default function TextSwarm() {
           </p>
         </div>
 
-        <div className="field">
-          <label htmlFor="size">Font size</label>
-          <div className="field-row">
+        <div className="sliders">
+          <div className="row">
+            <label htmlFor="size">Font size</label>
             <input
               id="size"
               type="range"
@@ -148,26 +148,25 @@ export default function TextSwarm() {
               value={settings.fontSize}
               onChange={(e) => set({ fontSize: Number(e.target.value) })}
             />
-            <input
-              className="num"
-              aria-label="Font size in px"
-              type="number"
-              min={MIN_SIZE}
-              max={MAX_SIZE}
-              value={settings.fontSize}
-              onChange={(e) => {
-                const n = Number(e.target.value);
-                if (e.target.value !== '' && Number.isFinite(n)) set({ fontSize: clamp(n, MIN_SIZE, MAX_SIZE) });
-              }}
-            />
-            <span className="unit">px</span>
+            <span className="row-value">
+              <input
+                className="num"
+                aria-label="Font size in px"
+                type="number"
+                min={MIN_SIZE}
+                max={MAX_SIZE}
+                value={settings.fontSize}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (e.target.value !== '' && Number.isFinite(n)) set({ fontSize: clamp(n, MIN_SIZE, MAX_SIZE) });
+                }}
+              />
+              <span className="unit">px</span>
+            </span>
           </div>
-          <p className="hint">Each dot is {dotPx(settings.fontSize).toFixed(2)}px. The dot count stays the same at any size.</p>
-        </div>
 
-        <div className="field">
-          <label htmlFor="spacing">Letter spacing</label>
-          <div className="field-row">
+          <div className="row">
+            <label htmlFor="spacing">Letter spacing</label>
             <input
               id="spacing"
               type="range"
@@ -177,14 +176,14 @@ export default function TextSwarm() {
               value={settings.letterSpacing}
               onChange={(e) => set({ letterSpacing: Number(e.target.value) })}
             />
-            <output className="num-out">{settings.letterSpacing}</output>
-            <span className="unit">dots</span>
+            <span className="row-value">
+              <output htmlFor="spacing">{settings.letterSpacing}</output>
+              <span className="unit">dots</span>
+            </span>
           </div>
-        </div>
 
-        <div className="field">
-          <label htmlFor="line-spacing">Line spacing</label>
-          <div className="field-row">
+          <div className="row">
+            <label htmlFor="line-spacing">Line spacing</label>
             <input
               id="line-spacing"
               type="range"
@@ -194,24 +193,27 @@ export default function TextSwarm() {
               value={settings.lineSpacing}
               onChange={(e) => set({ lineSpacing: Number(e.target.value) })}
             />
-            <output className="num-out">{settings.lineSpacing}</output>
-            <span className="unit">dots</span>
+            <span className="row-value">
+              <output htmlFor="line-spacing">{settings.lineSpacing}</output>
+              <span className="unit">dots</span>
+            </span>
           </div>
+
+          <p className="hint">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
         </div>
 
-        <ColorPicker label="Background" value={settings.background} onChange={(background) => set({ background })} />
-        <ColorPicker label="Text color" value={settings.color} onChange={(color) => set({ color })} />
+        <div className="colors">
+          <ColorPicker label="Background" value={settings.background} onChange={(background) => set({ background })} />
+          <ColorPicker label="Text color" value={settings.color} onChange={(color) => set({ color })} />
+        </div>
 
-        <div className="actions">
+        <div className="buttons">
           <button type="button" onClick={() => setRun((r) => r + 1)}>
             Replay
           </button>
           <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
-        </div>
-
-        <div className="actions copy">
           <button type="button" className="primary" onClick={() => copy('prompt')}>
             {copied === 'prompt' ? 'Copied prompt' : 'Copy prompt'}
           </button>
@@ -222,7 +224,7 @@ export default function TextSwarm() {
         <p className="hint" role="status">
           {copied === 'failed'
             ? 'Copy was blocked by the browser.'
-            : 'The code is one standalone HTML file with these settings. The prompt describes the same effect for an AI to rebuild.'}
+            : 'Code is one standalone HTML file. The prompt describes the same effect for an AI to rebuild.'}
         </p>
       </aside>
     </div>
