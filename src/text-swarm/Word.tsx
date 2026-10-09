@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ease } from '../dotCanvas';
+import { ease } from './ease';
 import type { Wave } from './wave';
 import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
@@ -288,8 +288,9 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   return (
     <span
       ref={wrapRef}
-      className="text-swarm-word"
       style={{
+        position: 'relative',
+        display: 'inline-block',
         height: rows * dot,
         verticalAlign: -(rows - baseline) * dot,
         marginRight: trailingSpace ? Math.max(4, 8 + 2 * letterSpacing) * dot : 0,
@@ -298,14 +299,27 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     >
       <canvas
         ref={canvasRef}
-        className="text-swarm-dots"
         aria-hidden="true"
-        style={{ width: wordCols * dot, height: rows * dot, display: phase === 'done' ? 'none' : undefined }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
+          width: wordCols * dot,
+          height: rows * dot,
+          display: phase === 'done' ? 'none' : undefined,
+        }}
       />
       <span
         ref={textRef}
-        className="text-swarm-text"
         style={{
+          position: 'absolute',
+          fontFamily: '"Geist Pixel Circle", monospace',
+          fontWeight: 400,
+          lineHeight: 1,
+          whiteSpace: 'pre',
+          fontKerning: 'none',
+          fontVariantLigatures: 'none',
           fontSize,
           left: -inkLeft * dot,
           color,

@@ -17,9 +17,6 @@ export type Settings = {
   stagger: boolean;
 };
 
-/** Gap between one word starting and the next when stagger is on. Fixed on purpose: much longer drags. */
-export const STAGGER_MS = 100;
-
 export const ANCHOR_NAMES = [
   'Top left',
   'Top center',

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsx scripts/registry.ts && tsc -b && vite build",
+    "registry": "tsx scripts/registry.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "vectorize": "tsx scripts/vectorize.ts"

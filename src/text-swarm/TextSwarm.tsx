@@ -1,11 +1,10 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
-import Word from './Word';
-import { dotPx, DEFAULT_SETTINGS, STAGGER_MS, type Settings } from './settings';
-import { fitLines, layoutText, type TextLayout } from './rasterize';
-import { anchorFractions, anchorPoint, placeWords, staggerOrder } from './wave';
+import { ANCHORS, STAGGER_MS } from './anchors';
+import DotSwarmText from './DotSwarmText';
+import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
 import './text-swarm.css';
 
 const MIN_SIZE = 1;
@@ -14,11 +13,10 @@ const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 240;
-const COMMAND = 'npx swarmingdots';
-
-// The skeletons sit for a beat, then the words swarm: together, or STAGGER_MS
-// apart when stagger is on.
-const INTRO_MS = 800;
+// Adds components/dot-swarm-text.tsx (built by scripts/registry.ts) to a shadcn project.
+const COMMAND = 'npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json';
+// The full command is too long for the button; it still copies all of it.
+const COMMAND_LABEL = 'npx shadcn add …';
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
@@ -47,55 +45,9 @@ export default function TextSwarm() {
     fontSize: fromUrl > 0 ? clamp(fromUrl, MIN_SIZE, MAX_SIZE) : DEFAULT_SETTINGS.fontSize,
   });
   const [run, setRun] = useState(0);
-  const [layout, setLayout] = useState<(TextLayout & { run: number; intro: boolean }) | null>(null);
-
-  // Re-read the dots from the font whenever the text changes. Words keep their
-  // identity across edits, so only the letters that were typed swarm; Replay
-  // bumps `run`, which remounts every word so they all start as boxes together.
-  useEffect(() => {
-    let alive = true;
-    layoutText(settings.text).then((next) => {
-      if (alive) setLayout((prev) => ({ ...next, run, intro: !prev || prev.run !== run }));
-    });
-    return () => {
-      alive = false;
-    };
-  }, [settings.text, run]);
+  // Replay bumps this, which remounts the text so every word starts as a box again.
+  const [skipped, setSkipped] = useState<string[]>([]);
   const [copied, setCopied] = useState<'done' | 'failed' | null>(null);
-
-  // The room the text has, so a word wider than the canvas can be broken to fit
-  // it instead of stretching the stage past the edge.
-  const stageRef = useRef<HTMLDivElement>(null);
-  const [room, setRoom] = useState(0);
-  useLayoutEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const measure = () => {
-      const style = getComputedStyle(el);
-      setRoom(el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const maxCols = room > 0 ? Math.floor(room / dotPx(settings.fontSize)) : Infinity;
-  const pieces = useMemo(
-    () => (layout ? fitLines(layout.lines, maxCols, settings.letterSpacing) : []),
-    [layout, maxCols, settings.letterSpacing],
-  );
-
-  // Where each word will settle, so the stagger order can follow the chosen
-  // point across the whole block. Without stagger every word starts together.
-  const dot = dotPx(settings.fontSize);
-  const placement = useMemo(
-    () => placeWords(pieces, room > 0 ? room : Infinity, dot, settings.letterSpacing, settings.lineSpacing),
-    [pieces, room, dot, settings.letterSpacing, settings.lineSpacing],
-  );
-  const { ax, ay } = anchorPoint(settings.anchor, placement.width, placement.height);
-  const wave = anchorFractions(settings.anchor);
-  const order = staggerOrder(placement.boxes, ax, ay);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
   // Changing how the swarm moves replays it, so the change is visible at once.
@@ -112,27 +64,22 @@ export default function TextSwarm() {
 
   return (
     <div className="text-swarm">
-      <div ref={stageRef} className="text-swarm-stage" style={{ background: settings.background }}>
-        <h1 className="text-swarm-sentence">
-          {pieces.map((line, li) => (
-            <Fragment key={`${layout?.run}-${li}`}>
-              {li > 0 && <br />}
-              {line.map((piece, wi) => (
-                <Word
-                  key={piece.key}
-                  word={piece.word}
-                  fontSize={settings.fontSize}
-                  letterSpacing={settings.letterSpacing}
-                  lineSpacing={settings.lineSpacing}
-                  color={settings.color}
-                  delay={layout?.intro ? INTRO_MS + (settings.stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
-                  wave={wave}
-                  trailingSpace={piece.gap}
-                />
-              ))}
-            </Fragment>
-          ))}
-        </h1>
+      <div className="text-swarm-stage" style={{ background: settings.background }}>
+        <DotSwarmText
+          key={run}
+          as="h1"
+          className="text-swarm-sentence"
+          align="center"
+          text={settings.text}
+          fontSize={settings.fontSize}
+          color={settings.color}
+          letterSpacing={settings.letterSpacing}
+          lineSpacing={settings.lineSpacing}
+          anchor={ANCHORS[settings.anchor]}
+          stagger={settings.stagger}
+          fontUrl="/fonts/GeistPixel-Circle.woff2"
+          onMissingGlyphs={setSkipped}
+        />
       </div>
 
       <aside className="text-swarm-panel" aria-label="Customize">
@@ -149,10 +96,10 @@ export default function TextSwarm() {
             value={settings.text}
             onChange={(e) => set({ text: e.target.value })}
           />
-          <p className={layout && layout.skipped.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
+          <p className={skipped.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
             {settings.text.length}/{MAX_CHARS}. Enter starts a new line.
-            {layout && layout.skipped.length > 0 && (
-              <> The font has no glyph for {layout.skipped.map((c) => `“${c}”`).join(' ')}, so {layout.skipped.length === 1 ? 'it was' : 'they were'} left out.</>
+            {skipped.length > 0 && (
+              <> The font has no glyph for {skipped.map((c) => `“${c}”`).join(' ')}, so {skipped.length === 1 ? 'it was' : 'they were'} left out.</>
             )}
           </p>
         </div>
@@ -265,14 +212,16 @@ export default function TextSwarm() {
           <button
             type="button"
             className="primary command"
-            aria-label={`Copy the command ${COMMAND}`}
+            aria-label={`Copy the install command: ${COMMAND}`}
+            title={COMMAND}
             onClick={copyCommand}
           >
             <span aria-live="polite">
-              {copied === 'done' ? 'Copied' : copied === 'failed' ? 'Copy blocked' : COMMAND}
+              {copied === 'done' ? 'Copied' : copied === 'failed' ? 'Copy blocked' : COMMAND_LABEL}
             </span>
           </button>
         </div>
+        <p className="hint hint-install">Copies the shadcn command that adds this text, as one component, to your project.</p>
       </aside>
     </div>
   );

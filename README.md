@@ -24,7 +24,41 @@ word wider than the canvas (a long URL, a row of dashes) is cut between letters
 into the fewest pieces that fit, and re-cut live as the window or the font size
 changes; words that already fit keep their swarm.
 
-The panel's dark button copies `npx swarmingdots` to the clipboard.
+## Use it in your project
+
+The text swarm is one component, `<DotSwarmText>`, published as a
+[shadcn](https://ui.shadcn.com) registry item. In a project set up for shadcn:
+
+```sh
+npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json
+```
+
+That adds a single file, `components/dot-swarm-text.tsx`, that needs only React:
+
+```tsx
+<DotSwarmText text="hello world" fontSize={40} anchor="top-left" stagger />
+```
+
+| prop            | default    | what it does                                                        |
+| --------------- | ---------- | ------------------------------------------------------------------- |
+| `text`          |            | the text; newlines start a new line                                 |
+| `fontSize`      | `26`       | px; one dot is 0.038 of it                                          |
+| `color`         | inherited  | dot and text colour                                                 |
+| `letterSpacing` | `0`        | extra space after each letter, in dots                              |
+| `lineSpacing`   | `6`        | gap between lines, in dots                                          |
+| `anchor`        | `'center'` | where each word fills in from; with stagger, which word goes first  |
+| `stagger`       | `false`    | start words 100ms apart instead of together                         |
+| `align`         | `'start'`  | where the block sits in its width                                   |
+| `as`            | `'p'`      | the element that holds the text                                     |
+| `fontUrl`       | jsDelivr   | where to load Geist Pixel Circle if the page has no `@font-face`    |
+
+Change its `key` to play it again. If the font cannot load, the text shows
+plainly instead of swarming.
+
+The file is generated on every build by `scripts/registry.ts`, which joins the
+modules in `src/text-swarm/` that the site itself renders (`DotSwarmText.tsx`
+and what it imports) into one file and wraps it as
+`public/r/dot-swarm-text.json`. `npm run registry` regenerates it on its own.
 
 Any other path, including the old `/text` and `/icons`, redirects to `/` and
 keeps its query string. `vercel.json` rewrites every path to `index.html` so

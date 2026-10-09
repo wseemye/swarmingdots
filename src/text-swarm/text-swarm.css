@@ -28,35 +28,11 @@
 }
 
 .text-swarm-sentence {
-  /* auto margins centre the text, and fall back to the start when it overflows
-     so the top is never cut off. */
-  margin: auto;
+  /* Full width so the text knows its room; auto margins centre it vertically,
+     and fall back to the top when it overflows so the top is never cut off. */
+  width: 100%;
   min-width: 0;
-  max-width: 100%;
-  font-size: 0;
-  line-height: 0;
-  font-weight: 400;
-}
-
-.text-swarm-word {
-  position: relative;
-  display: inline-block;
-}
-
-.text-swarm-dots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.text-swarm-text {
-  position: absolute;
-  font-family: 'Geist Pixel Circle', monospace;
-  font-weight: 400;
-  line-height: 1;
-  white-space: pre;
-  font-kerning: none;
-  font-variant-ligatures: none;
+  margin: auto 0;
 }
 
 /* ── Customize panel: sized to fit one screen without scrolling ── */
@@ -501,7 +477,8 @@
   }
 
   .text-swarm-panel h2,
-  .hint-dots {
+  .hint-dots,
+  .hint-install {
     display: none;
   }
 
