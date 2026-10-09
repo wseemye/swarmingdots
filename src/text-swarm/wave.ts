@@ -3,19 +3,13 @@ import type { Piece } from './rasterize';
 /** Where a word sits in the text block once settled, in px from the block's top-left. */
 export type Box = { x: number; y: number; w: number; h: number };
 
-/** What a word needs to time its dots against the whole block. */
-export type Wave = {
-  /** The word's top-left in the block, px. */
-  x: number;
-  y: number;
-  /** The point the swarm starts from, px in the block. */
-  ax: number;
-  ay: number;
-  /** Distance from that point to the block's farthest corner, px; the wave spans it. */
-  reach: number;
-  /** Time the sweep within this word only (an edit), not across the whole block. */
-  local: boolean;
-};
+/** Where in a word its dots start filling in from, as fractions of its width and height (0, 0.5 or 1). */
+export type Wave = { fx: number; fy: number };
+
+/** The cell of the 3x3 grid as fractions across and down. */
+export function anchorFractions(anchor: number): Wave {
+  return { fx: (anchor % 3) / 2, fy: Math.floor(anchor / 3) / 2 };
+}
 
 /**
  * Where every word will land once settled: the same greedy line filling the
@@ -61,11 +55,6 @@ export function placeWords(
 /** The cell of the 3x3 grid as a point on the block: 0, half or all of each side. */
 export function anchorPoint(anchor: number, width: number, height: number): { ax: number; ay: number } {
   return { ax: ((anchor % 3) / 2) * width, ay: (Math.floor(anchor / 3) / 2) * height };
-}
-
-/** How far the wave has to travel: from the anchor to the block's farthest corner. */
-export function reachFrom(ax: number, ay: number, width: number, height: number): number {
-  return Math.max(Math.hypot(ax, ay), Math.hypot(width - ax, ay), Math.hypot(ax, height - ay), Math.hypot(width - ax, height - ay));
 }
 
 /** Each word's turn when staggered: nearest the anchor first, reading order breaking ties. */

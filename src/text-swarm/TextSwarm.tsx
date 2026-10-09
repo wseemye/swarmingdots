@@ -5,7 +5,7 @@ import ColorPicker from './ColorPicker';
 import Word from './Word';
 import { dotPx, DEFAULT_SETTINGS, STAGGER_MS, type Settings } from './settings';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
-import { anchorPoint, placeWords, reachFrom, staggerOrder } from './wave';
+import { anchorFractions, anchorPoint, placeWords, staggerOrder } from './wave';
 import './text-swarm.css';
 
 const MIN_SIZE = 1;
@@ -86,15 +86,15 @@ export default function TextSwarm() {
     [layout, maxCols, settings.letterSpacing],
   );
 
-  // Where each word will settle, so the wave and the stagger order can follow
-  // the chosen point across the whole block.
+  // Where each word will settle, so the stagger order can follow the chosen
+  // point across the whole block. Without stagger every word starts together.
   const dot = dotPx(settings.fontSize);
   const placement = useMemo(
     () => placeWords(pieces, room > 0 ? room : Infinity, dot, settings.letterSpacing, settings.lineSpacing),
     [pieces, room, dot, settings.letterSpacing, settings.lineSpacing],
   );
   const { ax, ay } = anchorPoint(settings.anchor, placement.width, placement.height);
-  const reach = reachFrom(ax, ay, placement.width, placement.height);
+  const wave = anchorFractions(settings.anchor);
   const order = staggerOrder(placement.boxes, ax, ay);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
@@ -126,14 +126,7 @@ export default function TextSwarm() {
                   lineSpacing={settings.lineSpacing}
                   color={settings.color}
                   delay={layout?.intro ? INTRO_MS + (settings.stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
-                  wave={{
-                    x: placement.boxes[li]?.[wi]?.x ?? 0,
-                    y: placement.boxes[li]?.[wi]?.y ?? 0,
-                    ax,
-                    ay,
-                    reach,
-                    local: !layout?.intro,
-                  }}
+                  wave={wave}
                   trailingSpace={piece.gap}
                 />
               ))}

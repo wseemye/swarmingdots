@@ -5,8 +5,9 @@ import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
 // Each dot's own trip from the box to its place.
 const FLIGHT_MS = 900;
-// How long the wave takes to cross the whole text block: the dot nearest the
-// chosen point leaves first, the farthest one this much later.
+// How long the wave takes to cross a word: the dot nearest the chosen point
+// leaves first, the farthest one this much later. Every word takes the same
+// time, so words that start together also land together.
 const WAVE_MS = 500;
 const TEXT_FADE_MS = 350;
 const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
@@ -45,7 +46,7 @@ type Props = {
   color: string;
   /** ms from page load until this word's dots start to move. */
   delay: number;
-  /** Where the word sits in the block and where the swarm starts from, to time each dot. */
+  /** Where in the word the dots start filling in from. */
   wave: Wave;
   trailingSpace: boolean;
 };
@@ -182,24 +183,23 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     timeRef.current = 0;
 
     // Each dot leaves once the wave reaches the place it is heading for, so the
-    // word fills in from the chosen point. Across the whole block on a full
-    // swarm; within just this word when it is an edit.
+    // word fills in from the chosen point of its own box. Measured in dots.
     function timeDots() {
-      const { ax, ay, reach, local, x, y } = waveRef.current;
-      const { dot: d, letterSpacing: ls } = live.current;
-      const dist = new Float32Array(n);
-      let near = Infinity;
+      const { fx, fy } = waveRef.current;
+      const { wordCols: wc, rows: r, letterSpacing: ls } = live.current;
+      const ax = fx * wc;
+      const ay = fy * r;
+      const reach = Math.max(
+        Math.hypot(ax, ay),
+        Math.hypot(wc - ax, ay),
+        Math.hypot(ax, r - ay),
+        Math.hypot(wc - ax, r - ay),
+      );
       for (let i = 0; i < n; i++) {
-        dist[i] = Math.hypot(x + (tx[i] + tg[i] * ls + 0.5) * d - ax, y + (ty[i] + 0.5) * d - ay);
-        near = Math.min(near, dist[i]);
+        const dist = Math.hypot(tx[i] + tg[i] * ls + 0.5 - ax, ty[i] + 0.5 - ay);
+        dl[i] = reach > 0 ? (WAVE_MS * Math.min(dist, reach)) / reach : 0;
       }
-      const from = local ? near : 0;
-      let last = 0;
-      for (let i = 0; i < n; i++) {
-        dl[i] = reach > 0 ? (WAVE_MS * (dist[i] - from)) / reach : 0;
-        last = Math.max(last, dl[i]);
-      }
-      durationRef.current = last + FLIGHT_MS;
+      durationRef.current = WAVE_MS + FLIGHT_MS;
     }
 
     let startedAt: number | null = null;
