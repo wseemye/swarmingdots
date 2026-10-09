@@ -199,7 +199,7 @@ export default function TextSwarm() {
             </span>
           </div>
 
-          <p className="hint">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
+          <p className="hint hint-dots">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
         </div>
 
         <div className="colors">
@@ -221,7 +221,7 @@ export default function TextSwarm() {
             {copied === 'code' ? 'Copied code' : 'Copy code'}
           </button>
         </div>
-        <p className="hint" role="status">
+        <p className={copied === 'failed' ? 'hint' : 'hint hint-copy'} role="status">
           {copied === 'failed'
             ? 'Copy was blocked by the browser.'
             : 'Code is one standalone HTML file. The prompt describes the same effect for an AI to rebuild.'}

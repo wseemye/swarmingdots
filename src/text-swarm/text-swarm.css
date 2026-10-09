@@ -69,6 +69,7 @@
   border-left: 1px solid #e5e5e5;
   background: #fafafa;
   font-size: 13px;
+  container-type: inline-size;
 }
 
 .text-swarm-panel > * {
@@ -338,20 +339,104 @@
   }
 }
 
-@media (max-width: 760px) {
+/* ── Phones and short screens: everything in one viewport ── */
+
+/* Phone portrait: the canvas on top takes whatever height the panel leaves. */
+@media (max-width: 760px) and (orientation: portrait) {
   .text-swarm {
-    display: block;
-    height: auto;
-    min-height: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .text-swarm-stage {
-    min-height: 60vh;
+    padding: 24px 16px;
   }
 
   .text-swarm-panel {
+    /* No inner scroll here, so the colour popover can open over the canvas. */
+    overflow: visible;
     border-left: 0;
     border-top: 1px solid #e5e5e5;
+  }
+}
+
+/* Any narrow or short screen: drop what the controls do not need. */
+@media (max-width: 760px), (max-height: 640px) {
+  .text-swarm-panel {
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .text-swarm-panel h2,
+  .hint-dots,
+  .hint-copy {
+    display: none;
+  }
+
+  .field {
+    gap: 4px;
+  }
+
+  .field textarea {
+    min-height: 48px;
+    padding: 6px 10px;
+  }
+
+  .sliders {
+    gap: 2px;
+  }
+
+  .row {
+    min-height: 30px;
+  }
+
+  .buttons {
+    gap: 6px;
+  }
+
+  .buttons button {
+    height: 34px;
+    padding: 0 4px;
+    white-space: nowrap;
+  }
+}
+
+/* When the panel itself is wide enough, all four buttons share one row;
+   the copy buttons get the extra room their longer labels need. */
+@container (min-width: 320px) {
+  @media (max-width: 760px), (max-height: 640px) {
+    .buttons {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 1.2fr);
+    }
+
+    .buttons button {
+      font-size: 12.5px;
+    }
+  }
+}
+
+/* Landscape phones: the tightest spacing, with slider rows kept at 28px. */
+@media (max-height: 420px) {
+  .text-swarm-panel {
+    gap: 8px;
+    padding: 10px 16px;
+  }
+
+  .field textarea {
+    min-height: 40px;
+  }
+
+  .row {
+    min-height: 28px;
+  }
+}
+
+/* iOS zooms the page into any field with text under 16px. */
+@media (pointer: coarse) {
+  .field textarea,
+  .num,
+  .picker-hex {
+    font-size: 16px;
   }
 }
 
