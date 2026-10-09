@@ -22,8 +22,9 @@ documented below, for when it comes back.
 The sentence wraps inside the canvas and never scrolls sideways. A
 word wider than the canvas (a long URL, a row of dashes) is cut between letters
 into the fewest pieces that fit, and re-cut live as the window or the font size
-changes; words that already fit keep their swarm. The exported HTML and the
-copied prompt do the same.
+changes; words that already fit keep their swarm.
+
+The panel's dark button copies `npx swarmingdots` to the clipboard.
 
 Any other path, including the old `/text` and `/icons`, redirects to `/` and
 keeps its query string. `vercel.json` rewrites every path to `index.html` so

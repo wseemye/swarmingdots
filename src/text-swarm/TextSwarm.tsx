@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 
 import { useSearchParams } from 'react-router-dom';
 import ColorPicker from './ColorPicker';
 import Word from './Word';
-import { buildPrompt, buildSnippet, dotPx, DEFAULT_SETTINGS, type Settings } from './snippet';
+import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
 import './text-swarm.css';
 
@@ -12,6 +12,7 @@ const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 240;
+const COMMAND = 'npx swarmingdots';
 
 // The skeletons sit for a beat, then every word swarms at the same time.
 const INTRO_MS = 800;
@@ -57,7 +58,7 @@ export default function TextSwarm() {
       alive = false;
     };
   }, [settings.text, run]);
-  const [copied, setCopied] = useState<'prompt' | 'code' | 'failed' | null>(null);
+  const [copied, setCopied] = useState<'done' | 'failed' | null>(null);
 
   // The room the text has, so a word wider than the canvas can be broken to fit
   // it instead of stretching the stage past the edge.
@@ -84,9 +85,9 @@ export default function TextSwarm() {
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
 
-  async function copy(kind: 'prompt' | 'code') {
-    const ok = await copyText(kind === 'prompt' ? buildPrompt(settings) : buildSnippet(settings));
-    setCopied(ok ? kind : 'failed');
+  async function copyCommand() {
+    const ok = await copyText(COMMAND);
+    setCopied(ok ? 'done' : 'failed');
     window.setTimeout(() => setCopied(null), 1800);
   }
 
@@ -214,18 +215,17 @@ export default function TextSwarm() {
           <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
-          <button type="button" className="primary" onClick={() => copy('prompt')}>
-            {copied === 'prompt' ? 'Copied prompt' : 'Copy prompt'}
-          </button>
-          <button type="button" className="primary" onClick={() => copy('code')}>
-            {copied === 'code' ? 'Copied code' : 'Copy code'}
+          <button
+            type="button"
+            className="primary command"
+            aria-label={`Copy the command ${COMMAND}`}
+            onClick={copyCommand}
+          >
+            <span aria-live="polite">
+              {copied === 'done' ? 'Copied' : copied === 'failed' ? 'Copy blocked' : COMMAND}
+            </span>
           </button>
         </div>
-        <p className={copied === 'failed' ? 'hint' : 'hint hint-copy'} role="status">
-          {copied === 'failed'
-            ? 'Copy was blocked by the browser.'
-            : 'Code is one standalone HTML file. The prompt describes the same effect for an AI to rebuild.'}
-        </p>
       </aside>
     </div>
   );
