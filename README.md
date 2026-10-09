@@ -15,18 +15,19 @@ npm run build
 ## Routes
 
 For now the site is only the text swarm: type anything and watch its dots swarm
-into text, at `/text`. The icons page is not routed; its engine (`src/icons.ts`,
+into text, at `/`. The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
 documented below, for when it comes back.
 
-On `/text` the sentence wraps inside the canvas and never scrolls sideways. A
+The sentence wraps inside the canvas and never scrolls sideways. A
 word wider than the canvas (a long URL, a row of dashes) is cut between letters
 into the fewest pieces that fit, and re-cut live as the window or the font size
 changes; words that already fit keep their swarm. The exported HTML and the
 copied prompt do the same.
 
-`/` and any unknown path redirect to `/text`. `vercel.json` rewrites every path
-to `index.html` so the routes also work on a direct load or refresh.
+Any other path, including the old `/text` and `/icons`, redirects to `/` and
+keeps its query string. `vercel.json` rewrites every path to `index.html` so
+that redirect also works on a direct load or refresh.
 
 ## Swarming
 

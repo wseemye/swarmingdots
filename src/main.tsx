@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Shell from './Shell.tsx'
+import ToRoot from './ToRoot.tsx'
 import TextSwarm from './text-swarm/TextSwarm.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -9,9 +10,8 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Routes>
         <Route element={<Shell />}>
-          <Route path="/text" element={<TextSwarm />} />
-          {/* The site is only the text swarm for now; every other path lands there. */}
-          <Route path="*" element={<Navigate to="/text" replace />} />
+          <Route path="/" element={<TextSwarm />} />
+          <Route path="*" element={<ToRoot />} />
         </Route>
       </Routes>
     </BrowserRouter>
