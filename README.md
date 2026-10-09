@@ -14,12 +14,10 @@ npm run build
 
 ## Routes
 
-The site opens on the text swarm, with a two-button nav to switch pages.
-
-| route    | page                                             |
-| -------- | ------------------------------------------------ |
-| `/text`  | type anything and watch its dots swarm into text |
-| `/icons` | the eighty icons, one display, one picker        |
+For now the site is only the text swarm: type anything and watch its dots swarm
+into text, at `/text`. The icons page is not routed; its engine (`src/icons.ts`,
+`src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
+documented below, for when it comes back.
 
 On `/text` the sentence wraps inside the canvas and never scrolls sideways. A
 word wider than the canvas (a long URL, a row of dashes) is cut between letters
@@ -94,7 +92,6 @@ Mobile is detected with `window.matchMedia('(max-width: 600px)')` unless the
 | `src/DotSwarmStatic.tsx`| static renderer — walks `cells`, draws one `<rect>` each. Holds the constants.       |
 | `src/swarm.ts`         | exposes each icon's own unpadded cells, plus the shared field size.                  |
 | `src/DotSwarm.tsx`     | the animated display: one canvas, sized-per-transition scatter, one rAF loop.        |
-| `src/IconsPage.tsx`    | the picker — eighty buttons, click or focus to swarm.                               |
 
 Nothing is fetched or rasterised at runtime — `src/icons.ts` is a static array
 of cell coordinates, and the grid is the only source of truth the renderer has.
