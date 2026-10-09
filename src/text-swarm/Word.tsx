@@ -1,8 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ease } from '../dotCanvas';
+import type { Wave } from './wave';
 import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
-const SWARM_MS = 1100;
+// Each dot's own trip from the box to its place.
+const FLIGHT_MS = 900;
+// How long the wave takes to cross the whole text block: the dot nearest the
+// chosen point leaves first, the farthest one this much later.
+const WAVE_MS = 500;
 const TEXT_FADE_MS = 350;
 const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
 
@@ -40,10 +45,12 @@ type Props = {
   color: string;
   /** ms from page load until this word's dots start to move. */
   delay: number;
+  /** Where the word sits in the block and where the swarm starts from, to time each dot. */
+  wave: Wave;
   trailingSpace: boolean;
 };
 
-export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, delay, trailingSpace }: Props) {
+export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, delay, wave, trailingSpace }: Props) {
   const dot = fontSize * PIXEL_EM;
   const { cols, rows, baseline, inkLeft, cells, glyphs } = word;
   const boxCols = Math.ceil(cells.length / 2 / BOX_ROWS);
@@ -59,11 +66,15 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   const live = useRef({ dot, wordCols, letterSpacing, color, rows });
   // 0 while the dots sit where they started, 1 once they have settled.
   const progressRef = useRef(0);
+  // ms since this word's dots started moving.
   const timeRef = useRef(0);
+  // Read when the swarm starts, so a resize or a new anchor never restarts one.
+  const waveRef = useRef(wave);
   const redrawRef = useRef<() => void>(() => {});
 
-  // Every dot: where it started this transition (o), where it is going (t), and
-  // which letter it belongs to (g).
+  // Every dot: where it started this transition (o), where it is going (t),
+  // which letter it belongs to (g), and how long after the word starts it
+  // leaves (dl, ms).
   const dotsRef = useRef<{
     n: number;
     ox: Float32Array;
@@ -71,6 +82,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     tx: Float32Array;
     ty: Float32Array;
     tg: Uint16Array;
+    dl: Float32Array;
   } | null>(null);
   const timers = useRef({ begin: 0, fade: 0, frame: 0 });
   const beginAt = useRef<number | null>(null);
@@ -78,7 +90,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   // as the dots settle, so the boxes are spaced by their own widths at first.
   const slotFrom = useRef(boxCols);
   const slotNow = useRef(boxCols);
-  const durationRef = useRef(SWARM_MS);
+  const durationRef = useRef(FLIGHT_MS);
 
   // The phase has to change in step with the layout, before the browser paints.
   const enter = (next: Phase) => setPhase(next);
@@ -92,7 +104,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   // Dots are vector-drawn, not stamped from a bitmap: at ~1px a stamped sprite
   // gets resampled at every fractional position and goes soft. The backing
   // store is at least 3x and the transform maps it exactly onto the CSS box.
-  function render(t: number) {
+  function render(elapsed: number) {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const dots = dotsRef.current;
@@ -111,11 +123,11 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = fill;
     ctx.beginPath();
-    const e = ease(t);
-    progressRef.current = e;
+    progressRef.current = ease(Math.min(1, elapsed / durationRef.current));
     applySlot();
-    const { n, ox, oy, tx, ty, tg } = dots;
+    const { n, ox, oy, tx, ty, tg, dl } = dots;
     for (let i = 0; i < n; i++) {
+      const e = ease(Math.min(1, Math.max(0, (elapsed - dl[i]) / FLIGHT_MS)));
       const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * e;
       const y = oy[i] + (ty[i] - oy[i]) * e;
       ctx.roundRect(x * d, y * d, d, d, d * RADIUS);
@@ -160,20 +172,42 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       [tg[i], tg[j]] = [tg[j], tg[i]];
     }
 
-    dotsRef.current = { n, ox, oy, tx, ty, tg };
+    const dl = new Float32Array(n);
+    dotsRef.current = { n, ox, oy, tx, ty, tg, dl };
     live.current = { dot, wordCols, letterSpacing, color, rows };
     // An edited word's slot eases from the width it had to its new width.
     slotFrom.current = hadWord ? slotNow.current : boxCols;
-    durationRef.current = SWARM_MS;
+    durationRef.current = FLIGHT_MS;
     progressRef.current = 0;
     timeRef.current = 0;
+
+    // Each dot leaves once the wave reaches the place it is heading for, so the
+    // word fills in from the chosen point. Across the whole block on a full
+    // swarm; within just this word when it is an edit.
+    function timeDots() {
+      const { ax, ay, reach, local, x, y } = waveRef.current;
+      const { dot: d, letterSpacing: ls } = live.current;
+      const dist = new Float32Array(n);
+      let near = Infinity;
+      for (let i = 0; i < n; i++) {
+        dist[i] = Math.hypot(x + (tx[i] + tg[i] * ls + 0.5) * d - ax, y + (ty[i] + 0.5) * d - ay);
+        near = Math.min(near, dist[i]);
+      }
+      const from = local ? near : 0;
+      let last = 0;
+      for (let i = 0; i < n; i++) {
+        dl[i] = reach > 0 ? (WAVE_MS * (dist[i] - from)) / reach : 0;
+        last = Math.max(last, dl[i]);
+      }
+      durationRef.current = last + FLIGHT_MS;
+    }
 
     let startedAt: number | null = null;
     function step(now: number) {
       if (startedAt === null) startedAt = now;
-      timeRef.current = Math.min(1, (now - startedAt) / durationRef.current);
+      timeRef.current = Math.min(durationRef.current, now - startedAt);
       render(timeRef.current);
-      if (timeRef.current < 1) {
+      if (timeRef.current < durationRef.current) {
         t.frame = requestAnimationFrame(step);
         return;
       }
@@ -202,11 +236,16 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     enter(wait > 0 ? 'box' : 'swarm');
     render(0);
     t.begin = window.setTimeout(() => {
+      timeDots();
       setPhase('swarm');
       t.frame = requestAnimationFrame(step);
     }, wait);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [word]);
+
+  useLayoutEffect(() => {
+    waveRef.current = wave;
+  });
 
   useEffect(() => {
     const t = timers.current;

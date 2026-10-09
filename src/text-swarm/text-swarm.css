@@ -173,6 +173,131 @@
   text-align: right;
 }
 
+/* ── Motion: where the swarm starts, and whether words stagger ── */
+.motion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.motion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* The 3x3 picker: a dot per cell, the chosen one grown into a filled square. */
+.anchor {
+  display: grid;
+  grid-template-columns: repeat(3, 24px);
+  grid-template-rows: repeat(3, 24px);
+  width: max-content;
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.anchor-cell {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.anchor-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 1.6px;
+  background: #c4c4c4;
+  transition:
+    transform 180ms var(--ease-out),
+    background-color 180ms var(--ease-out);
+}
+
+.anchor-cell[aria-checked='true'] .anchor-dot {
+  background: #111;
+  transform: scale(2.5);
+}
+
+.anchor-cell:active .anchor-dot {
+  transform: scale(1.6);
+}
+
+.anchor-cell[aria-checked='true']:active .anchor-dot {
+  transform: scale(2.2);
+}
+
+.anchor-cell:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: -2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .anchor-cell:hover .anchor-dot {
+    background: #888;
+  }
+
+  .anchor-cell[aria-checked='true']:hover .anchor-dot {
+    background: #111;
+  }
+}
+
+/* Stagger: the label and the track are one button, so the whole row is the target. */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+}
+
+.switch {
+  flex: none;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #d4d4d4;
+  transition: background-color 200ms var(--ease-out);
+}
+
+.switch-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  transition: transform 200ms var(--ease-out);
+}
+
+.switch-row[aria-checked='true'] .switch {
+  background: #111;
+}
+
+.switch-row[aria-checked='true'] .switch-thumb {
+  transform: translateX(16px);
+}
+
+.switch-row:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* ── Colours: two side by side, each opening a picker above it ── */
 .colors {
   position: relative;
@@ -410,7 +535,7 @@
 
 /* When the panel itself is wide enough, all three buttons share one row;
    the command gets the extra room its longer label needs. */
-@container (min-width: 320px) {
+@container (min-width: 260px) {
   @media (max-width: 760px), (max-height: 640px) {
     .buttons {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
@@ -422,6 +547,7 @@
 
     .buttons button.command {
       grid-column: auto;
+      font-size: 12px;
     }
   }
 }
@@ -434,11 +560,26 @@
   }
 
   .field textarea {
-    min-height: 40px;
+    height: 34px;
+    min-height: 34px;
+  }
+
+  /* The count can go; a warning about letters left out cannot. */
+  .hint-count:not(.has-warning) {
+    display: none;
   }
 
   .row {
     min-height: 28px;
+  }
+
+  .anchor {
+    grid-template-columns: repeat(3, 18px);
+    grid-template-rows: repeat(3, 18px);
+  }
+
+  .motion-item {
+    gap: 4px;
   }
 }
 
@@ -455,7 +596,10 @@
   .buttons button,
   .num,
   .picker-hex,
-  .picker-swatch {
+  .picker-swatch,
+  .anchor-dot,
+  .switch,
+  .switch-thumb {
     transition: none;
   }
 

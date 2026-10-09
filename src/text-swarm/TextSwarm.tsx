@@ -1,9 +1,11 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
 import Word from './Word';
-import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
+import { dotPx, DEFAULT_SETTINGS, STAGGER_MS, type Settings } from './settings';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
+import { anchorPoint, placeWords, reachFrom, staggerOrder } from './wave';
 import './text-swarm.css';
 
 const MIN_SIZE = 1;
@@ -14,7 +16,8 @@ const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 240;
 const COMMAND = 'npx swarmingdots';
 
-// The skeletons sit for a beat, then every word swarms at the same time.
+// The skeletons sit for a beat, then the words swarm: together, or STAGGER_MS
+// apart when stagger is on.
 const INTRO_MS = 800;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
@@ -83,7 +86,23 @@ export default function TextSwarm() {
     [layout, maxCols, settings.letterSpacing],
   );
 
+  // Where each word will settle, so the wave and the stagger order can follow
+  // the chosen point across the whole block.
+  const dot = dotPx(settings.fontSize);
+  const placement = useMemo(
+    () => placeWords(pieces, room > 0 ? room : Infinity, dot, settings.letterSpacing, settings.lineSpacing),
+    [pieces, room, dot, settings.letterSpacing, settings.lineSpacing],
+  );
+  const { ax, ay } = anchorPoint(settings.anchor, placement.width, placement.height);
+  const reach = reachFrom(ax, ay, placement.width, placement.height);
+  const order = staggerOrder(placement.boxes, ax, ay);
+
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
+  // Changing how the swarm moves replays it, so the change is visible at once.
+  const setMotion = (patch: Partial<Settings>) => {
+    set(patch);
+    setRun((r) => r + 1);
+  };
 
   async function copyCommand() {
     const ok = await copyText(COMMAND);
@@ -98,7 +117,7 @@ export default function TextSwarm() {
           {pieces.map((line, li) => (
             <Fragment key={`${layout?.run}-${li}`}>
               {li > 0 && <br />}
-              {line.map((piece) => (
+              {line.map((piece, wi) => (
                 <Word
                   key={piece.key}
                   word={piece.word}
@@ -106,7 +125,15 @@ export default function TextSwarm() {
                   letterSpacing={settings.letterSpacing}
                   lineSpacing={settings.lineSpacing}
                   color={settings.color}
-                  delay={layout?.intro ? INTRO_MS : 0}
+                  delay={layout?.intro ? INTRO_MS + (settings.stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
+                  wave={{
+                    x: placement.boxes[li]?.[wi]?.x ?? 0,
+                    y: placement.boxes[li]?.[wi]?.y ?? 0,
+                    ax,
+                    ay,
+                    reach,
+                    local: !layout?.intro,
+                  }}
                   trailingSpace={piece.gap}
                 />
               ))}
@@ -129,7 +156,7 @@ export default function TextSwarm() {
             value={settings.text}
             onChange={(e) => set({ text: e.target.value })}
           />
-          <p className="hint">
+          <p className={layout && layout.skipped.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
             {settings.text.length}/{MAX_CHARS}. Enter starts a new line.
             {layout && layout.skipped.length > 0 && (
               <> The font has no glyph for {layout.skipped.map((c) => `“${c}”`).join(' ')}, so {layout.skipped.length === 1 ? 'it was' : 'they were'} left out.</>
@@ -201,6 +228,33 @@ export default function TextSwarm() {
           </div>
 
           <p className="hint hint-dots">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
+        </div>
+
+        <div className="motion">
+          <div className="motion-item">
+            <span className="picker-label" id="anchor-label">
+              Swarm from
+            </span>
+            <AnchorGrid value={settings.anchor} onChange={(anchor) => setMotion({ anchor })} labelledBy="anchor-label" />
+          </div>
+          <div className="motion-item">
+            <button
+              type="button"
+              role="switch"
+              className="switch-row"
+              aria-checked={settings.stagger}
+              aria-describedby="stagger-note"
+              onClick={() => setMotion({ stagger: !settings.stagger })}
+            >
+              Stagger
+              <span className="switch" aria-hidden="true">
+                <span className="switch-thumb" />
+              </span>
+            </button>
+            <p className="hint" id="stagger-note">
+              Words start {STAGGER_MS}ms apart, in the order the grid sets.
+            </p>
+          </div>
         </div>
 
         <div className="colors">
