@@ -14,22 +14,24 @@ const RADIUS = 0.4; // fraction of a dot, as drawn in the Paper file
 
 type Phase = 'box' | 'swarm' | 'text' | 'done';
 
-// The skeleton: the word's own dots packed into BOX_ROWS rows, extra dots going
-// to the top rows, so it is a full block with a ragged last column. It starts at
-// the word's left edge and sits on the x-height band (the 14 rows above the
-// baseline), so every box in the sentence shares one horizontal line.
+// Whole columns only: 400–409 dots make 40 columns, 410–419 make 41.
+function boxWidth(count: number): number {
+  return Math.max(1, Math.floor(count / BOX_ROWS));
+}
+
+// The skeleton: the word's own dots packed into a solid BOX_ROWS x boxWidth
+// block. The 1–9 dots left over after the last whole column stack exactly on
+// that column's dots, so they are hidden and the block keeps a straight edge.
+// It starts at the word's left edge and sits on the x-height band (the 14 rows
+// above the baseline), so every box in the sentence shares one horizontal line.
 function boxCells(count: number, baseline: number): Float32Array {
-  const left = 0;
+  const cols = boxWidth(count);
+  const full = cols * BOX_ROWS;
   const top = baseline - 12;
   const out = new Float32Array(count * 2);
-  let at = 0;
-  for (let r = 0; r < BOX_ROWS; r++) {
-    const inRow = Math.floor(count / BOX_ROWS) + (r < count % BOX_ROWS ? 1 : 0);
-    for (let c = 0; c < inRow; c++) {
-      out[at * 2] = left + c;
-      out[at * 2 + 1] = top + r;
-      at++;
-    }
+  for (let i = 0; i < count; i++) {
+    out[i * 2] = i < full ? i % cols : cols - 1;
+    out[i * 2 + 1] = top + (i < full ? Math.floor(i / cols) : i - full);
   }
   return out;
 }
@@ -54,7 +56,7 @@ type Props = {
 export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, delay, wave, trailingSpace }: Props) {
   const dot = fontSize * PIXEL_EM;
   const { cols, rows, baseline, inkLeft, cells, glyphs } = word;
-  const boxCols = Math.ceil(cells.length / 2 / BOX_ROWS);
+  const boxCols = boxWidth(cells.length / 2);
   const wordCols = cols + (Array.from(word.text).length - 1) * letterSpacing;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
