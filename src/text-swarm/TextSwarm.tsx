@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import About from './About';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
 import { ANCHORS, STAGGER_MS } from './anchors';
@@ -64,6 +65,7 @@ export default function TextSwarm() {
 
   return (
     <div className="text-swarm">
+      <About />
       <div className="text-swarm-stage" style={{ background: settings.background }}>
         <DotSwarmText
           key={run}

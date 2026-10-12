@@ -1,10 +1,5 @@
-@font-face {
-  font-family: 'Geist Pixel Circle';
-  src: url('/fonts/GeistPixel-Circle.woff2') format('woff2');
-  font-display: block;
-}
-
 .text-swarm {
+  position: relative;
   height: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
