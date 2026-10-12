@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import DotSwarmText from './DotSwarmText';
 import './intro.css';
@@ -10,14 +10,18 @@ const INTRO =
   'and real, selectable text settles over them. Set the size, spacing, colours and ' +
   'where the swarm starts in the editor, then add it to your own project with one shadcn command.';
 
+// Matches the phone breakpoint in intro.css.
+const PHONE = '(max-width: 760px)';
+const subscribe = (onChange: () => void) => {
+  const query = window.matchMedia(PHONE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const isPhone = () => window.matchMedia(PHONE).matches;
+
 /** What Swarming Dots is and who made it. The intro swarms in each time the page opens. */
 export default function Intro() {
-  useEffect(() => {
-    document.title = 'Dot Swarm: intro';
-    return () => {
-      document.title = 'Dot Swarm';
-    };
-  }, []);
+  const fontSize = useSyncExternalStore(subscribe, isPhone) ? 16 : 20;
 
   return (
     <div className="intro">
@@ -28,7 +32,7 @@ export default function Intro() {
         <DotSwarmText
           as="h1"
           text={INTRO}
-          fontSize={13}
+          fontSize={fontSize}
           lineSpacing={8}
           anchor="top-left"
           fontUrl="/fonts/GeistPixel-Circle.woff2"
@@ -36,10 +40,10 @@ export default function Intro() {
         <p className="intro-byline">
           by Waseem
           <a href="https://x.com/wseemye" target="_blank" rel="noreferrer">
-            @wseemye
+            Twitter
           </a>
           <a href="https://www.linkedin.com/in/wseem" target="_blank" rel="noreferrer">
-            /in/wseem
+            LinkedIn
           </a>
         </p>
       </div>
