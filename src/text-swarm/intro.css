@@ -14,7 +14,7 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  max-width: 380px;
+  max-width: 560px;
 }
 
 .intro-byline {
@@ -24,7 +24,7 @@
   gap: 4px 12px;
   margin: 0;
   font-family: 'Geist Pixel Circle', ui-monospace, monospace;
-  font-size: 13px;
+  font-size: 20px;
   line-height: 1.4;
   color: #666;
 }
@@ -51,6 +51,14 @@
 @media (max-width: 760px) {
   .intro {
     padding: 56px 16px;
+  }
+
+  .intro-body {
+    max-width: 420px;
+  }
+
+  .intro-byline {
+    font-size: 16px;
   }
 }
 
