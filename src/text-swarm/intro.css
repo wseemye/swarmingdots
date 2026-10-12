@@ -1,0 +1,61 @@
+/* Full height, content centred vertically and pinned to the left. */
+.intro {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 100%;
+  padding: 64px 48px;
+  background: #fff;
+  color: #111;
+}
+
+.intro-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.intro-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #666;
+}
+
+.intro-byline a {
+  color: #111;
+  text-decoration: underline;
+  text-decoration-color: #c4c4c4;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 160ms var(--ease-out);
+}
+
+.intro-byline a:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .intro-byline a:hover {
+    text-decoration-color: #111;
+  }
+}
+
+@media (max-width: 760px) {
+  .intro {
+    padding: 56px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-byline a {
+    transition: none;
+  }
+}

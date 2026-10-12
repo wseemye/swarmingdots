@@ -1,3 +1,9 @@
+@font-face {
+  font-family: 'Geist Pixel Circle';
+  src: url('/fonts/GeistPixel-Circle.woff2') format('woff2');
+  font-display: block;
+}
+
 :root {
   /* Emil Kowalski's strong ease-out: starts fast, so the UI feels like it answers the tap. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -58,8 +64,51 @@ body {
   }
 }
 
+/* ── The round button in the top left: "?" to the intro, "←" back to the editor ── */
+.corner-button {
+  position: absolute;
+  z-index: 10;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d4d4d4;
+  border-radius: 50%;
+  background: #fff;
+  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1;
+  color: #111;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+.corner-button:active {
+  transform: scale(0.94);
+}
+
+.corner-button:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .corner-button:hover {
+    border-color: #999;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shell-page {
     animation: none;
+  }
+
+  .corner-button {
+    transition: none;
   }
 }
