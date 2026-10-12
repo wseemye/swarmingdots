@@ -36,7 +36,7 @@ npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json
 That adds a single file, `components/dot-swarm-text.tsx`, that needs only React:
 
 ```tsx
-<DotSwarmText text="hello world" fontSize={40} anchor="top-left" stagger />
+<DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />
 ```
 
 | prop            | default    | what it does                                                        |
@@ -44,16 +44,54 @@ That adds a single file, `components/dot-swarm-text.tsx`, that needs only React:
 | `text`          |            | the text; newlines start a new line                                 |
 | `fontSize`      | `26`       | px; one dot is 0.038 of it                                          |
 | `color`         | inherited  | dot and text colour                                                 |
+| `variant`       | `'circle'` | Geist Pixel face: `circle`, `grid`, `line` or `square` (see below)  |
 | `letterSpacing` | `0`        | extra space after each letter, in dots                              |
 | `lineSpacing`   | `6`        | gap between lines, in dots                                          |
 | `anchor`        | `'center'` | where each word fills in from; with stagger, which word goes first  |
+| `pairing`       | `'scatter'`| how dots find their places: `scatter` (random) or `trace` (pen path) |
 | `stagger`       | `false`    | start words 100ms apart instead of together                         |
 | `align`         | `'start'`  | where the block sits in its width                                   |
 | `as`            | `'p'`      | the element that holds the text                                     |
-| `fontUrl`       | jsDelivr   | where to load Geist Pixel Circle if the page has no `@font-face`    |
+| `fontUrl`       | jsDelivr   | where to load the variant's font if the page has no `@font-face`    |
 
 Change its `key` to play it again. If the font cannot load, the text shows
 plainly instead of swarming.
+
+### Variants
+
+Each variant is one of the Geist Pixel faces. Its dots are read out of that
+face and drawn the way it draws a pixel (one lattice step is 38 font units), so
+the settled dots line up exactly with the text that replaces them:
+
+| variant  | each dot                                               | settles into                 |
+| -------- | ------------------------------------------------------ | ---------------------------- |
+| `circle` | a round dot                                            | dotted letters               |
+| `grid`   | a 30/38 square centred in its cell, so a slight gap    | letters of separate squares  |
+| `line`   | a bar the full cell wide on the cell's lower half      | rows of joined bars          |
+| `square` | the whole cell                                         | solid letters, no dots       |
+
+Geist Pixel Triangle is left out: its pixels do not tile into readable letters.
+
+### Pairing
+
+How each dot in the brick is matched to a cell in the letters:
+
+- `scatter` shuffles the cells (Fisher–Yates), so every dot heads somewhere
+  random: the brick bursts into a cloud and reassembles, filling in as a wave
+  from the anchor.
+- `trace` draws each word like a pen. `src/text-swarm/trace.ts` finds a short
+  open path through all of the word's cells, a travelling-salesman tour:
+  nearest neighbour from the cell closest to the anchor, then 2-opt, which
+  reverses any stretch whose reversal shortens the path (undoing crossings).
+  The brick hands out its dots column by column from the left, the k-th to the
+  k-th cell on the path, and they leave in path order over 1.2s, so a stream
+  runs from the brick to the pen tip. A word costs roughly 20-40ms to plan,
+  done while its brick sits, one word per task.
+
+Whatever the variant, the words are real text in the page from the first
+render, under the dots while they move and on their own once they settle, so
+they can be selected, copied, searched, clicked and read by screen readers and
+crawlers.
 
 The file is generated on every build by `scripts/registry.ts`, which joins the
 modules in `src/text-swarm/` that the site itself renders (`DotSwarmText.tsx`

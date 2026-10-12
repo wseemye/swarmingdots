@@ -5,6 +5,9 @@ import ColorPicker from './ColorPicker';
 import { ANCHORS, STAGGER_MS } from './anchors';
 import DotSwarmText from './DotSwarmText';
 import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
+import VariantPicker from './VariantPicker';
+import { PAIRINGS } from './trace';
+import { fontFile } from './variants';
 import './text-swarm.css';
 
 const MIN_SIZE = 1;
@@ -73,11 +76,13 @@ export default function TextSwarm() {
           text={settings.text}
           fontSize={settings.fontSize}
           color={settings.color}
+          variant={settings.variant}
           letterSpacing={settings.letterSpacing}
           lineSpacing={settings.lineSpacing}
           anchor={ANCHORS[settings.anchor]}
+          pairing={settings.pairing}
           stagger={settings.stagger}
-          fontUrl="/fonts/GeistPixel-Circle.woff2"
+          fontUrl={`/fonts/${fontFile(settings.variant)}`}
           onMissingGlyphs={setSkipped}
         />
       </div>
@@ -102,6 +107,13 @@ export default function TextSwarm() {
               <> The font has no glyph for {skipped.map((c) => `“${c}”`).join(' ')}, so {skipped.length === 1 ? 'it was' : 'they were'} left out.</>
             )}
           </p>
+        </div>
+
+        <div className="field">
+          <span className="picker-label" id="variant-label">
+            Typeface
+          </span>
+          <VariantPicker value={settings.variant} onChange={(variant) => setMotion({ variant })} labelledBy="variant-label" />
         </div>
 
         <div className="sliders">
@@ -168,6 +180,31 @@ export default function TextSwarm() {
           </div>
 
           <p className="hint hint-dots">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
+        </div>
+
+        <div className="field">
+          <span className="picker-label" id="pairing-label">
+            Pairing
+          </span>
+          <div className="variants pairings" role="radiogroup" aria-labelledby="pairing-label" aria-describedby="pairing-note">
+            {PAIRINGS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                role="radio"
+                className="variant"
+                aria-checked={settings.pairing === p}
+                onClick={() => setMotion({ pairing: p })}
+              >
+                <span className="variant-name">{p === 'scatter' ? 'Scatter' : 'Trace'}</span>
+              </button>
+            ))}
+          </div>
+          <p className="hint" id="pairing-note">
+            {settings.pairing === 'scatter'
+              ? 'Each dot flies to a random place, so the brick bursts and reassembles.'
+              : 'Each word is drawn along a travelling-salesman path, starting from the grid point.'}
+          </p>
         </div>
 
         <div className="motion">

@@ -1,6 +1,6 @@
+import { fontFamily, type Variant } from './variants';
 import { PIXEL_EM, type WordData } from './words';
 
-const FONT = '"Geist Pixel Circle"';
 const CELL = 8; // canvas px per lattice step while sampling
 const PAD = 2; // lattice steps of margin left of the letter
 const COLS = 48; // widest single letter we expect, in lattice steps
@@ -23,17 +23,22 @@ function ctx(): CanvasRenderingContext2D {
 
 const cache = new Map<string, { data: WordData | null; skipped: string[] }>();
 
+// Where in a cell to look for ink: three quarters down, the one point every
+// variant inks. Line's bars only cover the lower half of a cell.
+const SAMPLE_Y = (CELL * 3) / 4;
+
 /**
  * Reads a word's dots out of the font itself: each letter is drawn on a canvas at
- * a size where one lattice step is CELL px, and a cell is a dot if its centre is
- * inked. Letters the font cannot draw come back blank and are skipped.
+ * a size where one lattice step is CELL px, and a cell is a dot if it is inked
+ * at SAMPLE_Y. Letters the font cannot draw come back blank and are skipped.
  */
-function rasterizeWord(word: string): { data: WordData | null; skipped: string[] } {
-  const hit = cache.get(word);
+function rasterizeWord(word: string, variant: Variant): { data: WordData | null; skipped: string[] } {
+  const key = `${variant}:${word}`;
+  const hit = cache.get(key);
   if (hit) return hit;
 
   const g = ctx();
-  g.font = `${CELL / PIXEL_EM}px ${FONT}`;
+  g.font = `${CELL / PIXEL_EM}px "${fontFamily(variant)}"`;
   g.fillStyle = '#000';
   const w = g.canvas.width;
   const h = g.canvas.height;
@@ -52,12 +57,12 @@ function rasterizeWord(word: string): { data: WordData | null; skipped: string[]
     const px = g.getImageData(0, 0, w, h).data;
 
     // A letter the font lacks is drawn by the browser in some other font. Real
-    // glyphs only ink whole lattice cells (centre inked, ink never outside its
-    // cell), so reject a glyph whose ink mostly lies outside the cells it inks.
+    // glyphs only ink inside lattice cells (sample point inked, ink never outside
+    // its cell), so reject a glyph whose ink mostly lies outside the cells it inks.
     const cells: number[] = [];
     for (let y = 0; y < ASC + DESC; y++) {
       for (let x = 0; x < COLS; x++) {
-        if (px[((y * CELL + CELL / 2) * w + x * CELL + CELL / 2) * 4 + 3] > 128) cells.push(x, y);
+        if (px[((y * CELL + SAMPLE_Y) * w + x * CELL + CELL / 2) * 4 + 3] > 128) cells.push(x, y);
       }
     }
     let ink = 0;
@@ -112,7 +117,7 @@ function rasterizeWord(word: string): { data: WordData | null; skipped: string[]
       skipped,
     };
   }
-  cache.set(word, result);
+  cache.set(key, result);
   return result;
 }
 
@@ -123,8 +128,8 @@ export type TextLayout = {
   skipped: string[];
 };
 
-export async function layoutText(text: string): Promise<TextLayout> {
-  await document.fonts.load(`${CELL / PIXEL_EM}px ${FONT}`);
+export async function layoutText(text: string, variant: Variant): Promise<TextLayout> {
+  await document.fonts.load(`${CELL / PIXEL_EM}px "${fontFamily(variant)}"`);
   const skipped = new Set<string>();
   const lines = text
     .split('\n')
@@ -133,7 +138,7 @@ export async function layoutText(text: string): Promise<TextLayout> {
         .split(/\s+/)
         .filter(Boolean)
         .flatMap((word) => {
-          const r = rasterizeWord(word);
+          const r = rasterizeWord(word, variant);
           r.skipped.forEach((c) => skipped.add(c));
           return r.data ? [r.data] : [];
         }),
@@ -156,7 +161,7 @@ export type Piece = {
  * cutting between letters. Words that already fit are passed through untouched,
  * the same object, so their swarm is not restarted when the width changes.
  */
-export function fitLines(lines: WordData[][], maxCols: number, letterSpacing: number): Piece[][] {
+export function fitLines(lines: WordData[][], maxCols: number, letterSpacing: number, variant: Variant): Piece[][] {
   return lines.map((line) =>
     line.flatMap((word, wi) => {
       const gap = wi < line.length - 1;
@@ -178,7 +183,7 @@ export function fitLines(lines: WordData[][], maxCols: number, letterSpacing: nu
         let b = a;
         while (b + 1 < letters.length && hi[b + 1] - lo[a] + 1 + (b + 1 - a) * letterSpacing <= maxCols) b++;
         const text = letters.slice(a, b + 1).join('');
-        const data = rasterizeWord(text).data;
+        const data = rasterizeWord(text, variant).data;
         if (data) pieces.push({ word: data, key: `${wi}.${a}`, gap: false });
         a = b + 1;
       }
