@@ -22,21 +22,60 @@ function ctx(): CanvasRenderingContext2D {
 }
 
 const cache = new Map<string, { data: WordData | null; skipped: string[] }>();
+const glyphCache = new Map<string, Glyph>();
+
+/** One letter's dots, relative to its pen position, and how far it moves the pen. */
+type Glyph = { cells: number[]; advance: number } | null;
 
 /**
- * Reads a word's dots out of the font itself: each letter is drawn on a canvas at
- * a size where one lattice step is CELL px, and a cell is a dot if its centre is
- * inked. Letters the font cannot draw come back blank and are skipped.
+ * Reads a letter's dots out of the font itself: the letter is drawn on a canvas
+ * at a size where one lattice step is CELL px, and a cell is a dot if its centre
+ * is inked. A letter the font cannot draw comes back as null. Each letter is
+ * read once, so a long word costs one canvas read per distinct letter, not one
+ * per letter on every keystroke.
  */
-function rasterizeWord(word: string): { data: WordData | null; skipped: string[] } {
-  const hit = cache.get(word);
-  if (hit) return hit;
+function rasterizeGlyph(ch: string): Glyph {
+  if (glyphCache.has(ch)) return glyphCache.get(ch)!;
 
   const g = ctx();
   g.font = `${CELL / PIXEL_EM}px ${FONT}`;
   g.fillStyle = '#000';
   const w = g.canvas.width;
   const h = g.canvas.height;
+
+  const advance = Math.round(g.measureText(ch).width / CELL);
+  g.clearRect(0, 0, w, h);
+  g.fillText(ch, PAD * CELL, ASC * CELL);
+  const px = g.getImageData(0, 0, w, h).data;
+
+  // A letter the font lacks is drawn by the browser in some other font. Real
+  // glyphs only ink whole lattice cells (centre inked, ink never outside its
+  // cell), so reject a glyph whose ink mostly lies outside the cells it inks.
+  const cells: number[] = [];
+  for (let y = 0; y < ASC + DESC; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (px[((y * CELL + CELL / 2) * w + x * CELL + CELL / 2) * 4 + 3] > 128) cells.push(x - PAD, y);
+    }
+  }
+  let ink = 0;
+  for (let i = 3; i < px.length; i += 4) if (px[i] > 128) ink++;
+  let inCells = 0;
+  for (let i = 0; i < cells.length; i += 2) {
+    for (let dy = 0; dy < CELL; dy++) {
+      for (let dx = 0; dx < CELL; dx++) {
+        if (px[((cells[i + 1] * CELL + dy) * w + (cells[i] + PAD) * CELL + dx) * 4 + 3] > 128) inCells++;
+      }
+    }
+  }
+  const glyph = cells.length > 0 && inCells >= ink * 0.98 ? { cells, advance } : null;
+  glyphCache.set(ch, glyph);
+  return glyph;
+}
+
+/** A word's dots, built from its letters'. Letters the font cannot draw are skipped. */
+function rasterizeWord(word: string): { data: WordData | null; skipped: string[] } {
+  const hit = cache.get(word);
+  if (hit) return hit;
 
   const found: number[] = [];
   const glyphs: number[] = [];
@@ -46,44 +85,18 @@ function rasterizeWord(word: string): { data: WordData | null; skipped: string[]
   let origin = 0;
 
   for (const ch of word) {
-    const advance = Math.round(g.measureText(ch).width / CELL);
-    g.clearRect(0, 0, w, h);
-    g.fillText(ch, PAD * CELL, ASC * CELL);
-    const px = g.getImageData(0, 0, w, h).data;
-
-    // A letter the font lacks is drawn by the browser in some other font. Real
-    // glyphs only ink whole lattice cells (centre inked, ink never outside its
-    // cell), so reject a glyph whose ink mostly lies outside the cells it inks.
-    const cells: number[] = [];
-    for (let y = 0; y < ASC + DESC; y++) {
-      for (let x = 0; x < COLS; x++) {
-        if (px[((y * CELL + CELL / 2) * w + x * CELL + CELL / 2) * 4 + 3] > 128) cells.push(x, y);
-      }
-    }
-    let ink = 0;
-    for (let i = 3; i < px.length; i += 4) if (px[i] > 128) ink++;
-    let inCells = 0;
-    for (let i = 0; i < cells.length; i += 2) {
-      for (let dy = 0; dy < CELL; dy++) {
-        for (let dx = 0; dx < CELL; dx++) {
-          if (px[((cells[i + 1] * CELL + dy) * w + cells[i] * CELL + dx) * 4 + 3] > 128) inCells++;
-        }
-      }
-    }
-    const any = cells.length > 0 && inCells >= ink * 0.98;
-    if (any) {
-      for (let i = 0; i < cells.length; i += 2) {
-        found.push(origin + cells[i] - PAD, cells[i + 1]);
-        glyphs.push(keptCount);
-      }
-    }
-    if (!any) {
+    const glyph = rasterizeGlyph(ch);
+    if (!glyph) {
       skipped.push(ch);
       continue;
     }
+    for (let i = 0; i < glyph.cells.length; i += 2) {
+      found.push(origin + glyph.cells[i], glyph.cells[i + 1]);
+      glyphs.push(keptCount);
+    }
     kept += ch;
     keptCount++;
-    origin += advance;
+    origin += glyph.advance;
   }
 
   let result: { data: WordData | null; skipped: string[] } = { data: null, skipped };
