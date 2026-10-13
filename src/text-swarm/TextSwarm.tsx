@@ -13,7 +13,7 @@ const MAX_SIZE = 72;
 const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
-const MAX_CHARS = 240;
+const MAX_CHARS = 300;
 // Adds components/dot-swarm-text.tsx (built by scripts/registry.ts) to a shadcn project.
 const COMMAND = 'npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json';
 // The full command is too long for the button; it still copies all of it.
@@ -194,7 +194,7 @@ export default function TextSwarm() {
               </span>
             </button>
             <p className="hint" id="stagger-note">
-              Words start {STAGGER_MS}ms apart, in the order the grid sets.
+              Lines start {STAGGER_MS}ms apart (words, on a single line), in the order the grid sets.
             </p>
           </div>
         </div>

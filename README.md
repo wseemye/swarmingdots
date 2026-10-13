@@ -46,8 +46,8 @@ That adds a single file, `components/dot-swarm-text.tsx`, that needs only React:
 | `color`         | inherited  | dot and text colour                                                 |
 | `letterSpacing` | `0`        | extra space after each letter, in dots                              |
 | `lineSpacing`   | `6`        | gap between lines, in dots                                          |
-| `anchor`        | `'center'` | where each word fills in from; with stagger, which word goes first  |
-| `stagger`       | `false`    | start words 100ms apart instead of together                         |
+| `anchor`        | `'center'` | where each word fills in from; with stagger, which line goes first  |
+| `stagger`       | `false`    | start lines 100ms apart (words, on one line) instead of together    |
 | `align`         | `'start'`  | where the block sits in its width                                   |
 | `as`            | `'p'`      | the element that holds the text                                     |
 | `fontUrl`       | jsDelivr   | where to load Geist Pixel Circle if the page has no `@font-face`    |

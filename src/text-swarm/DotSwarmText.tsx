@@ -23,9 +23,9 @@ export type DotSwarmTextProps = {
   letterSpacing?: number;
   /** Gap between one line and the next, in dots. Default 6. */
   lineSpacing?: number;
-  /** Where the dots fill each word in from; with stagger, also which word goes first. Default 'center'. */
+  /** Where the dots fill each word in from; with stagger, also which line (or word) goes first. Default 'center'. */
   anchor?: Anchor;
-  /** Start words STAGGER_MS apart instead of all together. Default false. */
+  /** Start lines STAGGER_MS apart (words, if the text is one line) instead of all together. Default false. */
   stagger?: boolean;
   /** How the text block sits in the width it is given. Default 'start'. */
   align?: 'start' | 'center' | 'end';

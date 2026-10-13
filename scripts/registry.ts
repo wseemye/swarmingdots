@@ -77,7 +77,7 @@ const item = {
   type: 'registry:component',
   title: 'Dot Swarm Text',
   description:
-    'Text in Geist Pixel Circle that arrives as a swarm of dots, filling in from a chosen point, with an optional 100ms stagger between words.',
+    'Text in Geist Pixel Circle that arrives as a swarm of dots, filling in from a chosen point, with an optional 100ms stagger between lines (or words, on one line).',
   dependencies: [],
   files: [{ path: `registry/default/${NAME}.tsx`, type: 'registry:component', content: tsx }],
 };

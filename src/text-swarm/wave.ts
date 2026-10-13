@@ -57,11 +57,27 @@ export function anchorPoint(anchor: number, width: number, height: number): { ax
   return { ax: ((anchor % 3) / 2) * width, ay: (Math.floor(anchor / 3) / 2) * height };
 }
 
-/** Each word's turn when staggered: nearest the anchor first, reading order breaking ties. */
+/**
+ * Each word's turn when staggered. Text on one line goes word by word, nearest
+ * the anchor first. Text on several lines goes line by line, so long text does
+ * not take one turn per word: every word on a line shares its turn, and lines
+ * nearer the anchor's height go first. Reading order breaks ties. Lines here
+ * are the settled visual lines, wrapped ones included.
+ */
 export function staggerOrder(boxes: Box[][], ax: number, ay: number): number[][] {
-  const flat = boxes.flatMap((line, li) => line.map((b, wi) => ({ li, wi, d: Math.hypot(b.x + b.w / 2 - ax, b.y + b.h / 2 - ay) })));
-  const order = flat.map((_, i) => i).sort((a, b) => flat[a].d - flat[b].d || a - b);
+  const flat = boxes.flatMap((line, li) => line.map((b, wi) => ({ li, wi, b })));
+  const rows = [...new Set(flat.map(({ b }) => b.y))];
   const rank = boxes.map((line) => line.map(() => 0));
+  if (rows.length > 1) {
+    // A row's height is that of its tallest word.
+    const mid = rows.map((y) => y + Math.max(...flat.filter(({ b }) => b.y === y).map(({ b }) => b.h)) / 2);
+    const order = rows.map((_, i) => i).sort((a, b) => Math.abs(mid[a] - ay) - Math.abs(mid[b] - ay) || a - b);
+    const turn = new Map(order.map((row, r) => [rows[row], r]));
+    for (const { li, wi, b } of flat) rank[li][wi] = turn.get(b.y) ?? 0;
+    return rank;
+  }
+  const d = flat.map(({ b }) => Math.hypot(b.x + b.w / 2 - ax, b.y + b.h / 2 - ay));
+  const order = flat.map((_, i) => i).sort((a, b) => d[a] - d[b] || a - b);
   order.forEach((i, r) => {
     rank[flat[i].li][flat[i].wi] = r;
   });
