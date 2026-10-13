@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType } from 'react';
+import { Fragment, memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType } from 'react';
 import { ANCHORS, STAGGER_MS, type Anchor } from './anchors';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
 import { anchorFractions, anchorPoint, placeWords, staggerOrder } from './wave';
@@ -9,6 +9,11 @@ import { PIXEL_EM } from './words';
 
 // The skeletons sit for a beat, then the words swarm.
 const INTRO_MS = 800;
+// After the first layout, the dots follow a text that is still being typed
+// only once it has rested this long, so typing never waits on the swarm.
+const SETTLE_MS = 150;
+// A word only re-renders when its own props change, not on every keystroke.
+const MemoWord = memo(Word);
 const FAMILY = 'Geist Pixel Circle';
 const FONT_URL = 'https://cdn.jsdelivr.net/npm/geist@1.7.2/dist/fonts/geist-pixel/GeistPixel-Circle.woff2';
 
@@ -87,11 +92,14 @@ export default function DotSwarmText({
 
   // Re-read the dots from the font whenever the text changes. Words keep their
   // identity across edits, so an edit swarms only the word that changed; the
-  // first layout is the intro, where every word starts as a box.
+  // first layout is the intro, where every word starts as a box. Later edits
+  // wait for a pause in typing, so holding a key swarms once, not per key.
+  const laidOut = useRef(false);
   useEffect(() => {
     let alive = true;
     ensureFont(fontUrl);
-    layoutText(text).then(
+    const wait = laidOut.current ? SETTLE_MS : 0;
+    const timer = window.setTimeout(() => layoutText(text).then(
       (next) => {
         if (!alive) return;
         // Every letter came back without dots: the font is not really there.
@@ -100,15 +108,17 @@ export default function DotSwarmText({
           return;
         }
         setPlain(false);
+        laidOut.current = true;
         setLayout((prev) => ({ ...next, intro: !prev }));
         missingRef.current?.(next.skipped);
       },
       () => {
         if (alive) setPlain(true);
       },
-    );
+    ), wait);
     return () => {
       alive = false;
+      window.clearTimeout(timer);
     };
   }, [text, fontUrl]);
 
@@ -147,7 +157,7 @@ export default function DotSwarmText({
   const cell = Math.max(0, ANCHORS.indexOf(anchor));
   const { ax, ay } = anchorPoint(cell, placement.width, placement.height);
   const order = staggerOrder(placement.boxes, ax, ay);
-  const wave = anchorFractions(cell);
+  const wave = useMemo(() => anchorFractions(cell), [cell]);
 
   const justify = align === 'center' ? 'center' : align === 'end' ? 'flex-end' : 'flex-start';
 
@@ -192,7 +202,7 @@ export default function DotSwarmText({
             {line.map((piece, wi) => (
               <Fragment key={piece.key}>
                 {wi > 0 && placement.boxes[li]?.[wi]?.x === 0 && <br />}
-                <Word
+                <MemoWord
                   word={piece.word}
                   fontSize={fontSize}
                   letterSpacing={letterSpacing}
