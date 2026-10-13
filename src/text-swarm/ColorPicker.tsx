@@ -43,9 +43,11 @@ type Props = {
   /** `#rrggbb` */
   value: string;
   onChange: (hex: string) => void;
+  /** 'field': label above a square swatch and a hex input. 'dial': a round swatch with its label beside it. */
+  shape?: 'field' | 'dial';
 };
 
-export default function ColorPicker({ label, value, onChange }: Props) {
+export default function ColorPicker({ label, value, onChange, shape = 'field' }: Props) {
   // Hue is kept in state because hex alone forgets it at white, black and grey,
   // and the picker would snap back to red whenever the colour touched them.
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value));
@@ -127,36 +129,51 @@ export default function ColorPicker({ label, value, onChange }: Props) {
     commit({ ...hsv, h: Math.min(360, Math.max(0, hsv.h + (e.key === 'ArrowRight' ? step : -step))) });
   }
 
+  const swatch = (
+    <button
+      ref={triggerRef}
+      type="button"
+      className="picker-swatch"
+      aria-label={`${label} colour ${value}, open picker`}
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      style={{ background: value }}
+      onClick={() => setOpen((o) => !o)}
+    />
+  );
+
   return (
-    <div className="picker" ref={rootRef}>
-      <span className="picker-label">{label}</span>
-      <div className="picker-field">
-        <button
-          ref={triggerRef}
-          type="button"
-          className="picker-swatch"
-          aria-label={`${label} colour ${value}, open picker`}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          style={{ background: value }}
-          onClick={() => setOpen((o) => !o)}
-        />
-        <input
-          className="picker-hex"
-          aria-label={`${label} hex`}
-          spellCheck={false}
-          value={draft ?? value}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            const hex = normalizeHex(e.target.value);
-            if (hex) {
-              setHsv(hexToHsv(hex));
-              onChange(hex);
-            }
-          }}
-          onBlur={() => setDraft(null)}
-        />
-      </div>
+    <div className={shape === 'dial' ? 'picker picker-dial' : 'picker'} ref={rootRef}>
+      {shape === 'dial' ? (
+        <div className="picker-field">
+          {swatch}
+          <span className="picker-label" aria-hidden="true">
+            {label}
+          </span>
+        </div>
+      ) : (
+        <>
+          <span className="picker-label">{label}</span>
+          <div className="picker-field">
+            {swatch}
+            <input
+              className="picker-hex"
+              aria-label={`${label} hex`}
+              spellCheck={false}
+              value={draft ?? value}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                const hex = normalizeHex(e.target.value);
+                if (hex) {
+                  setHsv(hexToHsv(hex));
+                  onChange(hex);
+                }
+              }}
+              onBlur={() => setDraft(null)}
+            />
+          </div>
+        </>
+      )}
       {open && (
         <div className="picker-pop" role="dialog" aria-label={`${label} picker`}>
           <div

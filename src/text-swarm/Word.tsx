@@ -3,7 +3,7 @@ import { ease } from './ease';
 import { drawPixel, fontFamily, type Variant } from './variants';
 import { traceOrder, type Pairing } from './trace';
 import type { Wave } from './wave';
-import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
+import { BOX_ROWS, LINE_ASCENT, LINE_DESCENT, PIXEL_EM, type WordData } from './words';
 
 // Each dot's own trip from the box to its place.
 const FLIGHT_MS = 650;
@@ -118,14 +118,15 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
   // Dots are vector-drawn, not stamped from a bitmap: at ~1px a stamped sprite
   // gets resampled at every fractional position and goes soft. The backing
-  // store is at least 3x and the transform maps it exactly onto the CSS box.
+  // store is the screen's own resolution, at least 2x (more costs fill time
+  // and shows nothing), and the transform maps it exactly onto the CSS box.
   function render(elapsed: number) {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const dots = dotsRef.current;
     if (!canvas || !ctx || !dots) return;
     const { dot: d, wordCols: wc, letterSpacing: ls, color: fill, rows: r, pixel: draw } = live.current;
-    const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 3), 4);
+    const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
     const w = wc * d;
     const h = r * d;
     const bw = Math.max(1, Math.ceil(w * dpr));
@@ -145,7 +146,11 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       const e = ease(Math.min(1, Math.max(0, (elapsed - dl[i]) / flightRef.current)));
       const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * e;
       const y = oy[i] + (ty[i] - oy[i]) * e;
-      draw(ctx, x, y, d);
+      // A dot in flight is a plain square: in motion its shape cannot be seen,
+      // and a square costs about half as much to fill. Dots at rest (in the
+      // brick or in their letter) keep the variant's own pixel.
+      if (e > 0 && e < 1) ctx.rect(x * d, y * d, d, d);
+      else draw(ctx, x, y, d);
     }
     ctx.fill();
   }
@@ -358,6 +363,11 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
   const showText = phase === 'done';
 
+  // Margins pad the word out to the shared line height (see LINE_ASCENT); they
+  // take room in the line without moving anything drawn inside the word.
+  const padTop = Math.max(0, LINE_ASCENT - baseline);
+  const padBottom = Math.max(0, LINE_DESCENT - (rows - baseline));
+
   return (
     <span
       ref={wrapRef}
@@ -365,9 +375,10 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
         position: 'relative',
         display: 'inline-block',
         height: rows * dot,
-        verticalAlign: -(rows - baseline) * dot,
+        verticalAlign: -(rows - baseline + padBottom) * dot,
+        marginTop: padTop * dot,
         marginRight: trailingSpace ? Math.max(4, 8 + 2 * letterSpacing) * dot : 0,
-        marginBottom: lineSpacing * dot,
+        marginBottom: (lineSpacing + padBottom) * dot,
       }}
     >
       <canvas

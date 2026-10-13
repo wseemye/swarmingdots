@@ -15,6 +15,15 @@ export type WordData = {
   glyphs: number[];
 };
 
+/**
+ * Every line is at least this tall around its baseline, in dots: how far
+ * capitals reach above it and descenders below it in all the Geist Pixel faces.
+ * Words are padded out to it, so a line without capitals or descenders is not
+ * shorter than the rest and the lines stay evenly spaced.
+ */
+export const LINE_ASCENT = 19;
+export const LINE_DESCENT = 4;
+
 /** The skeleton box is always this many dots tall. */
 export const BOX_ROWS = 10;
 

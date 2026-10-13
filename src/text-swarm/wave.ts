@@ -1,4 +1,5 @@
 import type { Piece } from './rasterize';
+import { LINE_ASCENT, LINE_DESCENT } from './words';
 
 /** Where a word sits in the text block once settled, in px from the block's top-left. */
 export type Box = { x: number; y: number; w: number; h: number };
@@ -34,7 +35,9 @@ export function placeWords(
     for (const piece of line) {
       const letters = Array.from(piece.word.text).length;
       const w = (piece.word.cols + (letters - 1) * letterSpacing) * dot;
-      const h = piece.word.rows * dot;
+      const { rows, baseline } = piece.word;
+      // Padded like the words themselves (see LINE_ASCENT in words.ts).
+      const h = (Math.max(baseline, LINE_ASCENT) + Math.max(rows - baseline, LINE_DESCENT)) * dot;
       const gap = piece.gap ? Math.max(4, 8 + 2 * letterSpacing) * dot : 0;
       if (x > 0 && x + w > room) {
         y += lineH;

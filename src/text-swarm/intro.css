@@ -1,56 +1,141 @@
-/* Full height, content centred vertically and pinned to the left. */
+/* Full height, content centred vertically and pinned to the left. The bottom
+   padding keeps the text clear of the bar. Colours come from the bar's dials. */
 .intro {
   position: relative;
   display: flex;
   align-items: center;
   min-height: 100%;
-  padding: 64px 48px;
-  background: #fff;
-  color: #111;
+  padding: 72px 48px 128px;
+  transition: background-color 200ms var(--ease-out);
 }
 
 .intro-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
   max-width: 560px;
 }
 
+/* Quieter than the text above it, in the same colour. */
 .intro-byline {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
+  gap: 4px 14px;
   margin: 0;
   font-family: 'Geist Pixel Circle', ui-monospace, monospace;
-  font-size: 20px;
+  font-size: 15px;
   line-height: 1.4;
-  color: #666;
+  opacity: 0.6;
 }
 
 .intro-byline a {
-  color: #111;
+  color: inherit;
   text-decoration: underline;
-  text-decoration-color: #c4c4c4;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
   text-underline-offset: 3px;
   transition: text-decoration-color 160ms var(--ease-out);
 }
 
 .intro-byline a:focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .intro-byline a:hover {
-    text-decoration-color: #111;
+    text-decoration-color: currentColor;
   }
+}
+
+/* ── The bar: typeface and colours, floating at the bottom ──
+   Its own white surface, so it reads the same on any colours picked. */
+.intro-bar {
+  position: fixed;
+  z-index: 10;
+  left: 50%;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px 6px 6px;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.08);
+  transform: translateX(-50%);
+  font-size: 13px;
+}
+
+.intro-bar .variants {
+  width: 240px;
+  border: 0;
+  padding: 0;
+}
+
+.intro-bar .variant {
+  padding: 5px 0 4px;
+}
+
+.intro-bar .variant-sample {
+  font-size: 18px;
+}
+
+.intro-bar-rule {
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 0;
+  background: #e5e5e5;
+}
+
+/* The popovers open above the bar, the width of both dials. */
+.intro-dials {
+  position: relative;
+  display: flex;
+  gap: 14px;
+}
+
+.intro-dials .picker-pop {
+  left: auto;
+  right: -14px;
+  width: 240px;
+  bottom: calc(100% + 14px);
+  transform-origin: 50% 100%;
+}
+
+.picker-dial .picker-field {
+  gap: 8px;
+}
+
+.picker-dial .picker-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border-color: rgb(0 0 0 / 0.15);
+}
+
+.picker-dial .picker-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (max-width: 760px) {
   .intro {
-    padding: 56px 16px;
+    padding: 56px 16px 176px;
   }
 
   .intro-body {
@@ -58,11 +143,42 @@
   }
 
   .intro-byline {
-    font-size: 16px;
+    font-size: 14px;
+  }
+
+  /* Two rows: typeface above, the dials below. */
+  .intro-bar {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 6px;
+    transform: none;
+  }
+
+  .intro-bar .variants {
+    width: 100%;
+  }
+
+  .intro-bar-rule {
+    display: none;
+  }
+
+  .intro-dials {
+    padding: 4px 8px 6px;
+  }
+
+  .intro-dials .picker-pop {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    animation: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .intro,
   .intro-byline a {
     transition: none;
   }
