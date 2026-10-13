@@ -6,15 +6,16 @@ import type { Wave } from './wave';
 import { BOX_ROWS, PIXEL_EM, type WordData } from './words';
 
 // Each dot's own trip from the box to its place.
-const FLIGHT_MS = 900;
+const FLIGHT_MS = 650;
 // How long the wave takes to cross a word: the dot nearest the chosen point
 // leaves first, the farthest one this much later. Every word takes the same
 // time, so words that start together also land together.
-const WAVE_MS = 500;
+const WAVE_MS = 350;
+// Both pairings take 1s in all: WAVE_MS + FLIGHT_MS, or TRACE_MS + TRACE_FLIGHT_MS.
 // Trace: how long the pen takes to draw a word, start to finish (again the same
 // for every word), and each dot's quicker trip, so the stroke stays crisp.
-const TRACE_MS = 1200;
-const TRACE_FLIGHT_MS = 450;
+const TRACE_MS = 700;
+const TRACE_FLIGHT_MS = 300;
 const TEXT_FADE_MS = 350;
 
 type Phase = 'box' | 'swarm' | 'text' | 'done';
