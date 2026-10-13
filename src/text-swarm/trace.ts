@@ -53,7 +53,8 @@ export function traceOrder(xs: ArrayLike<number>, ys: ArrayLike<number>, startX:
   // 2-opt on an open path: reversing path[i+1..j] swaps the links (a,b) and
   // (c,d) for (a,c) and (b,d). The first cell stays put so the pen still
   // starts where it was asked to; the last link may be missing (j at the end).
-  const MAX_PASSES = 8;
+  // A letter is a few dozen cells, so 2-opt can run until nothing improves.
+  const MAX_PASSES = 50;
   for (let pass = 0, improved = true; improved && pass < MAX_PASSES; pass++) {
     improved = false;
     for (let i = 0; i < n - 2; i++) {

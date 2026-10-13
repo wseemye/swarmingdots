@@ -205,7 +205,7 @@ export default function TextSwarm() {
           <p className="hint" id="pairing-note">
             {settings.pairing === 'scatter'
               ? 'Each dot flies to a random place, so the brick bursts and reassembles.'
-              : 'Each word is drawn along a travelling-salesman path, starting from the grid point.'}
+              : 'Each word is written letter by letter, left to right; each letter starts from the grid point.'}
           </p>
         </div>
 

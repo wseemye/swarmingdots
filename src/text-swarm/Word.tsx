@@ -221,13 +221,33 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       durationRef.current = WAVE_MS + FLIGHT_MS;
     }
 
-    // Trace: the pen path starts at the letter cell nearest the chosen point
-    // and visits every cell. The brick hands out its dots column by column from
-    // the left, k-th dot to the k-th cell on the path, and they leave in path
-    // order, so a stream runs from the brick to the pen tip as the word is drawn.
+    // Trace: the word is written one letter at a time, left to right, each
+    // letter finished before the next starts, the way a pen would. Each
+    // letter's own short pen path starts at its cell nearest the chosen point.
+    // The brick hands out its dots column by column from the left, k-th dot to
+    // the k-th cell on the path, and they leave in path order: the brick empties
+    // from the left as the pen moves right, so no letter is written inside
+    // what is left of the brick.
     function planPath() {
       const { fx, fy } = waveRef.current;
-      return traceOrder(tx, ty, fx * cols, fy * rows);
+      const letters = new Map<number, number[]>();
+      for (let i = 0; i < n; i++) {
+        const cellsOf = letters.get(tg[i]);
+        if (cellsOf) cellsOf.push(i);
+        else letters.set(tg[i], [i]);
+      }
+      const order = [...letters.keys()].sort((a, b) => a - b);
+      const out = new Uint32Array(n);
+      let at = 0;
+      for (const g of order) {
+        const idx = letters.get(g)!;
+        const xs = idx.map((i) => tx[i]);
+        const ys = idx.map((i) => ty[i]);
+        const left = Math.min(...xs);
+        const right = Math.max(...xs);
+        for (const k of traceOrder(xs, ys, left + fx * (right - left), fy * rows)) out[at++] = idx[k];
+      }
+      return out;
     }
     // Worked out while the brick sits, one word per task, so a long sentence
     // does not stall the frame its words start moving on.

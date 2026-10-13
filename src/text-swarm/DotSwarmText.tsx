@@ -39,9 +39,9 @@ export type DotSwarmTextProps = {
   anchor?: Anchor;
   /**
    * How the brick's dots find their places: 'scatter' pairs them at random, so
-   * the brick bursts and reassembles; 'trace' sends them along a short pen path
-   * (a travelling-salesman tour) from the anchor, so each word draws itself in
-   * one stroke. Default 'scatter'.
+   * the brick bursts and reassembles; 'trace' writes each word letter by
+   * letter, left to right, each letter along a short pen path (a
+   * travelling-salesman tour) that starts nearest the anchor. Default 'scatter'.
    */
   pairing?: Pairing;
   /** Start lines STAGGER_MS apart (words, if the text is one line) instead of all together. Default false. */

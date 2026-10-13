@@ -79,14 +79,16 @@ How each dot in the brick is matched to a cell in the letters:
 - `scatter` shuffles the cells (Fisher–Yates), so every dot heads somewhere
   random: the brick bursts into a cloud and reassembles, filling in as a wave
   from the anchor.
-- `trace` draws each word like a pen. `src/text-swarm/trace.ts` finds a short
-  open path through all of the word's cells, a travelling-salesman tour:
-  nearest neighbour from the cell closest to the anchor, then 2-opt, which
-  reverses any stretch whose reversal shortens the path (undoing crossings).
-  The brick hands out its dots column by column from the left, the k-th to the
-  k-th cell on the path, and they leave in path order over 1.2s, so a stream
-  runs from the brick to the pen tip. A word costs roughly 20-40ms to plan,
-  done while its brick sits, one word per task.
+- `trace` writes each word like a pen, one letter at a time, left to right,
+  each letter finished before the next. For every letter,
+  `src/text-swarm/trace.ts` finds a short open path through its cells, a
+  travelling-salesman tour: nearest neighbour from the cell closest to the
+  anchor, then 2-opt, which reverses any stretch whose reversal shortens the
+  path (undoing crossings). The brick hands out its dots column by column from
+  the left, the k-th to the k-th cell on the path, and they leave in path
+  order over 0.7s, so the brick empties from the left as the pen moves right
+  and a stream runs from the brick to the pen tip. Planning is done while the
+  brick sits, one word per task.
 
 Whatever the variant, the words are real text in the page from the first
 render, under the dots while they move and on their own once they settle, so
