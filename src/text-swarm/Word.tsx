@@ -16,9 +16,8 @@ const WAVE_MS = 350;
 // for every word), and each dot's quicker trip, so the stroke stays crisp.
 const TRACE_MS = 700;
 const TRACE_FLIGHT_MS = 300;
-const TEXT_FADE_MS = 350;
 
-type Phase = 'box' | 'swarm' | 'text' | 'done';
+type Phase = 'box' | 'swarm' | 'done';
 
 // Whole columns only: 400–409 dots make 40 columns, 410–419 make 41.
 function boxWidth(count: number): number {
@@ -99,7 +98,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     tg: Uint16Array;
     dl: Float32Array;
   } | null>(null);
-  const timers = useRef({ begin: 0, fade: 0, frame: 0, plan: 0 });
+  const timers = useRef({ begin: 0, frame: 0, plan: 0 });
   const beginAt = useRef<number | null>(null);
   // The slot a word takes in the line grows from where it was to its full width
   // as the dots settle, so the boxes are spaced by their own widths at first.
@@ -158,7 +157,6 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     const hadWord = dotsRef.current !== null;
     const t = timers.current;
     window.clearTimeout(t.begin);
-    window.clearTimeout(t.fade);
     window.clearTimeout(t.plan);
     cancelAnimationFrame(t.frame);
 
@@ -262,14 +260,11 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
         t.frame = requestAnimationFrame(step);
         return;
       }
-      // The text fades in over the settled dots; the dots only leave once it
-      // is fully there.
-      setPhase('text');
-      t.fade = window.setTimeout(() => {
-        redrawRef.current = () => {};
-        if (canvasRef.current) canvasRef.current.width = 0; // release the backing store
-        setPhase('done');
-      }, TEXT_FADE_MS + 80);
+      // The settled dots and the text are the same shape, so the text simply
+      // takes their place in the same frame.
+      redrawRef.current = () => {};
+      if (canvasRef.current) canvasRef.current.width = 0; // release the backing store
+      setPhase('done');
     }
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -302,8 +297,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     const t = timers.current;
     return () => {
       window.clearTimeout(t.begin);
-      window.clearTimeout(t.fade);
-      window.clearTimeout(t.plan);
+        window.clearTimeout(t.plan);
       cancelAnimationFrame(t.frame);
     };
   }, []);
@@ -335,7 +329,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     };
   }, [dot, wordCols, letterSpacing, color, rows, pixel, baseline, fontSize, boxCols, family]);
 
-  const showText = phase === 'text' || phase === 'done';
+  const showText = phase === 'done';
 
   return (
     <span
@@ -377,7 +371,6 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
           color,
           letterSpacing: `${letterSpacing * dot}px`,
           opacity: showText ? 1 : 0,
-          transition: showText ? `opacity ${TEXT_FADE_MS}ms ease-out` : 'none',
         }}
       >
         {trailingSpace ? `${word.text} ` : word.text}

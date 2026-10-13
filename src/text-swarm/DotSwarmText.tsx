@@ -80,7 +80,7 @@ function ensureFont(family: string, url: string) {
 /**
  * Text drawn in Geist Pixel that arrives as a swarm of dots: each word starts
  * as a block of its own dots, the dots cross to their places in the letters,
- * and the real, selectable text fades in over them. The text is in the page
+ * and the real, selectable text takes their place. The text is in the page
  * from the first render, so it can be read, selected, searched and clicked
  * (by people, screen readers and crawlers alike) whatever the dots are doing. Remount it (change
  * its `key`) to play it again.

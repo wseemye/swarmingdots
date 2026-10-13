@@ -28,7 +28,7 @@ const HEADER = `/**
  *   <DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />
  *
  * Each word starts as a block of its own dots, the dots cross to their places in
- * the letters, and the real, selectable text fades in over them. Remount it
+ * the letters, and the real, selectable text takes their place. Remount it
  * (change its key) to play it again. Needs React 18 or later; nothing else.
  *
  * Code: MIT License. Font: Geist Pixel by Vercel, SIL Open Font License 1.1,
