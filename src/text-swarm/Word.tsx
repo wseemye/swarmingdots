@@ -261,9 +261,10 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
         return;
       }
       // The settled dots and the text are the same shape, so the text simply
-      // takes their place in the same frame.
+      // takes their place. The dots stay drawn until that change is on the
+      // page (see the effect on phase below): clearing them here would leave a
+      // frame with neither, a visible blink.
       redrawRef.current = () => {};
-      if (canvasRef.current) canvasRef.current.width = 0; // release the backing store
       setPhase('done');
     }
 
@@ -328,6 +329,12 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       alive = false;
     };
   }, [dot, wordCols, letterSpacing, color, rows, pixel, baseline, fontSize, boxCols, family]);
+
+  // Hiding the dots and showing the text land in the same commit; only then
+  // is the canvas released, before the browser paints.
+  useLayoutEffect(() => {
+    if (phase === 'done' && canvasRef.current) canvasRef.current.width = 0; // release the backing store
+  }, [phase]);
 
   const showText = phase === 'done';
 
