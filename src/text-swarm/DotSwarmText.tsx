@@ -3,6 +3,8 @@
 import { Fragment, memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType } from 'react';
 import { ANCHORS, STAGGER_MS, type Anchor } from './anchors';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
+import type { Pairing } from './trace';
+import { fontFamily, fontFile, type Variant } from './variants';
 import { anchorFractions, anchorPoint, placeWords, staggerOrder } from './wave';
 import Word from './Word';
 import { PIXEL_EM } from './words';
@@ -14,8 +16,7 @@ const INTRO_MS = 800;
 const SETTLE_MS = 150;
 // A word only re-renders when its own props change, not on every keystroke.
 const MemoWord = memo(Word);
-const FAMILY = 'Geist Pixel Circle';
-const FONT_URL = 'https://cdn.jsdelivr.net/npm/geist@1.7.2/dist/fonts/geist-pixel/GeistPixel-Circle.woff2';
+const FONT_DIR = 'https://cdn.jsdelivr.net/npm/geist@1.7.2/dist/fonts/geist-pixel/';
 
 export type DotSwarmTextProps = {
   /** What to show. Newlines start a new line; words are split on whitespace. */
@@ -24,12 +25,25 @@ export type DotSwarmTextProps = {
   fontSize?: number;
   /** Dot and text colour. Defaults to the colour the component inherits. */
   color?: string;
+  /**
+   * Which Geist Pixel typeface: round dots ('circle'), squares with a slight gap
+   * ('grid'), bars that join along a row ('line'), or solid pixels ('square').
+   * The dots are drawn in its shape and the text that replaces them is set in it. Default 'circle'.
+   */
+  variant?: Variant;
   /** Extra space after every letter, in dots. Default 0. */
   letterSpacing?: number;
   /** Gap between one line and the next, in dots. Default 6. */
   lineSpacing?: number;
   /** Where the dots fill each word in from; with stagger, also which line (or word) goes first. Default 'center'. */
   anchor?: Anchor;
+  /**
+   * How the brick's dots find their places: 'scatter' pairs them at random, so
+   * the brick bursts and reassembles; 'trace' sends them along a short pen path
+   * (a travelling-salesman tour) from the anchor, so each word draws itself in
+   * one stroke. Default 'scatter'.
+   */
+  pairing?: Pairing;
   /** Start lines STAGGER_MS apart (words, if the text is one line) instead of all together. Default false. */
   stagger?: boolean;
   /** How the text block sits in the width it is given. Default 'start'. */
@@ -38,8 +52,9 @@ export type DotSwarmTextProps = {
   as?: ElementType;
   className?: string;
   /**
-   * Where to load Geist Pixel Circle from if the page has no @font-face for it.
-   * Defaults to jsDelivr. Use the same value for every DotSwarmText on a page.
+   * Where to load the variant's font from if the page has no @font-face for it.
+   * Defaults to jsDelivr. Use the same value for every DotSwarmText on a page
+   * that shares a variant.
    * If the font cannot load, the text is shown plainly instead.
    */
   fontUrl?: string;
@@ -47,41 +62,47 @@ export type DotSwarmTextProps = {
   onMissingGlyphs?: (chars: string[]) => void;
 };
 
-// Uses the page's own @font-face for Geist Pixel Circle if there is one;
-// otherwise registers the font from fontUrl. A copy that already failed to
-// load is dropped, so it cannot stand in the way of one that works.
-function ensureFont(url: string) {
+// Uses the page's own @font-face for the family if there is one; otherwise
+// registers the font from url. A copy that already failed to load is dropped,
+// so it cannot stand in the way of one that works.
+function ensureFont(family: string, url: string) {
   let ready = false;
   const failed: FontFace[] = [];
   document.fonts.forEach((face) => {
-    if (face.family.replace(/["']/g, '') !== FAMILY) return;
+    if (face.family.replace(/["']/g, '') !== family) return;
     if (face.status === 'error') failed.push(face);
     else ready = true;
   });
   for (const face of failed) document.fonts.delete(face);
-  if (!ready) document.fonts.add(new FontFace(FAMILY, `url(${url})`, { display: 'block' }));
+  if (!ready) document.fonts.add(new FontFace(family, `url(${url})`, { display: 'block' }));
 }
 
 /**
- * Text drawn in Geist Pixel Circle that arrives as a swarm of dots: each word
- * starts as a block of its own dots, the dots cross to their places in the
- * letters, and the real, selectable text fades in over them. Remount it (change
+ * Text drawn in Geist Pixel that arrives as a swarm of dots: each word starts
+ * as a block of its own dots, the dots cross to their places in the letters,
+ * and the real, selectable text fades in over them. The text is in the page
+ * from the first render, so it can be read, selected, searched and clicked
+ * (by people, screen readers and crawlers alike) whatever the dots are doing. Remount it (change
  * its `key`) to play it again.
  */
 export default function DotSwarmText({
   text,
   fontSize = 26,
   color,
+  variant = 'circle',
   letterSpacing = 0,
   lineSpacing = 6,
   anchor = 'center',
+  pairing = 'scatter',
   stagger = false,
   align = 'start',
   as: Tag = 'p',
   className,
-  fontUrl = FONT_URL,
+  fontUrl,
   onMissingGlyphs,
 }: DotSwarmTextProps) {
+  const family = fontFamily(variant);
+  const url = fontUrl ?? FONT_DIR + fontFile(variant);
   const [layout, setLayout] = useState<(TextLayout & { intro: boolean }) | null>(null);
   // The font could not be loaded, so there are no dots to swarm: show the text plainly.
   const [plain, setPlain] = useState(false);
@@ -97,9 +118,9 @@ export default function DotSwarmText({
   const laidOut = useRef(false);
   useEffect(() => {
     let alive = true;
-    ensureFont(fontUrl);
+    ensureFont(family, url);
     const wait = laidOut.current ? SETTLE_MS : 0;
-    const timer = window.setTimeout(() => layoutText(text).then(
+    const timer = window.setTimeout(() => layoutText(text, variant).then(
       (next) => {
         if (!alive) return;
         // Every letter came back without dots: the font is not really there.
@@ -120,7 +141,7 @@ export default function DotSwarmText({
       alive = false;
       window.clearTimeout(timer);
     };
-  }, [text, fontUrl]);
+  }, [text, family, url, variant]);
 
   // The room the text has, so a word wider than it can be broken to fit
   // instead of overflowing; and the inherited colour, for when none is given.
@@ -144,8 +165,8 @@ export default function DotSwarmText({
   const dot = fontSize * PIXEL_EM;
   const maxCols = room > 0 ? Math.floor(room / dot) : Infinity;
   const pieces = useMemo(
-    () => (layout ? fitLines(layout.lines, maxCols, letterSpacing) : []),
-    [layout, maxCols, letterSpacing],
+    () => (layout ? fitLines(layout.lines, maxCols, letterSpacing, variant) : []),
+    [layout, maxCols, letterSpacing, variant],
   );
 
   // Where each word will settle, so the stagger order can follow the anchor
@@ -161,7 +182,9 @@ export default function DotSwarmText({
 
   const justify = align === 'center' ? 'center' : align === 'end' ? 'flex-end' : 'flex-start';
 
-  if (plain) {
+  // Until the dots are ready, and if they never will be, the words are plain
+  // text: invisible while the font loads, shown once it is known to have failed.
+  if (plain || !layout) {
     return (
       <div ref={rootRef} className={className} style={{ display: 'flex', justifyContent: justify }}>
         <Tag
@@ -169,13 +192,14 @@ export default function DotSwarmText({
             margin: 0,
             minWidth: 0,
             maxWidth: '100%',
-            fontFamily: `"${FAMILY}", monospace`,
+            fontFamily: `"${family}", monospace`,
             fontSize,
             fontWeight: 400,
             letterSpacing: `${letterSpacing * dot}px`,
             color: color ?? 'inherit',
             whiteSpace: 'pre-wrap',
             overflowWrap: 'anywhere',
+            opacity: plain ? 1 : 0,
           }}
         >
           {text}
@@ -208,8 +232,10 @@ export default function DotSwarmText({
                   letterSpacing={letterSpacing}
                   lineSpacing={lineSpacing}
                   color={color ?? inherited}
-                  delay={layout?.intro ? INTRO_MS + (stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
+                  variant={variant}
+                  delay={layout.intro ? INTRO_MS + (stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
                   wave={wave}
+                  pairing={pairing}
                   trailingSpace={piece.gap}
                 />
               </Fragment>

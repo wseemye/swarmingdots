@@ -1,3 +1,22 @@
+/* Geist Pixel Circle is declared in shell.css, which the intro page shares. */
+@font-face {
+  font-family: 'Geist Pixel Grid';
+  src: url('/fonts/GeistPixel-Grid.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Line';
+  src: url('/fonts/GeistPixel-Line.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Square';
+  src: url('/fonts/GeistPixel-Square.woff2') format('woff2');
+  font-display: block;
+}
+
 .text-swarm {
   position: relative;
   height: 100%;
@@ -85,6 +104,82 @@
   font: inherit;
   line-height: 1.4;
   color: inherit;
+}
+
+/* ── Typeface: four samples in one segmented row ── */
+.variants {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.variant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 0 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  color: #666;
+  cursor: pointer;
+  transition:
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out);
+}
+
+.pairings {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pairings .variant {
+  padding: 6px 0;
+}
+
+.pairings .variant-name {
+  font-size: 12px;
+}
+
+.variant-sample {
+  font-size: 22px;
+  line-height: 1;
+  color: #111;
+}
+
+.variant-name {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.variant[aria-checked='true'] {
+  background: #111;
+  color: #fff;
+}
+
+.variant[aria-checked='true'] .variant-sample {
+  color: #fff;
+}
+
+.variant:active {
+  transform: scale(0.97);
+}
+
+.variant:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .variant:not([aria-checked='true']):hover {
+    background: #f0f0f0;
+  }
 }
 
 /* ── Sliders: label, track and value share one row ── */
