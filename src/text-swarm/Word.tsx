@@ -56,6 +56,7 @@ type Props = {
 export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, delay, wave, trailingSpace }: Props) {
   const dot = fontSize * PIXEL_EM;
   const { cols, rows, baseline, inkLeft, cells, glyphs } = word;
+  const boxCols = boxWidth(cells.length / 2);
   const wordCols = cols + (Array.from(word.text).length - 1) * letterSpacing;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -88,12 +89,10 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   } | null>(null);
   const timers = useRef({ begin: 0, fade: 0, frame: 0 });
   const beginAt = useRef<number | null>(null);
-  // The slot a word takes in the line is its full width from the start, so the
-  // boxes already sit on the lines and at the places their words will settle,
-  // and nothing reflows as the dots arrive. Only an edit eases a slot from the
-  // width it had to the new word's width.
-  const slotFrom = useRef(wordCols);
-  const slotNow = useRef(wordCols);
+  // The slot a word takes in the line grows from where it was to its full width
+  // as the dots settle, so the boxes are spaced by their own widths at first.
+  const slotFrom = useRef(boxCols);
+  const slotNow = useRef(boxCols);
   const durationRef = useRef(FLIGHT_MS);
 
   // The phase has to change in step with the layout, before the browser paints.
@@ -180,7 +179,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     dotsRef.current = { n, ox, oy, tx, ty, tg, dl };
     live.current = { dot, wordCols, letterSpacing, color, rows };
     // An edited word's slot eases from the width it had to its new width.
-    slotFrom.current = hadWord ? slotNow.current : wordCols;
+    slotFrom.current = hadWord ? slotNow.current : boxCols;
     durationRef.current = FLIGHT_MS;
     progressRef.current = 0;
     timeRef.current = 0;
@@ -284,7 +283,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     return () => {
       alive = false;
     };
-  }, [dot, wordCols, letterSpacing, color, rows, baseline, fontSize]);
+  }, [dot, wordCols, letterSpacing, color, rows, baseline, fontSize, boxCols]);
 
   const showText = phase === 'text' || phase === 'done';
 

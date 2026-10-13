@@ -121,8 +121,9 @@ export default function DotSwarmText({
     const el = rootRef.current;
     if (!el) return;
     const measure = () => {
-      setRoom(el.clientWidth);
-      setInherited(getComputedStyle(el).color);
+      const style = getComputedStyle(el);
+      setRoom(el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+      setInherited(style.color);
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -179,22 +180,29 @@ export default function DotSwarmText({
       className={className}
       style={{ display: 'flex', justifyContent: justify }}
     >
-      <Tag style={{ margin: 0, minWidth: 0, maxWidth: '100%', fontSize: 0, lineHeight: 0, fontWeight: 400 }}>
+      {/* Lines break where the settled words will, not where the browser would
+          wrap the narrower boxes, so a line of boxes holds exactly the words
+          that line ends up with and nothing reflows as the words grow. */}
+      <Tag
+        style={{ margin: 0, minWidth: 0, maxWidth: '100%', fontSize: 0, lineHeight: 0, fontWeight: 400, whiteSpace: 'nowrap' }}
+      >
         {pieces.map((line, li) => (
           <Fragment key={li}>
             {li > 0 && <br />}
             {line.map((piece, wi) => (
-              <Word
-                key={piece.key}
-                word={piece.word}
-                fontSize={fontSize}
-                letterSpacing={letterSpacing}
-                lineSpacing={lineSpacing}
-                color={color ?? inherited}
-                delay={layout?.intro ? INTRO_MS + (stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
-                wave={wave}
-                trailingSpace={piece.gap}
-              />
+              <Fragment key={piece.key}>
+                {wi > 0 && placement.boxes[li]?.[wi]?.x === 0 && <br />}
+                <Word
+                  word={piece.word}
+                  fontSize={fontSize}
+                  letterSpacing={letterSpacing}
+                  lineSpacing={lineSpacing}
+                  color={color ?? inherited}
+                  delay={layout?.intro ? INTRO_MS + (stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
+                  wave={wave}
+                  trailingSpace={piece.gap}
+                />
+              </Fragment>
             ))}
           </Fragment>
         ))}
