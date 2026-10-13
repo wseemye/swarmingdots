@@ -10,7 +10,7 @@ import Word from './Word';
 import { PIXEL_EM } from './words';
 
 // The skeletons sit for a beat, then the words swarm.
-const INTRO_MS = 500;
+const INTRO_MS = 200;
 // After the first layout, the dots follow a text that is still being typed
 // only once it has rested this long, so typing never waits on the swarm.
 const SETTLE_MS = 150;
