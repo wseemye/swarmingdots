@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import About from './About';
+import { Tick } from './icons';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
 import { ANCHORS, SWARM_BY } from './anchors';
@@ -58,6 +59,9 @@ function prompt(s: Settings): string {
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+
+// How far along its track a slider is, for the filled part of the track.
+const fill = (v: number, lo: number, hi: number) => ({ '--p': `${((v - lo) / (hi - lo)) * 100}%` }) as CSSProperties;
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -187,6 +191,7 @@ export default function TextSwarm() {
                 max={MAX_SIZE}
                 step={1}
                 value={settings.fontSize}
+                style={fill(settings.fontSize, MIN_SIZE, MAX_SIZE)}
                 onChange={(e) => set({ fontSize: Number(e.target.value) })}
               />
               <span className="row-value">
@@ -215,6 +220,7 @@ export default function TextSwarm() {
                 max={MAX_SPACING}
                 step={0.5}
                 value={settings.letterSpacing}
+                style={fill(settings.letterSpacing, MIN_SPACING, MAX_SPACING)}
                 onChange={(e) => set({ letterSpacing: Number(e.target.value) })}
               />
               <span className="row-value">
@@ -232,6 +238,7 @@ export default function TextSwarm() {
                 max={MAX_LINE_SPACING}
                 step={1}
                 value={settings.lineSpacing}
+                style={fill(settings.lineSpacing, 0, MAX_LINE_SPACING)}
                 onChange={(e) => set({ lineSpacing: Number(e.target.value) })}
               />
               <span className="row-value">
@@ -312,7 +319,10 @@ export default function TextSwarm() {
             Reset
           </button>
           <button type="button" className="primary prompt" onClick={copyPrompt}>
-            <span aria-live="polite">{copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy Prompt'}</span>
+            <span aria-live="polite">
+              {copiedPrompt === 'done' && <Tick />}
+              {copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy Prompt'}
+            </span>
           </button>
         </div>
         <p className="hint hint-install">Paste the prompt into your AI assistant and it adds this text to your project.</p>
