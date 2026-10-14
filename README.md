@@ -56,7 +56,8 @@ Then use it like this:
 | `lineSpacing`   | `6`        | gap between lines, in dots                                          |
 | `anchor`        | `'center'` | where each word fills in from; with `swarmBy`, which turn goes first |
 | `pairing`       | `'scatter'`| how dots find their places: `scatter` (random) or `trace` (pen path) |
-| `swarmBy`       | `'paragraph'` | what takes its own turn, nearest the anchor first: `letter`, `word`, `line` (as settled on screen) or `paragraph` (a line you started with Enter; one paragraph is a single turn, so it all starts together) |
+| `swarmBy`       | `'word'`   | what the swarm is built from: `letter` makes each letter its own small brick, side by side with no gaps; `word`, `line` (as settled on screen) and `paragraph` (a line you started with Enter) keep a brick per word. With `stagger`, it is also what takes a turn |
+| `stagger`       | `false`    | start those turns one after another, nearest the anchor first, instead of all together |
 | `align`         | `'start'`  | where the block sits in its width                                   |
 | `as`            | `'p'`      | the element that holds the text                                     |
 | `fontUrl`       | jsDelivr   | where to load the variant's font if the page has no `@font-face`    |

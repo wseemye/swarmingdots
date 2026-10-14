@@ -38,6 +38,7 @@ function snippet(s: Settings): string {
   if (s.anchor !== DEFAULT_SETTINGS.anchor) props.push(`anchor="${ANCHORS[s.anchor]}"`);
   if (s.pairing !== DEFAULT_SETTINGS.pairing) props.push(`pairing="${s.pairing}"`);
   if (s.swarmBy !== DEFAULT_SETTINGS.swarmBy) props.push(`swarmBy="${s.swarmBy}"`);
+  if (s.stagger) props.push('stagger');
   const line = `<DotSwarmText ${props.join(' ')} />`;
   const stacked = props.map((p) => `  ${p}`).join('\n');
   return line.length <= 80 ? line : `<DotSwarmText\n${stacked}\n/>`;
@@ -137,6 +138,7 @@ export default function TextSwarm() {
           anchor={ANCHORS[settings.anchor]}
           pairing={settings.pairing}
           swarmBy={settings.swarmBy}
+          stagger={settings.stagger}
           fontUrl={`/fonts/${fontFile(settings.variant)}`}
           onMissingGlyphs={setSkipped}
         />
@@ -304,6 +306,18 @@ export default function TextSwarm() {
                   </button>
                 ))}
               </div>
+              <button
+                type="button"
+                role="switch"
+                className="switch-row"
+                aria-checked={settings.stagger}
+                onClick={() => setMotion({ stagger: !settings.stagger })}
+              >
+                Stagger
+                <span className="switch" aria-hidden="true">
+                  <span className="switch-thumb" />
+                </span>
+              </button>
             </div>
           </div>
         </div>

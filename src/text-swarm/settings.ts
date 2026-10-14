@@ -21,8 +21,10 @@ export type Settings = {
   anchor: number;
   /** How the brick's dots find their places: at random, or along a pen path. */
   pairing: Pairing;
-  /** What takes a turn of its own: each letter, word, line or paragraph in turn. */
+  /** What the swarm is built from, and what takes a turn when staggered: letter, word, line or paragraph. */
   swarmBy: SwarmBy;
+  /** Whether those turns start one after another, instead of all together. */
+  stagger: boolean;
 };
 
 export const ANCHOR_NAMES = [
@@ -49,7 +51,8 @@ export const DEFAULT_SETTINGS: Settings = {
   lineSpacing: 6,
   anchor: 4,
   pairing: 'scatter',
-  swarmBy: 'paragraph',
+  swarmBy: 'word',
+  stagger: false,
 };
 
 /** The dot size these settings produce, for display. */

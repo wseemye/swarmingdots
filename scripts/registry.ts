@@ -121,7 +121,8 @@ Text in Geist Pixel that arrives as a swarm of dots. One React component in one 
 | \`lineSpacing\`   | \`6\`         | gap between lines, in dots                                           |
 | \`anchor\`        | \`'center'\`  | where each word fills in from (top-left, top, top-right, left, center, ...) |
 | \`pairing\`       | \`'scatter'\` | how dots find their places: scatter (random) or trace (pen path)     |
-| \`swarmBy\`       | \`'paragraph'\` | what takes its own turn, nearest the anchor first: letter, word, line (as it settles on screen) or paragraph (a line started with Enter; one paragraph is a single turn, so it all starts together) |
+| \`swarmBy\`       | \`'word'\`     | what the swarm is built from: letter makes each letter its own small brick, side by side with no gaps; word, line (as it settles on screen) and paragraph (a line started with Enter) keep a brick per word. With stagger, it is also what takes a turn |
+| \`stagger\`       | \`false\`     | start those turns one after another, nearest the anchor first, instead of all together |
 | \`align\`         | \`'start'\`   | where the block sits in its width                                    |
 | \`as\`            | \`'p'\`       | the element that holds the text                                      |
 | \`className\`     |             | class for the wrapper                                                |

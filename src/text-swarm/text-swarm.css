@@ -436,6 +436,66 @@
   }
 }
 
+/* Stagger: the label and the track are one button, so the whole row is the target. */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+}
+
+.switch {
+  flex: none;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #d4d4d4;
+  transition: background-color 200ms var(--ease-out);
+}
+
+/* The thumb stretches while pressed, then settles at the end it was sent to. */
+.switch-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition:
+    transform 220ms var(--ease-out),
+    width 160ms var(--ease-out);
+}
+
+.switch-row[aria-checked='true'] .switch {
+  background: #111;
+}
+
+.switch-row[aria-checked='true'] .switch-thumb {
+  transform: translateX(16px);
+}
+
+.switch-row:active .switch-thumb {
+  width: 20px;
+}
+
+.switch-row[aria-checked='true']:active .switch-thumb {
+  transform: translateX(12px);
+}
+
+.switch-row:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* Swarm by: a few small buttons that wrap, as tall as the grid beside them. */
 .pills {
   display: flex;
@@ -1053,6 +1113,8 @@
   .picker-hex,
   .picker-swatch,
   .anchor-dot,
+  .switch,
+  .switch-thumb,
   .pill {
     transition: none;
   }

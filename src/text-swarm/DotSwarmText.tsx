@@ -45,11 +45,14 @@ export type DotSwarmTextProps = {
    */
   pairing?: Pairing;
   /**
-   * What takes a turn of its own, each starting a little after the one before, nearest the anchor first:
-   * 'letter', 'word', 'line' (as it settles on screen) or 'paragraph' (a line you started with Enter).
-   * A single paragraph is one turn, so it all starts together. Default 'paragraph'.
+   * What the swarm is built from: 'letter' makes each letter its own small brick, side by side with no
+   * gaps; 'word', 'line' (as it settles on screen) and 'paragraph' (a line you started with Enter) keep a
+   * brick per word. With stagger, it is also what takes a turn of its own.
+   * Default 'word'.
    */
   swarmBy?: SwarmBy;
+  /** Start the turns of swarmBy one after another, nearest the anchor first, instead of all together. Default false. */
+  stagger?: boolean;
   /** How the text block sits in the width it is given. Default 'start'. */
   align?: 'start' | 'center' | 'end';
   /** The element that holds the text. Default 'p'. */
@@ -98,7 +101,8 @@ export default function DotSwarmText({
   lineSpacing = 6,
   anchor = 'center',
   pairing = 'scatter',
-  swarmBy = 'paragraph',
+  swarmBy = 'word',
+  stagger = false,
   align = 'start',
   as: Tag = 'p',
   className,
@@ -196,6 +200,13 @@ export default function DotSwarmText({
   // letters after that. The turns are spaced STEP_MS apart, squeezed if there are
   // so many that the last would start later than MAX_SPAN_MS.
   const schedule = useMemo(() => {
+    // Not staggered, every word starts at once; letter by letter still gives each letter its own brick.
+    if (!stagger) {
+      return {
+        word: pieces.map((line) => line.map(() => 0)),
+        letters: swarmBy === 'letter' ? pieces.map((line) => line.map((p) => new Array<number>(Array.from(p.word.text).length).fill(0))) : null,
+      };
+    }
     const spaced = (turns: number) => Math.min(STEP_MS[swarmBy], turns > 1 ? MAX_SPAN_MS / (turns - 1) : Infinity);
     if (swarmBy === 'letter') {
       const turns = letterTurns(pieces, placement.boxes, dot, letterSpacing, ax, ay);
@@ -207,7 +218,7 @@ export default function DotSwarmText({
     const turns = unitTurns(swarmBy, placement.boxes, ax, ay);
     const step = spaced(Math.max(0, ...turns.flat()) + 1);
     return { word: turns.map((line) => line.map((t) => t * step)), letters: null };
-  }, [swarmBy, pieces, placement, dot, letterSpacing, ax, ay]);
+  }, [swarmBy, stagger, pieces, placement, dot, letterSpacing, ax, ay]);
   const wave = useMemo(() => anchorFractions(cell), [cell]);
 
   const justify = align === 'center' ? 'center' : align === 'end' ? 'flex-end' : 'flex-start';

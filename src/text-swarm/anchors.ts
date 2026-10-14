@@ -13,9 +13,11 @@ export const ANCHORS = [
 export type Anchor = (typeof ANCHORS)[number];
 
 /**
- * What takes a turn of its own: each letter, word, line or paragraph (a line you
- * started with Enter) starts a little after the one before it, nearest the anchor
- * first. Text that is one paragraph is a single turn, so it all starts together.
+ * What the swarm is built from: 'letter' cuts each word's brick into one small
+ * brick per letter, side by side with no gaps; the others keep a brick per word.
+ * With stagger on, it is also what takes a turn of its own: each letter, word,
+ * line or paragraph (a line you started with Enter) starts a little after the one
+ * before it, nearest the anchor first.
  */
 export const SWARM_BY = ['letter', 'word', 'line', 'paragraph'] as const;
 export type SwarmBy = (typeof SWARM_BY)[number];

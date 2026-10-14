@@ -195,10 +195,12 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     }
     const byLetter = lettersRef.current;
     if (byLetter && pairing === 'scatter') {
-      // The brick gives its dots out column by column from the left, to the letters
-      // in the order of their turns, so the brick wears away letter by letter.
+      // The word's brick is cut into one small brick per letter, side by side with no
+      // gaps: the brick gives its dots out column by column from the left, to the
+      // letters in the order they stand in the word, so each letter's dots start in
+      // its own stretch of the brick.
       const from = Array.from({ length: n }, (_, i) => i).sort((a, b) => ox[a] - ox[b] || oy[a] - oy[b]);
-      const to = Array.from({ length: n }, (_, i) => i).sort((a, b) => (byLetter[tg[a]] ?? 0) - (byLetter[tg[b]] ?? 0) || a - b);
+      const to = Array.from({ length: n }, (_, i) => i).sort((a, b) => tg[a] - tg[b] || a - b);
       const x2 = new Float32Array(n);
       const y2 = new Float32Array(n);
       const g2 = new Uint16Array(n);
