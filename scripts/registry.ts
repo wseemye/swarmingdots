@@ -86,4 +86,53 @@ const item = {
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, `${NAME}.tsx`), tsx);
 writeFileSync(join(OUT, `${NAME}.json`), `${JSON.stringify(item, null, 2)}\n`);
-process.stdout.write(`registry: public/r/${NAME}.json and public/r/${NAME}.tsx (${tsx.split('\n').length} lines)\n`);
+
+// The same file as a page an AI assistant (or a person) can read: what to do with it, how to use
+// it, and then the code. The site's "Copy for AI" button points assistants here.
+const fence = '`'.repeat(3);
+const md = `# DotSwarmText
+
+Text in Geist Pixel that arrives as a swarm of dots. One React component in one file, from ${SITE}.
+
+## Instructions for an AI assistant
+
+1. Save the code below, exactly as it is, as \`dot-swarm-text.tsx\` in this project's components folder
+   (for example \`components/\` or \`src/components/\`).
+2. Do not run shadcn or install anything: the file needs only React 18 or later.
+3. Do not change the project's theme, colours, CSS or fonts.
+4. It is a default export and a client component (it starts with \`'use client'\`):
+   \`import DotSwarmText from '@/components/dot-swarm-text'\`, with the project's own import alias or a
+   relative path.
+5. Use it where the user says, with the props they gave. If they gave none, ask for the text.
+
+## Props
+
+| prop            | default     | what it does                                                         |
+| --------------- | ----------- | -------------------------------------------------------------------- |
+| \`text\`          |             | the text; newlines start a new line                                  |
+| \`fontSize\`      | \`26\`        | px; one dot is 0.038 of it                                           |
+| \`color\`         | inherited   | dot and text colour: a hex value, or any CSS colour including var(--x) |
+| \`variant\`       | \`'circle'\`  | Geist Pixel face: circle, grid, line or square                       |
+| \`letterSpacing\` | \`0\`         | extra space after each letter, in dots                               |
+| \`lineSpacing\`   | \`6\`         | gap between lines, in dots                                           |
+| \`anchor\`        | \`'center'\`  | where each word fills in from (top-left, top, top-right, left, center, ...) |
+| \`pairing\`       | \`'scatter'\` | how dots find their places: scatter (random) or trace (pen path)     |
+| \`stagger\`       | \`false\`     | start lines 100ms apart (words, on one line) instead of together     |
+| \`align\`         | \`'start'\`   | where the block sits in its width                                    |
+| \`as\`            | \`'p'\`       | the element that holds the text                                      |
+| \`className\`     |             | class for the wrapper                                                |
+| \`fontUrl\`       | jsDelivr    | where to load the variant's font if the page has no @font-face       |
+
+Example: \`<DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />\`
+
+Change its \`key\` to play it again. If the font cannot load, the text shows plainly instead of swarming.
+The code is MIT licensed; the font is Geist Pixel by Vercel, SIL Open Font License 1.1.
+
+## dot-swarm-text.tsx
+
+${fence}tsx
+${tsx.trimEnd()}
+${fence}
+`;
+writeFileSync(join(OUT, `${NAME}.md`), md);
+process.stdout.write(`registry: public/r/${NAME}.json, .tsx and .md (${tsx.split('\n').length} lines)\n`);

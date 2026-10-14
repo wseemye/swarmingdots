@@ -40,6 +40,21 @@ function snippet(s: Settings): string {
   return line.length <= 80 ? line : `<DotSwarmText\n${stacked}\n/>`;
 }
 
+// The page an AI assistant reads to install the component (built by scripts/registry.ts).
+const GUIDE_URL = 'https://swarmingdots.vercel.app/r/dot-swarm-text.md';
+
+// What to paste into an AI assistant: where the instructions are and what to put on the page.
+function prompt(s: Settings): string {
+  return [
+    `Add the DotSwarmText component to this project. Read ${GUIDE_URL} first and follow it.`,
+    '',
+    'Use it where I tell you, like this:',
+    snippet(s),
+    '',
+    "Don't run shadcn, and don't change my theme, colours or fonts.",
+  ].join('\n');
+}
+
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
 async function copyText(text: string): Promise<boolean> {
@@ -72,6 +87,7 @@ export default function TextSwarm() {
   const [copied, setCopied] = useState<'done' | 'failed' | null>(null);
   const [copiedJsx, setCopiedJsx] = useState<'done' | 'failed' | null>(null);
   const [copiedFile, setCopiedFile] = useState<'done' | 'failed' | null>(null);
+  const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
   // Changing how the swarm moves replays it, so the change is visible at once.
@@ -84,6 +100,12 @@ export default function TextSwarm() {
     const ok = await copyText(COMMAND);
     setCopied(ok ? 'done' : 'failed');
     window.setTimeout(() => setCopied(null), 1800);
+  }
+
+  async function copyPrompt() {
+    const ok = await copyText(prompt(settings));
+    setCopiedPrompt(ok ? 'done' : 'failed');
+    window.setTimeout(() => setCopiedPrompt(null), 1800);
   }
 
   async function copyFile() {
@@ -286,7 +308,12 @@ export default function TextSwarm() {
           <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
-          <button type="button" className="primary snippet" onClick={copyFile}>
+          <button type="button" className="primary snippet" onClick={copyPrompt}>
+            <span aria-live="polite">
+              {copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy for your AI assistant'}
+            </span>
+          </button>
+          <button type="button" className="snippet" onClick={copyFile}>
             <span aria-live="polite">
               {copiedFile === 'done' ? 'Copied' : copiedFile === 'failed' ? 'Copy blocked' : 'Copy the component (one file)'}
             </span>
@@ -309,9 +336,9 @@ export default function TextSwarm() {
           </button>
         </div>
         <p className="hint hint-install">
-          Paste the component into your project as components/dot-swarm-text.tsx (it needs only React), then paste the snippet where
-          you want the text. Already use shadcn? The command adds the same file; in a project without shadcn it also changes your
-          theme and fonts.
+          Paste the prompt into your AI assistant and it adds the component for you. Or copy the component into your project as
+          components/dot-swarm-text.tsx (it needs only React) and paste the tag where you want the text. Already use shadcn? The
+          command adds the same file; in a project without shadcn it also changes your theme and fonts.
         </p>
       </aside>
     </div>
