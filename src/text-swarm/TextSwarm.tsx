@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import About from './About';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
-import { ANCHORS, STAGGER_MS } from './anchors';
+import { ANCHORS, SWARM_BY } from './anchors';
 import DotSwarmText from './DotSwarmText';
 import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
 import VariantPicker from './VariantPicker';
@@ -36,7 +36,7 @@ function snippet(s: Settings): string {
   if (s.lineSpacing !== DEFAULT_SETTINGS.lineSpacing) props.push(`lineSpacing={${s.lineSpacing}}`);
   if (s.anchor !== DEFAULT_SETTINGS.anchor) props.push(`anchor="${ANCHORS[s.anchor]}"`);
   if (s.pairing !== DEFAULT_SETTINGS.pairing) props.push(`pairing="${s.pairing}"`);
-  if (s.stagger) props.push('stagger');
+  if (s.swarmBy !== DEFAULT_SETTINGS.swarmBy) props.push(`swarmBy="${s.swarmBy}"`);
   const line = `<DotSwarmText ${props.join(' ')} />`;
   const stacked = props.map((p) => `  ${p}`).join('\n');
   return line.length <= 80 ? line : `<DotSwarmText\n${stacked}\n/>`;
@@ -116,9 +116,9 @@ export default function TextSwarm() {
   }
 
   return (
-    <div className="text-swarm">
+    <div className="text-swarm" style={{ background: settings.background }}>
       <About copied={copiedFile} onCopy={copyFile} />
-      <div className="text-swarm-stage" style={{ background: settings.background }}>
+      <div className="text-swarm-stage">
         <DotSwarmText
           key={run}
           as="h1"
@@ -132,7 +132,7 @@ export default function TextSwarm() {
           lineSpacing={settings.lineSpacing}
           anchor={ANCHORS[settings.anchor]}
           pairing={settings.pairing}
-          stagger={settings.stagger}
+          swarmBy={settings.swarmBy}
           fontUrl={`/fonts/${fontFile(settings.variant)}`}
           onMissingGlyphs={setSkipped}
         />
@@ -283,22 +283,23 @@ export default function TextSwarm() {
               <AnchorGrid value={settings.anchor} onChange={(anchor) => setMotion({ anchor })} labelledBy="anchor-label" />
             </div>
             <div className="motion-item">
-              <button
-                type="button"
-                role="switch"
-                className="switch-row"
-                aria-checked={settings.stagger}
-                aria-describedby="stagger-note"
-                onClick={() => setMotion({ stagger: !settings.stagger })}
-              >
-                Stagger
-                <span className="switch" aria-hidden="true">
-                  <span className="switch-thumb" />
-                </span>
-              </button>
-              <p className="hint hint-stagger" id="stagger-note">
-                Lines start {STAGGER_MS}ms apart (words, on a single line), in the order the grid sets.
-              </p>
+              <span className="picker-label" id="by-label">
+                Swarm by
+              </span>
+              <div className="pills" role="radiogroup" aria-labelledby="by-label">
+                {SWARM_BY.map((by) => (
+                  <button
+                    key={by}
+                    type="button"
+                    role="radio"
+                    className="pill"
+                    aria-checked={settings.swarmBy === by}
+                    onClick={() => setMotion({ swarmBy: by })}
+                  >
+                    {by === 'together' ? 'Together' : by[0].toUpperCase() + by.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

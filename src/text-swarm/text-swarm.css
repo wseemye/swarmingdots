@@ -18,10 +18,10 @@
 }
 
 .text-swarm {
+  --panel-w: 320px;
   position: relative;
   height: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  overflow: hidden;
   background: #fff;
   color: #111;
   font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
@@ -32,13 +32,16 @@
 }
 
 .text-swarm-stage {
+  position: absolute;
+  inset: 0;
   display: flex;
   /* The text wraps inside the canvas; it never scrolls sideways. */
   overflow-x: hidden;
   overflow-y: auto;
   /* Reserve the scrollbar so it appearing cannot change the width the text wraps to. */
   scrollbar-gutter: stable;
-  padding: 48px 24px;
+  /* The text centres in what the floating panel leaves free. */
+  padding: 56px calc(var(--panel-w) + 48px) 56px 24px;
 }
 
 .text-swarm-sentence {
@@ -49,15 +52,26 @@
   margin: auto 0;
 }
 
-/* ── Customize panel: sized to fit one screen without scrolling ── */
+/* ── Customize panel: a card floating over the canvas, sized to fit one screen ── */
 .text-swarm-panel {
+  position: absolute;
+  z-index: 5;
+  top: 16px;
+  right: 16px;
+  width: var(--panel-w);
+  max-height: calc(100% - 32px);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 16px;
   overflow-y: auto;
-  border-left: 1px solid #e5e5e5;
-  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  background: rgb(250 250 250 / 0.94);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 12px 32px rgb(0 0 0 / 0.1);
+  backdrop-filter: blur(12px);
   font-size: 13px;
   container-type: inline-size;
 }
@@ -346,7 +360,7 @@
   text-align: right;
 }
 
-/* ── Motion: where the swarm starts, and whether words stagger ── */
+/* ── Motion: where the swarm starts, and what takes a turn of its own ── */
 .motion {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -421,54 +435,50 @@
   }
 }
 
-/* Stagger: the label and the track are one button, so the whole row is the target. */
-.switch-row {
+/* Swarm by: a few small buttons that wrap, as tall as the grid beside them. */
+.pills {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 28px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-weight: 500;
-  color: inherit;
-  cursor: pointer;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.switch {
-  flex: none;
-  width: 36px;
-  height: 20px;
-  padding: 2px;
-  border-radius: 999px;
-  background: #d4d4d4;
-  transition: background-color 200ms var(--ease-out);
-}
-
-.switch-thumb {
-  display: block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+.pill {
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
-  transition: transform 200ms var(--ease-out);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
 }
 
-.switch-row[aria-checked='true'] .switch {
+.pill[aria-checked='true'] {
+  border-color: #111;
   background: #111;
+  color: #fff;
 }
 
-.switch-row[aria-checked='true'] .switch-thumb {
-  transform: translateX(16px);
+.pill:active {
+  transform: scale(0.97);
 }
 
-.switch-row:focus-visible {
+.pill:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
-  border-radius: 6px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pill[aria-checked='false']:hover {
+    border-color: #999;
+  }
 }
 
 /* ── Colours: two side by side, each opening a picker above it ── */
@@ -644,24 +654,34 @@
 
 /* ── Phones and short screens: everything in one viewport ── */
 
+@media (max-width: 900px) {
+  .text-swarm {
+    --panel-w: 280px;
+  }
+}
+
 /* Phone portrait: the canvas on top takes whatever height the panel leaves, and the
    controls are split into Text, Style and Motion so the panel stays short. */
 @media (max-width: 760px) and (orientation: portrait) {
   .text-swarm {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
+    overflow: visible;
   }
 
   .text-swarm-stage {
+    position: static;
     /* Room at the top for the buttons in the corner. */
-    padding: 52px 16px 24px;
+    padding: 52px 16px 16px;
   }
 
   .text-swarm-panel {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin: 0 12px 12px;
     /* No inner scroll here, so the colour popover can open over the canvas. */
     overflow: visible;
-    border-left: 0;
-    border-top: 1px solid #e5e5e5;
   }
 
   .tabs {
@@ -695,7 +715,6 @@
   .text-swarm-panel h2,
   .hint-dots,
   .hint-pairing,
-  .hint-stagger,
   .hint-install,
   .hint-count:not(.has-warning) {
     display: none;
@@ -795,8 +814,7 @@
   .picker-hex,
   .picker-swatch,
   .anchor-dot,
-  .switch,
-  .switch-thumb {
+  .pill {
     transition: none;
   }
 

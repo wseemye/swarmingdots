@@ -1,3 +1,4 @@
+import type { SwarmBy } from './anchors';
 import type { Pairing } from './trace';
 import type { Variant } from './variants';
 
@@ -20,8 +21,8 @@ export type Settings = {
   anchor: number;
   /** How the brick's dots find their places: at random, or along a pen path. */
   pairing: Pairing;
-  /** Whether words start one after another, STAGGER_MS apart, instead of together. */
-  stagger: boolean;
+  /** What takes a turn of its own: each letter, word, line or paragraph in turn, or everything together. */
+  swarmBy: SwarmBy;
 };
 
 export const ANCHOR_NAMES = [
@@ -48,7 +49,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lineSpacing: 6,
   anchor: 4,
   pairing: 'scatter',
-  stagger: false,
+  swarmBy: 'together',
 };
 
 /** The dot size these settings produce, for display. */

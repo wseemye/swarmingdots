@@ -43,7 +43,7 @@ Nothing else is added to your project, and your colours and fonts are not touche
 Then use it like this:
 
 ```tsx
-<DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />
+<DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" swarmBy="word" />
 ```
 
 | prop            | default    | what it does                                                        |
@@ -54,9 +54,9 @@ Then use it like this:
 | `variant`       | `'circle'` | Geist Pixel face: `circle`, `grid`, `line` or `square` (see below)  |
 | `letterSpacing` | `0`        | extra space after each letter, in dots                              |
 | `lineSpacing`   | `6`        | gap between lines, in dots                                          |
-| `anchor`        | `'center'` | where each word fills in from; with stagger, which line goes first  |
+| `anchor`        | `'center'` | where each word fills in from; with `swarmBy`, which turn goes first |
 | `pairing`       | `'scatter'`| how dots find their places: `scatter` (random) or `trace` (pen path) |
-| `stagger`       | `false`    | start lines 100ms apart (words, on one line) instead of together    |
+| `swarmBy`       | `'together'` | what takes its own turn, nearest the anchor first: `letter`, `word`, `line` (as settled on screen) or `paragraph` (a line you started with Enter) |
 | `align`         | `'start'`  | where the block sits in its width                                   |
 | `as`            | `'p'`      | the element that holds the text                                     |
 | `fontUrl`       | jsDelivr   | where to load the variant's font if the page has no `@font-face`    |

@@ -19,13 +19,13 @@ const SITE = 'https://swarmingdots.vercel.app';
 const MODULES = ['anchors.ts', 'variants.ts', 'words.ts', 'ease.ts', 'rasterize.ts', 'wave.ts', 'trace.ts', 'Word.tsx', 'DotSwarmText.tsx'];
 const MAIN = 'DotSwarmText.tsx';
 // Exports from the helper modules that the installed file should still offer.
-const PUBLIC = new Set(['Anchor', 'Variant', 'Pairing']);
+const PUBLIC = new Set(['Anchor', 'Variant', 'Pairing', 'SwarmBy']);
 
 const HEADER = `/**
  * DotSwarmText: text in Geist Pixel that arrives as a swarm of dots.
  * ${SITE}
  *
- *   <DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />
+ *   <DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" swarmBy="word" />
  *
  * Each word starts as a block of its own dots, the dots cross to their places in
  * the letters, and the real, selectable text takes their place. Remount it
@@ -63,6 +63,10 @@ for (const file of MODULES) {
   parts.push(`// ── ${file} ${'─'.repeat(Math.max(4, 72 - file.length))}\n\n${src.trim()}\n`);
 }
 
+// Only the editor's typeface picker uses this label; in the copy-in file it would be an unused local.
+const unused = /^const variantLabel = .*\n/m;
+for (let i = 0; i < parts.length; i++) parts[i] = parts[i].replace(unused, '');
+
 const leftover = parts.join('\n').match(/^import .*$/gm);
 if (leftover) throw new Error(`unresolved imports in the bundle:\n${leftover.join('\n')}`);
 
@@ -78,7 +82,7 @@ const item = {
   type: 'registry:component',
   title: 'Dot Swarm Text',
   description:
-    'Text in Geist Pixel (Circle, Grid, Line or Square) that arrives as a swarm of dots, filling in from a chosen point, with an optional 100ms stagger between lines (or words, on one line).',
+    'Text in Geist Pixel (Circle, Grid, Line or Square) that arrives as a swarm of dots, filling in from a chosen point, optionally letter by letter, word by word, line by line or paragraph by paragraph.',
   dependencies: [],
   files: [{ path: `registry/default/${NAME}.tsx`, type: 'registry:component', content: tsx }],
 };
@@ -117,13 +121,13 @@ Text in Geist Pixel that arrives as a swarm of dots. One React component in one 
 | \`lineSpacing\`   | \`6\`         | gap between lines, in dots                                           |
 | \`anchor\`        | \`'center'\`  | where each word fills in from (top-left, top, top-right, left, center, ...) |
 | \`pairing\`       | \`'scatter'\` | how dots find their places: scatter (random) or trace (pen path)     |
-| \`stagger\`       | \`false\`     | start lines 100ms apart (words, on one line) instead of together     |
+| \`swarmBy\`       | \`'together'\` | what takes its own turn, nearest the anchor first: letter, word, line (as it settles on screen) or paragraph (a line started with Enter) |
 | \`align\`         | \`'start'\`   | where the block sits in its width                                    |
 | \`as\`            | \`'p'\`       | the element that holds the text                                      |
 | \`className\`     |             | class for the wrapper                                                |
 | \`fontUrl\`       | jsDelivr    | where to load the variant's font if the page has no @font-face       |
 
-Example: \`<DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />\`
+Example: \`<DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" swarmBy="word" />\`
 
 Change its \`key\` to play it again. If the font cannot load, the text shows plainly instead of swarming.
 The code is MIT licensed; the font is Geist Pixel by Vercel, SIL Open Font License 1.1.

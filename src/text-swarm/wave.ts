@@ -61,28 +61,88 @@ export function anchorPoint(anchor: number, width: number, height: number): { ax
 }
 
 /**
- * Each word's turn when staggered. Text on one line goes word by word, nearest
- * the anchor first. Text on several lines goes line by line, so long text does
- * not take one turn per word: every word on a line shares its turn, and lines
- * nearer the anchor's height go first. Reading order breaks ties. Lines here
- * are the settled visual lines, wrapped ones included.
+ * Each word's turn when the swarm goes word by word, line by line or paragraph
+ * by paragraph. Words that share a unit share its turn; the unit nearest the
+ * anchor goes first and reading order breaks ties. A line is a settled visual
+ * line, wrapped ones included; a paragraph is a line the writer started with Enter.
  */
-export function staggerOrder(boxes: Box[][], ax: number, ay: number): number[][] {
+export function unitTurns(by: 'word' | 'line' | 'paragraph', boxes: Box[][], ax: number, ay: number): number[][] {
   const flat = boxes.flatMap((line, li) => line.map((b, wi) => ({ li, wi, b })));
-  const rows = [...new Set(flat.map(({ b }) => b.y))];
   const rank = boxes.map((line) => line.map(() => 0));
-  if (rows.length > 1) {
-    // A row's height is that of its tallest word.
-    const mid = rows.map((y) => y + Math.max(...flat.filter(({ b }) => b.y === y).map(({ b }) => b.h)) / 2);
-    const order = rows.map((_, i) => i).sort((a, b) => Math.abs(mid[a] - ay) - Math.abs(mid[b] - ay) || a - b);
-    const turn = new Map(order.map((row, r) => [rows[row], r]));
-    for (const { li, wi, b } of flat) rank[li][wi] = turn.get(b.y) ?? 0;
-    return rank;
-  }
-  const d = flat.map(({ b }) => Math.hypot(b.x + b.w / 2 - ax, b.y + b.h / 2 - ay));
-  const order = flat.map((_, i) => i).sort((a, b) => d[a] - d[b] || a - b);
-  order.forEach((i, r) => {
-    rank[flat[i].li][flat[i].wi] = r;
+  // Which unit a word belongs to.
+  const unitOf = (e: (typeof flat)[number]) => (by === 'word' ? `${e.li}:${e.wi}` : by === 'paragraph' ? `${e.li}` : `${e.b.y}`);
+  const units = new Map<string, { first: number; members: typeof flat }>();
+  flat.forEach((e, i) => {
+    const u = units.get(unitOf(e));
+    if (u) u.members.push(e);
+    else units.set(unitOf(e), { first: i, members: [e] });
+  });
+  const list = [...units.values()].map((u) => {
+    const left = Math.min(...u.members.map(({ b }) => b.x));
+    const right = Math.max(...u.members.map(({ b }) => b.x + b.w));
+    const top = Math.min(...u.members.map(({ b }) => b.y));
+    const bottom = Math.max(...u.members.map(({ b }) => b.y + b.h));
+    // A word is judged by its centre. A whole line or paragraph by its height alone:
+    // it spans the block, so its width says nothing about where it is.
+    const d = by === 'word' ? Math.hypot((left + right) / 2 - ax, (top + bottom) / 2 - ay) : Math.abs((top + bottom) / 2 - ay);
+    return { ...u, d };
+  });
+  list.sort((p, q) => p.d - q.d || p.first - q.first);
+  list.forEach((u, turn) => {
+    for (const { li, wi } of u.members) rank[li][wi] = turn;
   });
   return rank;
+}
+
+/**
+ * Each letter's turn when the swarm goes letter by letter: the letter whose
+ * dots sit nearest the anchor goes first, across the whole text. Indexed
+ * [line][word][letter]. A letter with no dots takes the turn of the first
+ * letter in its word that has some, since it has nothing to wait for.
+ */
+export function letterTurns(
+  pieces: Piece[][],
+  boxes: Box[][],
+  dot: number,
+  letterSpacing: number,
+  ax: number,
+  ay: number,
+): number[][][] {
+  const turns = pieces.map((line) => line.map((p) => new Array<number>(Array.from(p.word.text).length).fill(-1)));
+  const found: { li: number; wi: number; g: number; d: number }[] = [];
+  pieces.forEach((line, li) =>
+    line.forEach((piece, wi) => {
+      const box = boxes[li]?.[wi];
+      if (!box) return;
+      const { cells, glyphs, baseline } = piece.word;
+      const padTop = Math.max(0, LINE_ASCENT - baseline);
+      const sum = new Map<number, { x: number; y: number; n: number }>();
+      for (let i = 0; i < glyphs.length; i++) {
+        const s = sum.get(glyphs[i]) ?? { x: 0, y: 0, n: 0 };
+        s.x += cells[i * 2];
+        s.y += cells[i * 2 + 1];
+        s.n++;
+        sum.set(glyphs[i], s);
+      }
+      for (const [g, s] of sum) {
+        const x = box.x + (s.x / s.n + g * letterSpacing) * dot;
+        const y = box.y + (padTop + s.y / s.n) * dot;
+        found.push({ li, wi, g, d: Math.hypot(x - ax, y - ay) });
+      }
+    }),
+  );
+  found.sort((p, q) => p.d - q.d || p.li - q.li || p.wi - q.wi || p.g - q.g);
+  found.forEach(({ li, wi, g }, turn) => {
+    turns[li][wi][g] = turn;
+  });
+  for (const line of turns) {
+    for (const word of line) {
+      const present = word.filter((t) => t >= 0);
+      const first = present.length ? Math.min(...present) : 0;
+      word.forEach((t, g) => {
+        if (t < 0) word[g] = first;
+      });
+    }
+  }
+  return turns;
 }

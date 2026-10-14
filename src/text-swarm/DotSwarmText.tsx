@@ -1,11 +1,11 @@
 'use client';
 
 import { Fragment, memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType } from 'react';
-import { ANCHORS, STAGGER_MS, type Anchor } from './anchors';
+import { ANCHORS, MAX_SPAN_MS, STEP_MS, type Anchor, type SwarmBy } from './anchors';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
 import type { Pairing } from './trace';
 import { fontFamily, fontFile, type Variant } from './variants';
-import { anchorFractions, anchorPoint, placeWords, staggerOrder } from './wave';
+import { anchorFractions, anchorPoint, letterTurns, placeWords, unitTurns } from './wave';
 import Word from './Word';
 import { PIXEL_EM } from './words';
 
@@ -35,7 +35,7 @@ export type DotSwarmTextProps = {
   letterSpacing?: number;
   /** Gap between one line and the next, in dots. Default 6. */
   lineSpacing?: number;
-  /** Where the dots fill each word in from; with stagger, also which line (or word) goes first. Default 'center'. */
+  /** Where the dots fill each word in from; with swarmBy, also which letter, word, line or paragraph goes first. Default 'center'. */
   anchor?: Anchor;
   /**
    * How the brick's dots find their places: 'scatter' pairs them at random, so
@@ -44,8 +44,12 @@ export type DotSwarmTextProps = {
    * travelling-salesman tour) that starts nearest the anchor. Default 'scatter'.
    */
   pairing?: Pairing;
-  /** Start lines STAGGER_MS apart (words, if the text is one line) instead of all together. Default false. */
-  stagger?: boolean;
+  /**
+   * What takes a turn of its own, each starting a little after the one before, nearest the anchor first:
+   * 'letter', 'word', 'line' (as it settles on screen) or 'paragraph' (a line you started with Enter).
+   * 'together' starts everything at once. Default 'together'.
+   */
+  swarmBy?: SwarmBy;
   /** How the text block sits in the width it is given. Default 'start'. */
   align?: 'start' | 'center' | 'end';
   /** The element that holds the text. Default 'p'. */
@@ -94,7 +98,7 @@ export default function DotSwarmText({
   lineSpacing = 6,
   anchor = 'center',
   pairing = 'scatter',
-  stagger = false,
+  swarmBy = 'together',
   align = 'start',
   as: Tag = 'p',
   className,
@@ -180,15 +184,32 @@ export default function DotSwarmText({
     [layout, maxCols, letterSpacing, variant],
   );
 
-  // Where each word will settle, so the stagger order can follow the anchor
-  // across the whole block. Without stagger every word starts together.
+  // Where each word will settle, so the turns can follow the anchor across the
+  // whole block. Together, every word starts at once.
   const placement = useMemo(
     () => placeWords(pieces, room > 0 ? room : Infinity, dot, letterSpacing, lineSpacing),
     [pieces, room, dot, letterSpacing, lineSpacing],
   );
   const cell = Math.max(0, ANCHORS.indexOf(anchor));
   const { ax, ay } = anchorPoint(cell, placement.width, placement.height);
-  const order = staggerOrder(placement.boxes, ax, ay);
+  // When each word starts (ms after the first), and, letter by letter, each of its
+  // letters after that. The turns are spaced STEP_MS apart, squeezed if there are
+  // so many that the last would start later than MAX_SPAN_MS.
+  const schedule = useMemo(() => {
+    const none = { word: pieces.map((line) => line.map(() => 0)), letters: null as number[][][] | null };
+    if (swarmBy === 'together') return none;
+    const spaced = (turns: number) => Math.min(STEP_MS[swarmBy], turns > 1 ? MAX_SPAN_MS / (turns - 1) : Infinity);
+    if (swarmBy === 'letter') {
+      const turns = letterTurns(pieces, placement.boxes, dot, letterSpacing, ax, ay);
+      const step = spaced(Math.max(0, ...turns.flat(2)) + 1);
+      const ms = turns.map((line) => line.map((word) => word.map((t) => t * step)));
+      const word = ms.map((line) => line.map((w) => (w.length ? Math.min(...w) : 0)));
+      return { word, letters: ms.map((line, li) => line.map((w, wi) => w.map((t) => t - word[li][wi]))) };
+    }
+    const turns = unitTurns(swarmBy, placement.boxes, ax, ay);
+    const step = spaced(Math.max(0, ...turns.flat()) + 1);
+    return { word: turns.map((line) => line.map((t) => t * step)), letters: null };
+  }, [swarmBy, pieces, placement, dot, letterSpacing, ax, ay]);
   const wave = useMemo(() => anchorFractions(cell), [cell]);
 
   const justify = align === 'center' ? 'center' : align === 'end' ? 'flex-end' : 'flex-start';
@@ -244,9 +265,10 @@ export default function DotSwarmText({
                   lineSpacing={lineSpacing}
                   color={resolved ?? inherited}
                   variant={variant}
-                  delay={layout.intro ? INTRO_MS + (stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
+                  delay={layout.intro ? INTRO_MS + (schedule.word[li]?.[wi] ?? 0) : 0}
                   wave={wave}
                   pairing={pairing}
+                  letterDelays={schedule.letters?.[li]?.[wi]}
                   trailingSpace={piece.gap}
                 />
               </Fragment>
