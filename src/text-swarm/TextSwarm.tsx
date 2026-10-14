@@ -195,18 +195,7 @@ export default function TextSwarm() {
                 onChange={(e) => set({ fontSize: Number(e.target.value) })}
               />
               <span className="row-value">
-                <input
-                  className="num"
-                  aria-label="Font size in px"
-                  type="number"
-                  min={MIN_SIZE}
-                  max={MAX_SIZE}
-                  value={settings.fontSize}
-                  onChange={(e) => {
-                    const n = Number(e.target.value);
-                    if (e.target.value !== '' && Number.isFinite(n)) set({ fontSize: clamp(n, MIN_SIZE, MAX_SIZE) });
-                  }}
-                />
+                <output htmlFor="size">{settings.fontSize}</output>
                 <span className="unit">px</span>
               </span>
             </div>
@@ -261,7 +250,14 @@ export default function TextSwarm() {
             <span className="picker-label" id="pairing-label">
               Pairing
             </span>
-            <div className="variants pairings" role="radiogroup" aria-labelledby="pairing-label" aria-describedby="pairing-note">
+            <div
+              className="variants pairings"
+              role="radiogroup"
+              aria-labelledby="pairing-label"
+              aria-describedby="pairing-note"
+              style={{ '--n': PAIRINGS.length, '--i': PAIRINGS.indexOf(settings.pairing) } as CSSProperties}
+            >
+              <span className="slide" aria-hidden="true" />
               {PAIRINGS.map((p) => (
                 <button
                   key={p}
@@ -303,7 +299,7 @@ export default function TextSwarm() {
                     aria-checked={settings.swarmBy === by}
                     onClick={() => setMotion({ swarmBy: by })}
                   >
-                    {by === 'together' ? 'Together' : by[0].toUpperCase() + by.slice(1)}
+                    {by[0].toUpperCase() + by.slice(1)}
                   </button>
                 ))}
               </div>

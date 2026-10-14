@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent } from 'react';
+import { useRef, type CSSProperties, type KeyboardEvent } from 'react';
 import { fontFamily, variantLabel, VARIANTS, type Variant } from './variants';
 
 type Props = {
@@ -33,7 +33,13 @@ export default function VariantPicker({ value, onChange, labelledBy }: Props) {
   }
 
   return (
-    <div className="variants" role="radiogroup" aria-labelledby={labelledBy}>
+    <div
+      className="variants"
+      role="radiogroup"
+      aria-labelledby={labelledBy}
+      style={{ '--n': VARIANTS.length, '--i': at } as CSSProperties}
+    >
+      <span className="slide" aria-hidden="true" />
       {VARIANTS.map((v, i) => (
         <button
           key={v}

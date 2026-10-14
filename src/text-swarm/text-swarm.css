@@ -66,10 +66,10 @@
   gap: 12px;
   padding: 16px;
   overflow-y: auto;
-  border: 1px solid rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(0 0 0 / 0.1);
   border-radius: 16px;
-  background: #000;
-  color: #fff;
+  background: #fff;
+  color: #111;
   animation: panel-in 360ms var(--ease-out) both;
   font-size: 13px;
   container-type: inline-size;
@@ -651,146 +651,36 @@
   }
 }
 
-/* ── The panel is black with white text; the controls inside are re-coloured to match ── */
-.text-swarm-panel {
-  --fg: #fff;
-  --muted: rgb(255 255 255 / 0.6);
-  --line: rgb(255 255 255 / 0.2);
-  --line-hover: rgb(255 255 255 / 0.5);
-  --field: #121212;
-  --field-hover: #1e1e1e;
-}
-
-.text-swarm-panel h2,
-.text-swarm-panel .hint,
-.text-swarm-panel .unit {
-  color: var(--muted);
-}
-
-.text-swarm-panel .field textarea,
-.text-swarm-panel .num,
-.text-swarm-panel .picker-hex {
-  border-color: var(--line);
-  background: var(--field);
-  color: var(--fg);
-}
-
-.text-swarm-panel .field textarea::placeholder {
-  color: var(--muted);
-}
-
-.text-swarm-panel .variants,
-.text-swarm-panel .anchor,
-.text-swarm-panel .tabs {
-  border-color: var(--line);
-  background: var(--field);
-}
-
-.text-swarm-panel .variant,
-.text-swarm-panel .tab {
-  color: var(--muted);
-}
-
-.text-swarm-panel .variant-sample {
-  color: var(--fg);
-}
-
-.text-swarm-panel .variant[aria-checked='true'],
-.text-swarm-panel .tab[aria-pressed='true'],
-.text-swarm-panel .pill[aria-checked='true'] {
-  border-color: #fff;
-  background: #fff;
-  color: #000;
-}
-
-.text-swarm-panel .variant[aria-checked='true'] .variant-sample {
-  color: #000;
-}
-
-.text-swarm-panel .pill {
-  border-color: var(--line);
-  background: var(--field);
-  color: var(--fg);
-}
-
-.text-swarm-panel .anchor-dot {
-  background: rgb(255 255 255 / 0.3);
-}
-
-.text-swarm-panel .anchor-cell[aria-checked='true'] .anchor-dot {
-  background: #fff;
-}
-
-.text-swarm-panel .picker-swatch {
-  border-color: var(--line);
-}
-
-.text-swarm-panel .picker-swatch[aria-expanded='true'] {
-  border-color: #fff;
-}
-
+/* The colour popover has an edge of its own instead of a shadow. */
 .text-swarm-panel .picker-pop {
-  border-color: var(--line);
-  background: #0a0a0a;
+  border-color: rgb(0 0 0 / 0.1);
   box-shadow: none;
 }
 
-.text-swarm-panel .buttons button {
-  border-color: var(--line);
-  background: var(--field);
-  color: var(--fg);
+/* ── Segmented choices: one pill that slides to the option you pick ── */
+.variants {
+  position: relative;
 }
 
-.text-swarm-panel .buttons button.primary {
-  border-color: #fff;
-  background: #fff;
-  color: #000;
+.variants > .slide {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n));
+  border-radius: 6px;
+  background: #111;
+  transform: translateX(calc(var(--i) * (100% + 2px)));
+  transition: transform 280ms var(--ease-out);
+  pointer-events: none;
 }
 
-.text-swarm-panel .num:focus-visible,
-.text-swarm-panel .picker-hex:focus-visible,
-.text-swarm-panel .field textarea:focus-visible {
-  border-color: #fff;
+.variants .variant {
+  position: relative;
 }
 
-.text-swarm-panel .picker-sv:focus-visible,
-.text-swarm-panel .picker-hue:focus-visible,
-.text-swarm-panel .picker-swatch:focus-visible,
-.text-swarm-panel .row input[type='range']:focus-visible,
-.text-swarm-panel button:focus-visible,
-.text-swarm-panel .variant:focus-visible,
-.text-swarm-panel .anchor-cell:focus-visible,
-.text-swarm-panel .num:focus-visible,
-.text-swarm-panel .picker-hex:focus-visible,
-.text-swarm-panel .field textarea:focus-visible {
-  outline-color: #fff;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .text-swarm-panel .variant:not([aria-checked='true']):hover,
-  .text-swarm-panel .tab[aria-pressed='false']:hover {
-    background: var(--field-hover);
-    color: var(--fg);
-  }
-
-  .text-swarm-panel .pill[aria-checked='false']:hover,
-  .text-swarm-panel .buttons button:hover {
-    border-color: var(--line-hover);
-    background: var(--field-hover);
-  }
-
-  .text-swarm-panel .buttons button.primary:hover {
-    border-color: #e5e5e5;
-    background: #e5e5e5;
-  }
-
-  .text-swarm-panel .anchor-cell:hover .anchor-dot {
-    background: rgb(255 255 255 / 0.7);
-  }
-
-  .text-swarm-panel .anchor-cell[aria-checked='true']:hover .anchor-dot {
-    background: #fff;
-  }
+.variant[aria-checked='true'] {
+  background: transparent;
 }
 
 /* ── Sliders: a filled track and a thumb that answers the pointer ── */
@@ -805,13 +695,13 @@
 .row input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(to right, #fff var(--p, 50%), rgb(255 255 255 / 0.22) var(--p, 50%));
+  background: linear-gradient(to right, #111 var(--p, 50%), rgb(0 0 0 / 0.12) var(--p, 50%));
 }
 
 .row input[type='range']::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(to right, #fff var(--p, 50%), rgb(255 255 255 / 0.22) var(--p, 50%));
+  background: linear-gradient(to right, #111 var(--p, 50%), rgb(0 0 0 / 0.12) var(--p, 50%));
 }
 
 .row input[type='range']::-webkit-slider-thumb {
@@ -821,7 +711,7 @@
   margin-top: -5px;
   border: 0;
   border-radius: 50%;
-  background: #fff;
+  background: #111;
   transition: transform 160ms var(--ease-out);
 }
 
@@ -830,7 +720,7 @@
   height: 14px;
   border: 0;
   border-radius: 50%;
-  background: #fff;
+  background: #111;
   transition: transform 160ms var(--ease-out);
 }
 
@@ -916,7 +806,6 @@
   }
 }
 
-.variant[aria-checked='true'],
 .pill[aria-checked='true'],
 .tab[aria-pressed='true'] {
   animation: pop 200ms var(--ease-out);
@@ -975,11 +864,14 @@
 @media (prefers-reduced-motion: reduce) {
   .text-swarm-panel,
   .chip,
-  .variant,
   .pill,
   .tab,
   .icon-tick {
     animation: none;
+  }
+
+  .variants > .slide {
+    transition: none;
   }
 
   .chip:hover,

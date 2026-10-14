@@ -47,7 +47,7 @@ export type DotSwarmTextProps = {
   /**
    * What takes a turn of its own, each starting a little after the one before, nearest the anchor first:
    * 'letter', 'word', 'line' (as it settles on screen) or 'paragraph' (a line you started with Enter).
-   * 'together' starts everything at once. Default 'together'.
+   * A single paragraph is one turn, so it all starts together. Default 'paragraph'.
    */
   swarmBy?: SwarmBy;
   /** How the text block sits in the width it is given. Default 'start'. */
@@ -98,7 +98,7 @@ export default function DotSwarmText({
   lineSpacing = 6,
   anchor = 'center',
   pairing = 'scatter',
-  swarmBy = 'together',
+  swarmBy = 'paragraph',
   align = 'start',
   as: Tag = 'p',
   className,
@@ -196,8 +196,6 @@ export default function DotSwarmText({
   // letters after that. The turns are spaced STEP_MS apart, squeezed if there are
   // so many that the last would start later than MAX_SPAN_MS.
   const schedule = useMemo(() => {
-    const none = { word: pieces.map((line) => line.map(() => 0)), letters: null as number[][][] | null };
-    if (swarmBy === 'together') return none;
     const spaced = (turns: number) => Math.min(STEP_MS[swarmBy], turns > 1 ? MAX_SPAN_MS / (turns - 1) : Infinity);
     if (swarmBy === 'letter') {
       const turns = letterTurns(pieces, placement.boxes, dot, letterSpacing, ax, ay);

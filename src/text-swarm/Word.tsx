@@ -17,7 +17,9 @@ const WAVE_MS = 350;
 const TRACE_MS = 700;
 const TRACE_FLIGHT_MS = 300;
 // Letter by letter: the wave across one letter, and the pen's time on one letter.
-const LETTER_WAVE_MS = 220;
+const LETTER_WAVE_MS = 160;
+// Letter by letter, each dot flies for less, so one letter lands before the next is far along.
+const LETTER_FLIGHT_MS = 420;
 const TRACE_LETTER_MS = 200;
 
 type Phase = 'box' | 'swarm' | 'done';
@@ -191,7 +193,25 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       ox[i] = box[i * 2];
       oy[i] = box[i * 2 + 1];
     }
-    for (let i = n - 1; i > 0 && pairing === 'scatter'; i--) {
+    const byLetter = lettersRef.current;
+    if (byLetter && pairing === 'scatter') {
+      // The brick gives its dots out column by column from the left, to the letters
+      // in the order of their turns, so the brick wears away letter by letter.
+      const from = Array.from({ length: n }, (_, i) => i).sort((a, b) => ox[a] - ox[b] || oy[a] - oy[b]);
+      const to = Array.from({ length: n }, (_, i) => i).sort((a, b) => (byLetter[tg[a]] ?? 0) - (byLetter[tg[b]] ?? 0) || a - b);
+      const x2 = new Float32Array(n);
+      const y2 = new Float32Array(n);
+      const g2 = new Uint16Array(n);
+      for (let k = 0; k < n; k++) {
+        x2[from[k]] = tx[to[k]];
+        y2[from[k]] = ty[to[k]];
+        g2[from[k]] = tg[to[k]];
+      }
+      tx.set(x2);
+      ty.set(y2);
+      tg.set(g2);
+    }
+    for (let i = n - 1; i > 0 && pairing === 'scatter' && !byLetter; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [tx[i], tx[j]] = [tx[j], tx[i]];
       [ty[i], ty[j]] = [ty[j], ty[i]];
@@ -204,7 +224,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     // An edited word's slot eases from the width it had to its new width.
     slotFrom.current = hadWord ? slotNow.current : boxCols;
     durationRef.current = FLIGHT_MS;
-    flightRef.current = FLIGHT_MS;
+    flightRef.current = byLetter ? LETTER_FLIGHT_MS : FLIGHT_MS;
     progressRef.current = 0;
     timeRef.current = 0;
 
@@ -240,7 +260,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
         dl[i] = (off[tg[i]] ?? 0) + (reach > 0 ? (LETTER_WAVE_MS * Math.min(dist, reach)) / reach : 0);
         last = Math.max(last, dl[i]);
       }
-      durationRef.current = last + FLIGHT_MS;
+      durationRef.current = last + flightRef.current;
     }
 
     function timeDots() {

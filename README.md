@@ -56,7 +56,7 @@ Then use it like this:
 | `lineSpacing`   | `6`        | gap between lines, in dots                                          |
 | `anchor`        | `'center'` | where each word fills in from; with `swarmBy`, which turn goes first |
 | `pairing`       | `'scatter'`| how dots find their places: `scatter` (random) or `trace` (pen path) |
-| `swarmBy`       | `'together'` | what takes its own turn, nearest the anchor first: `letter`, `word`, `line` (as settled on screen) or `paragraph` (a line you started with Enter) |
+| `swarmBy`       | `'paragraph'` | what takes its own turn, nearest the anchor first: `letter`, `word`, `line` (as settled on screen) or `paragraph` (a line you started with Enter; one paragraph is a single turn, so it all starts together) |
 | `align`         | `'start'`  | where the block sits in its width                                   |
 | `as`            | `'p'`      | the element that holds the text                                     |
 | `fontUrl`       | jsDelivr   | where to load the variant's font if the page has no `@font-face`    |
