@@ -148,6 +148,8 @@ export default function DotSwarmText({
   const rootRef = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState(0);
   const [inherited, setInherited] = useState('#000');
+  // `color` as the canvas needs it: var(--x), currentColor and the like only mean something in the page.
+  const [resolved, setResolved] = useState<string | null>(null);
   useLayoutEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -155,12 +157,21 @@ export default function DotSwarmText({
       const style = getComputedStyle(el);
       setRoom(el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
       setInherited(style.color);
+      if (color) {
+        const probe = document.createElement('span');
+        probe.style.color = color;
+        el.appendChild(probe);
+        setResolved(getComputedStyle(probe).color);
+        probe.remove();
+      } else {
+        setResolved(null);
+      }
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [color]);
 
   const dot = fontSize * PIXEL_EM;
   const maxCols = room > 0 ? Math.floor(room / dot) : Infinity;
@@ -231,7 +242,7 @@ export default function DotSwarmText({
                   fontSize={fontSize}
                   letterSpacing={letterSpacing}
                   lineSpacing={lineSpacing}
-                  color={color ?? inherited}
+                  color={resolved ?? inherited}
                   variant={variant}
                   delay={layout.intro ? INTRO_MS + (stagger ? (order[li]?.[wi] ?? 0) * STAGGER_MS : 0) : 0}
                   wave={wave}

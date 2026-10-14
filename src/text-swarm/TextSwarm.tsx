@@ -22,6 +22,22 @@ const COMMAND = 'npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swa
 // The full command is too long for the button; it still copies all of it.
 const COMMAND_LABEL = 'npx shadcn add …';
 
+// The component tag for what is on screen, with only the props that differ from the component's defaults.
+function snippet(s: Settings): string {
+  const plain = !/[\n\r"\\{}<>]/.test(s.text);
+  const props = [plain ? `text="${s.text}"` : `text={${JSON.stringify(s.text)}}`, `fontSize={${s.fontSize}}`];
+  if (s.color !== DEFAULT_SETTINGS.color) props.push(`color="${s.color}"`);
+  if (s.variant !== DEFAULT_SETTINGS.variant) props.push(`variant="${s.variant}"`);
+  if (s.letterSpacing !== DEFAULT_SETTINGS.letterSpacing) props.push(`letterSpacing={${s.letterSpacing}}`);
+  if (s.lineSpacing !== DEFAULT_SETTINGS.lineSpacing) props.push(`lineSpacing={${s.lineSpacing}}`);
+  if (s.anchor !== DEFAULT_SETTINGS.anchor) props.push(`anchor="${ANCHORS[s.anchor]}"`);
+  if (s.pairing !== DEFAULT_SETTINGS.pairing) props.push(`pairing="${s.pairing}"`);
+  if (s.stagger) props.push('stagger');
+  const line = `<DotSwarmText ${props.join(' ')} />`;
+  const stacked = props.map((p) => `  ${p}`).join('\n');
+  return line.length <= 80 ? line : `<DotSwarmText\n${stacked}\n/>`;
+}
+
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
 async function copyText(text: string): Promise<boolean> {
@@ -52,6 +68,7 @@ export default function TextSwarm() {
   // Replay bumps this, which remounts the text so every word starts as a box again.
   const [skipped, setSkipped] = useState<string[]>([]);
   const [copied, setCopied] = useState<'done' | 'failed' | null>(null);
+  const [copiedJsx, setCopiedJsx] = useState<'done' | 'failed' | null>(null);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
   // Changing how the swarm moves replays it, so the change is visible at once.
@@ -64,6 +81,12 @@ export default function TextSwarm() {
     const ok = await copyText(COMMAND);
     setCopied(ok ? 'done' : 'failed');
     window.setTimeout(() => setCopied(null), 1800);
+  }
+
+  async function copyJsx() {
+    const ok = await copyText(snippet(settings));
+    setCopiedJsx(ok ? 'done' : 'failed');
+    window.setTimeout(() => setCopiedJsx(null), 1800);
   }
 
   return (
@@ -248,6 +271,11 @@ export default function TextSwarm() {
           <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
+          <button type="button" className="snippet" onClick={copyJsx}>
+            <span aria-live="polite">
+              {copiedJsx === 'done' ? 'Copied' : copiedJsx === 'failed' ? 'Copy blocked' : 'Copy <DotSwarmText /> with these settings'}
+            </span>
+          </button>
           <button
             type="button"
             className="primary command"
@@ -261,8 +289,8 @@ export default function TextSwarm() {
           </button>
         </div>
         <p className="hint hint-install">
-          Copies the shadcn command that adds this text, as one component, to your project. No components.json yet? Run
-          npx shadcn@latest init first.
+          Run the shadcn command in your project to add the component (if shadcn asks to create a components.json, say yes), then
+          paste the snippet where you want the text.
         </p>
       </aside>
     </div>

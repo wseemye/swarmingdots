@@ -28,7 +28,7 @@ changes; words that already fit keep their swarm.
 
 The text swarm is one component, `<DotSwarmText>`, published as a
 [shadcn](https://ui.shadcn.com) registry item. In a project set up for shadcn (if it
-has no `components.json` yet, run `npx shadcn@latest init` first):
+has no `components.json` yet, shadcn offers to create one; say yes):
 
 ```sh
 npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json

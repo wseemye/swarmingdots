@@ -520,7 +520,11 @@
   color: #fff;
 }
 
-/* The command reads as code and gets the whole row. */
+/* The snippet and the command each get the whole row. */
+.buttons button.snippet {
+  grid-column: 1 / -1;
+}
+
 .buttons button.command {
   grid-column: 1 / -1;
   font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -610,6 +614,10 @@
 
     .buttons button {
       font-size: 12.5px;
+    }
+
+    .buttons button.snippet {
+      grid-column: 1 / -1;
     }
 
     .buttons button.command {
