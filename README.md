@@ -58,6 +58,7 @@ Then use it like this:
 | `pairing`       | `'scatter'`| how dots find their places: `scatter` (random) or `trace` (pen path) |
 | `swarmBy`       | `'word'`   | what the swarm is built from: `letter` makes each letter its own small brick, side by side with no gaps; `word`, `line` (as settled on screen) and `paragraph` (a line you started with Enter) keep a brick per word. With `stagger`, it is also what takes a turn |
 | `stagger`       | `false`    | start those turns one after another, nearest the anchor first, instead of all together |
+| `staggerMs`    | `100`      | only with `stagger`: ms between one turn starting and the next (ignored when `stagger` is off) |
 | `speed`         | `0.75`     | how fast it plays: 1 is about a second a word, 0.5 takes twice as long, 2 half as long |
 | `align`         | `'start'`  | where the block sits in its width                                   |
 | `as`            | `'p'`      | the element that holds the text                                     |

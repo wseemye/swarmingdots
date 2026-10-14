@@ -18,6 +18,8 @@ const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 300;
+const MIN_GAP = 20;
+const MAX_GAP = 500;
 const MIN_SPEED = 0.25;
 const MAX_SPEED = 2;
 // The controls, split in three for a phone; a wide screen shows them all.
@@ -41,6 +43,8 @@ function snippet(s: Settings): string {
   if (s.pairing !== DEFAULT_SETTINGS.pairing) props.push(`pairing="${s.pairing}"`);
   if (s.swarmBy !== DEFAULT_SETTINGS.swarmBy) props.push(`swarmBy="${s.swarmBy}"`);
   if (s.stagger) props.push('stagger');
+  // The gap only means something when staggering.
+  if (s.stagger && s.staggerMs !== DEFAULT_SETTINGS.staggerMs) props.push(`staggerMs={${s.staggerMs}}`);
   if (s.speed !== DEFAULT_SETTINGS.speed) props.push(`speed={${s.speed}}`);
   const line = `<DotSwarmText ${props.join(' ')} />`;
   const stacked = props.map((p) => `  ${p}`).join('\n');
@@ -142,6 +146,7 @@ export default function TextSwarm() {
           pairing={settings.pairing}
           swarmBy={settings.swarmBy}
           stagger={settings.stagger}
+          staggerMs={settings.staggerMs}
           speed={settings.speed}
           fontUrl={`/fonts/${fontFile(settings.variant)}`}
           onMissingGlyphs={setSkipped}
@@ -345,6 +350,30 @@ export default function TextSwarm() {
                   <span className="switch-thumb" />
                 </span>
               </button>
+            </div>
+          </div>
+
+          {/* Only usable while staggering: dimmed and out of reach otherwise. */}
+          <div className="sliders">
+            <div className={settings.stagger ? 'row' : 'row row-off'} aria-disabled={!settings.stagger}>
+              <label htmlFor="stagger-gap">Stagger gap</label>
+              <input
+                id="stagger-gap"
+                type="range"
+                min={MIN_GAP}
+                max={MAX_GAP}
+                step={10}
+                value={settings.staggerMs}
+                disabled={!settings.stagger}
+                style={fill(settings.staggerMs, MIN_GAP, MAX_GAP)}
+                onChange={(e) => set({ staggerMs: Number(e.target.value) })}
+                onPointerUp={() => setRun((r) => r + 1)}
+                onKeyUp={() => setRun((r) => r + 1)}
+              />
+              <span className="row-value">
+                <output htmlFor="stagger-gap">{settings.staggerMs}</output>
+                <span className="unit">ms</span>
+              </span>
             </div>
           </div>
         </div>

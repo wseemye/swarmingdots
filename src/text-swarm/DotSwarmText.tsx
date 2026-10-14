@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType } from 'react';
-import { ANCHORS, MAX_SPAN_MS, STEP_MS, type Anchor, type SwarmBy } from './anchors';
+import { ANCHORS, MAX_SPAN_MS, STAGGER_MS, type Anchor, type SwarmBy } from './anchors';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
 import type { Pairing } from './trace';
 import { fontFamily, fontFile, type Variant } from './variants';
@@ -53,6 +53,12 @@ export type DotSwarmTextProps = {
   swarmBy?: SwarmBy;
   /** Start the turns of swarmBy one after another, nearest the anchor first, instead of all together. Default false. */
   stagger?: boolean;
+  /**
+   * Only with stagger: ms between one turn starting and the next, in real time whatever the speed.
+   * Ignored when stagger is off. The last turn never starts more than 3s after the first, so many
+   * turns squeeze it. Default 100.
+   */
+  staggerMs?: number;
   /** How fast the swarm plays. 1 takes about a second a word, 0.5 twice as long, 2 half as long. Default 0.75. */
   speed?: number;
   /** How the text block sits in the width it is given. Default 'start'. */
@@ -105,6 +111,7 @@ export default function DotSwarmText({
   pairing = 'scatter',
   swarmBy = 'word',
   stagger = false,
+  staggerMs = STAGGER_MS,
   speed = 0.75,
   align = 'start',
   as: Tag = 'p',
@@ -200,7 +207,7 @@ export default function DotSwarmText({
   const cell = Math.max(0, ANCHORS.indexOf(anchor));
   const { ax, ay } = anchorPoint(cell, placement.width, placement.height);
   // When each word starts (ms after the first), and, letter by letter, each of its
-  // letters after that. The turns are spaced STEP_MS apart, squeezed if there are
+  // letters after that. The turns are spaced staggerMs apart, squeezed if there are
   // so many that the last would start later than MAX_SPAN_MS.
   const schedule = useMemo(() => {
     // Not staggered, every word starts at once; letter by letter still gives each letter its own brick.
@@ -210,18 +217,18 @@ export default function DotSwarmText({
         letters: swarmBy === 'letter' ? pieces.map((line) => line.map((p) => new Array<number>(Array.from(p.word.text).length).fill(0))) : null,
       };
     }
-    const spaced = (turns: number) => Math.min(STEP_MS[swarmBy], turns > 1 ? MAX_SPAN_MS / (turns - 1) : Infinity);
+    const spaced = (turns: number) => Math.min(staggerMs, turns > 1 ? MAX_SPAN_MS / (turns - 1) : Infinity);
     if (swarmBy === 'letter') {
       const turns = letterTurns(pieces, placement.boxes, dot, letterSpacing, ax, ay);
       const step = spaced(Math.max(0, ...turns.flat(2)) + 1);
       const ms = turns.map((line) => line.map((word) => word.map((t) => t * step)));
       const word = ms.map((line) => line.map((w) => (w.length ? Math.min(...w) : 0)));
-      return { word, letters: ms.map((line, li) => line.map((w, wi) => w.map((t) => t - word[li][wi]))) };
+      return { word, letters: ms.map((line, li) => line.map((w, wi) => w.map((t) => (t - word[li][wi]) * speed))) };
     }
     const turns = unitTurns(swarmBy, placement.boxes, ax, ay);
     const step = spaced(Math.max(0, ...turns.flat()) + 1);
     return { word: turns.map((line) => line.map((t) => t * step)), letters: null };
-  }, [swarmBy, stagger, pieces, placement, dot, letterSpacing, ax, ay]);
+  }, [swarmBy, stagger, staggerMs, speed, pieces, placement, dot, letterSpacing, ax, ay]);
   const wave = useMemo(() => anchorFractions(cell), [cell]);
 
   const justify = align === 'center' ? 'center' : align === 'end' ? 'flex-end' : 'flex-start';
@@ -277,7 +284,7 @@ export default function DotSwarmText({
                   lineSpacing={lineSpacing}
                   color={resolved ?? inherited}
                   variant={variant}
-                  delay={layout.intro ? INTRO_MS + (schedule.word[li]?.[wi] ?? 0) / speed : 0}
+                  delay={layout.intro ? INTRO_MS + (schedule.word[li]?.[wi] ?? 0) : 0}
                   wave={wave}
                   pairing={pairing}
                   speed={speed}

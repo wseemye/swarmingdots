@@ -1,4 +1,4 @@
-import type { SwarmBy } from './anchors';
+import { STAGGER_MS, type SwarmBy } from './anchors';
 import type { Pairing } from './trace';
 import type { Variant } from './variants';
 
@@ -25,6 +25,8 @@ export type Settings = {
   swarmBy: SwarmBy;
   /** Whether those turns start one after another, instead of all together. */
   stagger: boolean;
+  /** Only with stagger: ms between one turn starting and the next. */
+  staggerMs: number;
   /** How fast the swarm plays: 1 is about a second a word, 0.5 twice as long. */
   speed: number;
 };
@@ -55,6 +57,7 @@ export const DEFAULT_SETTINGS: Settings = {
   pairing: 'scatter',
   swarmBy: 'word',
   stagger: false,
+  staggerMs: STAGGER_MS,
   speed: 0.75,
 };
 

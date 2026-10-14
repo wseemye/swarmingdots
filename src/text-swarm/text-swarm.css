@@ -319,6 +319,16 @@
   min-height: 32px;
 }
 
+/* A row whose control cannot be used right now. */
+.row {
+  transition: opacity 200ms var(--ease-out);
+}
+
+.row-off {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .row input[type='range'] {
   min-width: 0;
   margin: 0;
