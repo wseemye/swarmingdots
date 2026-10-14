@@ -30,25 +30,15 @@ The text swarm is one component, `<DotSwarmText>`, in one file that needs only R
 
 1. **Try it.** Run the editor (`npm run dev`, above) or open
    [swarmingdots.vercel.app](https://swarmingdots.vercel.app), set the text, typeface, size and colour.
-2. **Using an AI assistant?** "Copy for your AI assistant" copies a prompt with your settings. The assistant reads
+2. **Using an AI assistant?** "Copy Prompt" copies a prompt with your settings. The assistant reads
    [`/r/dot-swarm-text.md`](https://swarmingdots.vercel.app/r/dot-swarm-text.md), which holds the instructions, the props
    and the code, and adds the component for you.
-3. **Or copy the component.** The "Copy the component" button copies the whole file; save it as
+3. **Or do it by hand.** "Copy .TSX" in the top left copies the whole component; save it as
    `components/dot-swarm-text.tsx`. It is also served at
    `https://swarmingdots.vercel.app/r/dot-swarm-text.tsx`, and `npm run registry` rebuilds it from
    `src/text-swarm/` into `public/r/`.
-4. **Copy the tag.** "Copy the `<DotSwarmText />` tag" gives the tag with your settings; paste it where the text goes.
 
 Nothing else is added to your project, and your colours and fonts are not touched.
-
-Already use [shadcn](https://ui.shadcn.com)? The same file is a registry item:
-
-```sh
-npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json
-```
-
-In a project that has no `components.json`, shadcn runs its own setup first, which rewrites theme
-variables in your CSS and adds a font. Use the copy above there instead.
 
 Then use it like this:
 

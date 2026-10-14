@@ -11,7 +11,7 @@ const INTRO =
   'Swarming Dots is a text component for React. Words arrive as a swarm of dots: ' +
   'each one starts as a block, its dots cross into the letters of Geist Pixel, ' +
   'and real, selectable text takes their place. Set the size, spacing, colours and ' +
-  'where the swarm starts in the editor, then add it to your own project with one shadcn command.';
+  'where the swarm starts in the editor, then copy the component into your own project, or hand a prompt to your AI assistant.';
 
 // Matches the phone breakpoint in intro.css.
 const PHONE = '(max-width: 760px)';

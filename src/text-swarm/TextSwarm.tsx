@@ -17,12 +17,14 @@ const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 300;
+// The controls, split in three for a phone; a wide screen shows them all.
+const TABS = [
+  ['text', 'Text'],
+  ['style', 'Style'],
+  ['motion', 'Motion'],
+] as const;
 // The component as one file (built by scripts/registry.ts), for pasting into any React project.
 const FILE_URL = '/r/dot-swarm-text.tsx';
-// The same file as a shadcn registry item, for projects that already use shadcn.
-const COMMAND = 'npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json';
-// The full command is too long for the button; it still copies all of it.
-const COMMAND_LABEL = 'npx shadcn add …';
 
 // The component tag for what is on screen, with only the props that differ from the component's defaults.
 function snippet(s: Settings): string {
@@ -84,10 +86,9 @@ export default function TextSwarm() {
   const [run, setRun] = useState(0);
   // Replay bumps this, which remounts the text so every word starts as a box again.
   const [skipped, setSkipped] = useState<string[]>([]);
-  const [copied, setCopied] = useState<'done' | 'failed' | null>(null);
-  const [copiedJsx, setCopiedJsx] = useState<'done' | 'failed' | null>(null);
   const [copiedFile, setCopiedFile] = useState<'done' | 'failed' | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
+  const [tab, setTab] = useState<(typeof TABS)[number][0]>('text');
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
   // Changing how the swarm moves replays it, so the change is visible at once.
@@ -95,12 +96,6 @@ export default function TextSwarm() {
     set(patch);
     setRun((r) => r + 1);
   };
-
-  async function copyCommand() {
-    const ok = await copyText(COMMAND);
-    setCopied(ok ? 'done' : 'failed');
-    window.setTimeout(() => setCopied(null), 1800);
-  }
 
   async function copyPrompt() {
     const ok = await copyText(prompt(settings));
@@ -114,21 +109,15 @@ export default function TextSwarm() {
       const res = await fetch(FILE_URL);
       ok = res.ok && (await copyText(await res.text()));
     } catch {
-      // Offline, or the file is not served here: the button says so below.
+      // Offline, or the file is not served here: the button says so.
     }
     setCopiedFile(ok ? 'done' : 'failed');
     window.setTimeout(() => setCopiedFile(null), 1800);
   }
 
-  async function copyJsx() {
-    const ok = await copyText(snippet(settings));
-    setCopiedJsx(ok ? 'done' : 'failed');
-    window.setTimeout(() => setCopiedJsx(null), 1800);
-  }
-
   return (
     <div className="text-swarm">
-      <About />
+      <About copied={copiedFile} onCopy={copyFile} />
       <div className="text-swarm-stage" style={{ background: settings.background }}>
         <DotSwarmText
           key={run}
@@ -149,156 +138,169 @@ export default function TextSwarm() {
         />
       </div>
 
-      <aside className="text-swarm-panel" aria-label="Customize">
-        <h2>Customize</h2>
-
-        <div className="field">
-          <label htmlFor="text">Your text</label>
-          <textarea
-            id="text"
-            rows={2}
-            maxLength={MAX_CHARS}
-            spellCheck={false}
-            placeholder="Type something…"
-            value={settings.text}
-            onChange={(e) => set({ text: e.target.value })}
-          />
-          <p className={skipped.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
-            {settings.text.length}/{MAX_CHARS}. Enter starts a new line.
-            {skipped.length > 0 && (
-              <> The font has no glyph for {skipped.map((c) => `“${c}”`).join(' ')}, so {skipped.length === 1 ? 'it was' : 'they were'} left out.</>
-            )}
-          </p>
-        </div>
-
-        <div className="field">
-          <span className="picker-label" id="variant-label">
-            Typeface
-          </span>
-          <VariantPicker value={settings.variant} onChange={(variant) => setMotion({ variant })} labelledBy="variant-label" />
-        </div>
-
-        <div className="sliders">
-          <div className="row">
-            <label htmlFor="size">Font size</label>
-            <input
-              id="size"
-              type="range"
-              min={MIN_SIZE}
-              max={MAX_SIZE}
-              step={1}
-              value={settings.fontSize}
-              onChange={(e) => set({ fontSize: Number(e.target.value) })}
-            />
-            <span className="row-value">
-              <input
-                className="num"
-                aria-label="Font size in px"
-                type="number"
-                min={MIN_SIZE}
-                max={MAX_SIZE}
-                value={settings.fontSize}
-                onChange={(e) => {
-                  const n = Number(e.target.value);
-                  if (e.target.value !== '' && Number.isFinite(n)) set({ fontSize: clamp(n, MIN_SIZE, MAX_SIZE) });
-                }}
-              />
-              <span className="unit">px</span>
-            </span>
-          </div>
-
-          <div className="row">
-            <label htmlFor="spacing">Letter spacing</label>
-            <input
-              id="spacing"
-              type="range"
-              min={MIN_SPACING}
-              max={MAX_SPACING}
-              step={0.5}
-              value={settings.letterSpacing}
-              onChange={(e) => set({ letterSpacing: Number(e.target.value) })}
-            />
-            <span className="row-value">
-              <output htmlFor="spacing">{settings.letterSpacing}</output>
-              <span className="unit">dots</span>
-            </span>
-          </div>
-
-          <div className="row">
-            <label htmlFor="line-spacing">Line spacing</label>
-            <input
-              id="line-spacing"
-              type="range"
-              min={0}
-              max={MAX_LINE_SPACING}
-              step={1}
-              value={settings.lineSpacing}
-              onChange={(e) => set({ lineSpacing: Number(e.target.value) })}
-            />
-            <span className="row-value">
-              <output htmlFor="line-spacing">{settings.lineSpacing}</output>
-              <span className="unit">dots</span>
-            </span>
-          </div>
-
-          <p className="hint hint-dots">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
-        </div>
-
-        <div className="field">
-          <span className="picker-label" id="pairing-label">
-            Pairing
-          </span>
-          <div className="variants pairings" role="radiogroup" aria-labelledby="pairing-label" aria-describedby="pairing-note">
-            {PAIRINGS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                role="radio"
-                className="variant"
-                aria-checked={settings.pairing === p}
-                onClick={() => setMotion({ pairing: p })}
-              >
-                <span className="variant-name">{p === 'scatter' ? 'Scatter' : 'Trace'}</span>
-              </button>
-            ))}
-          </div>
-          <p className="hint" id="pairing-note">
-            {settings.pairing === 'scatter'
-              ? 'Each dot flies to a random place, so the brick bursts and reassembles.'
-              : 'Each word is written letter by letter, left to right; each letter starts from the grid point.'}
-          </p>
-        </div>
-
-        <div className="motion">
-          <div className="motion-item">
-            <span className="picker-label" id="anchor-label">
-              Swarm from
-            </span>
-            <AnchorGrid value={settings.anchor} onChange={(anchor) => setMotion({ anchor })} labelledBy="anchor-label" />
-          </div>
-          <div className="motion-item">
-            <button
-              type="button"
-              role="switch"
-              className="switch-row"
-              aria-checked={settings.stagger}
-              aria-describedby="stagger-note"
-              onClick={() => setMotion({ stagger: !settings.stagger })}
-            >
-              Stagger
-              <span className="switch" aria-hidden="true">
-                <span className="switch-thumb" />
-              </span>
+      <aside className="text-swarm-panel" aria-label="Customize" data-tab={tab}>
+        {/* On a phone the controls are split in three; on a wide screen all of them show and this row is hidden. */}
+        <div className="tabs">
+          {TABS.map(([id, label]) => (
+            <button key={id} type="button" className="tab" aria-pressed={tab === id} onClick={() => setTab(id)}>
+              {label}
             </button>
-            <p className="hint" id="stagger-note">
-              Lines start {STAGGER_MS}ms apart (words, on a single line), in the order the grid sets.
+          ))}
+        </div>
+
+        <div className="group group-text">
+          <div className="field">
+            <label htmlFor="text">Your text</label>
+            <textarea
+              id="text"
+              rows={2}
+              maxLength={MAX_CHARS}
+              spellCheck={false}
+              placeholder="Type something…"
+              value={settings.text}
+              onChange={(e) => set({ text: e.target.value })}
+            />
+            <p className={skipped.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
+              {settings.text.length}/{MAX_CHARS}. Enter starts a new line.
+              {skipped.length > 0 && (
+                <> The font has no glyph for {skipped.map((c) => `“${c}”`).join(' ')}, so {skipped.length === 1 ? 'it was' : 'they were'} left out.</>
+              )}
             </p>
           </div>
+
+          <div className="field">
+            <span className="picker-label" id="variant-label">
+              Typeface
+            </span>
+            <VariantPicker value={settings.variant} onChange={(variant) => setMotion({ variant })} labelledBy="variant-label" />
+          </div>
         </div>
 
-        <div className="colors">
-          <ColorPicker label="Background" value={settings.background} onChange={(background) => set({ background })} />
-          <ColorPicker label="Text color" value={settings.color} onChange={(color) => set({ color })} />
+        <div className="group group-style">
+          <div className="sliders">
+            <div className="row">
+              <label htmlFor="size">Font size</label>
+              <input
+                id="size"
+                type="range"
+                min={MIN_SIZE}
+                max={MAX_SIZE}
+                step={1}
+                value={settings.fontSize}
+                onChange={(e) => set({ fontSize: Number(e.target.value) })}
+              />
+              <span className="row-value">
+                <input
+                  className="num"
+                  aria-label="Font size in px"
+                  type="number"
+                  min={MIN_SIZE}
+                  max={MAX_SIZE}
+                  value={settings.fontSize}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    if (e.target.value !== '' && Number.isFinite(n)) set({ fontSize: clamp(n, MIN_SIZE, MAX_SIZE) });
+                  }}
+                />
+                <span className="unit">px</span>
+              </span>
+            </div>
+
+            <div className="row">
+              <label htmlFor="spacing">Letter spacing</label>
+              <input
+                id="spacing"
+                type="range"
+                min={MIN_SPACING}
+                max={MAX_SPACING}
+                step={0.5}
+                value={settings.letterSpacing}
+                onChange={(e) => set({ letterSpacing: Number(e.target.value) })}
+              />
+              <span className="row-value">
+                <output htmlFor="spacing">{settings.letterSpacing}</output>
+                <span className="unit">dots</span>
+              </span>
+            </div>
+
+            <div className="row">
+              <label htmlFor="line-spacing">Line spacing</label>
+              <input
+                id="line-spacing"
+                type="range"
+                min={0}
+                max={MAX_LINE_SPACING}
+                step={1}
+                value={settings.lineSpacing}
+                onChange={(e) => set({ lineSpacing: Number(e.target.value) })}
+              />
+              <span className="row-value">
+                <output htmlFor="line-spacing">{settings.lineSpacing}</output>
+                <span className="unit">dots</span>
+              </span>
+            </div>
+
+            <p className="hint hint-dots">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
+          </div>
+
+          <div className="colors">
+            <ColorPicker label="Background" value={settings.background} onChange={(background) => set({ background })} />
+            <ColorPicker label="Text color" value={settings.color} onChange={(color) => set({ color })} />
+          </div>
+        </div>
+
+        <div className="group group-motion">
+          <div className="field field-inline">
+            <span className="picker-label" id="pairing-label">
+              Pairing
+            </span>
+            <div className="variants pairings" role="radiogroup" aria-labelledby="pairing-label" aria-describedby="pairing-note">
+              {PAIRINGS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  role="radio"
+                  className="variant"
+                  aria-checked={settings.pairing === p}
+                  onClick={() => setMotion({ pairing: p })}
+                >
+                  <span className="variant-name">{p === 'scatter' ? 'Scatter' : 'Trace'}</span>
+                </button>
+              ))}
+            </div>
+            <p className="hint hint-pairing" id="pairing-note">
+              {settings.pairing === 'scatter'
+                ? 'Each dot flies to a random place, so the brick bursts and reassembles.'
+                : 'Each word is written letter by letter, left to right; each letter starts from the grid point.'}
+            </p>
+          </div>
+
+          <div className="motion">
+            <div className="motion-item">
+              <span className="picker-label" id="anchor-label">
+                Swarm from
+              </span>
+              <AnchorGrid value={settings.anchor} onChange={(anchor) => setMotion({ anchor })} labelledBy="anchor-label" />
+            </div>
+            <div className="motion-item">
+              <button
+                type="button"
+                role="switch"
+                className="switch-row"
+                aria-checked={settings.stagger}
+                aria-describedby="stagger-note"
+                onClick={() => setMotion({ stagger: !settings.stagger })}
+              >
+                Stagger
+                <span className="switch" aria-hidden="true">
+                  <span className="switch-thumb" />
+                </span>
+              </button>
+              <p className="hint hint-stagger" id="stagger-note">
+                Lines start {STAGGER_MS}ms apart (words, on a single line), in the order the grid sets.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="buttons">
@@ -308,38 +310,11 @@ export default function TextSwarm() {
           <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
-          <button type="button" className="primary snippet" onClick={copyPrompt}>
-            <span aria-live="polite">
-              {copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy for your AI assistant'}
-            </span>
-          </button>
-          <button type="button" className="snippet" onClick={copyFile}>
-            <span aria-live="polite">
-              {copiedFile === 'done' ? 'Copied' : copiedFile === 'failed' ? 'Copy blocked' : 'Copy the component (one file)'}
-            </span>
-          </button>
-          <button type="button" className="snippet" onClick={copyJsx}>
-            <span aria-live="polite">
-              {copiedJsx === 'done' ? 'Copied' : copiedJsx === 'failed' ? 'Copy blocked' : 'Copy the <DotSwarmText /> tag'}
-            </span>
-          </button>
-          <button
-            type="button"
-            className="command"
-            aria-label={`Copy the install command: ${COMMAND}`}
-            title={COMMAND}
-            onClick={copyCommand}
-          >
-            <span aria-live="polite">
-              {copied === 'done' ? 'Copied' : copied === 'failed' ? 'Copy blocked' : COMMAND_LABEL}
-            </span>
+          <button type="button" className="primary prompt" onClick={copyPrompt}>
+            <span aria-live="polite">{copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy Prompt'}</span>
           </button>
         </div>
-        <p className="hint hint-install">
-          Paste the prompt into your AI assistant and it adds the component for you. Or copy the component into your project as
-          components/dot-swarm-text.tsx (it needs only React) and paste the tag where you want the text. Already use shadcn? The
-          command adds the same file; in a project without shadcn it also changes your theme and fonts.
-        </p>
+        <p className="hint hint-install">Paste the prompt into your AI assistant and it adds this text to your project.</p>
       </aside>
     </div>
   );

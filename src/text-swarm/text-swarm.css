@@ -66,6 +66,101 @@
   flex-shrink: 0;
 }
 
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Text, Style and Motion: only on a phone (see the portrait query below). */
+.tabs {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tab {
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition:
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out);
+}
+
+.tab[aria-pressed='true'] {
+  background: #111;
+  color: #fff;
+}
+
+.tab:active {
+  transform: scale(0.97);
+}
+
+/* ── Top left: the intro, the repository, the component file ── */
+.chips {
+  position: absolute;
+  z-index: 10;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: #111;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+.chip-icon {
+  width: 28px;
+  padding: 0;
+  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+.chip:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: #999;
+  }
+}
+
 .text-swarm-panel h2 {
   margin: 0;
   font-size: 12px;
@@ -92,6 +187,18 @@
   color: #666;
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* Label and control on one line; a hint, when shown, goes underneath. */
+.field-inline {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.field-inline .hint {
+  grid-column: 1 / -1;
 }
 
 .field textarea {
@@ -488,7 +595,7 @@
   outline-offset: 2px;
 }
 
-/* ── Buttons: all four in one block ── */
+/* ── Buttons: replay and reset, then the prompt ── */
 .buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -520,16 +627,9 @@
   color: #fff;
 }
 
-/* The snippet and the command each get the whole row. */
-.buttons button.snippet {
+/* The prompt gets the whole row. */
+.buttons button.prompt {
   grid-column: 1 / -1;
-}
-
-.buttons button.command {
-  grid-column: 1 / -1;
-  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
-  font-weight: 500;
-  letter-spacing: -0.01em;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -544,7 +644,8 @@
 
 /* ── Phones and short screens: everything in one viewport ── */
 
-/* Phone portrait: the canvas on top takes whatever height the panel leaves. */
+/* Phone portrait: the canvas on top takes whatever height the panel leaves, and the
+   controls are split into Text, Style and Motion so the panel stays short. */
 @media (max-width: 760px) and (orientation: portrait) {
   .text-swarm {
     grid-template-columns: minmax(0, 1fr);
@@ -552,7 +653,8 @@
   }
 
   .text-swarm-stage {
-    padding: 24px 16px;
+    /* Room at the top for the buttons in the corner. */
+    padding: 52px 16px 24px;
   }
 
   .text-swarm-panel {
@@ -561,18 +663,41 @@
     border-left: 0;
     border-top: 1px solid #e5e5e5;
   }
+
+  .tabs {
+    display: grid;
+  }
+
+  /* The same height on every tab, so the canvas does not jump when switching. */
+  .group {
+    min-height: 170px;
+  }
+
+  .text-swarm-panel[data-tab='text'] .group:not(.group-text),
+  .text-swarm-panel[data-tab='style'] .group:not(.group-style),
+  .text-swarm-panel[data-tab='motion'] .group:not(.group-motion) {
+    display: none;
+  }
 }
 
-/* Any narrow or short screen: drop what the controls do not need. */
-@media (max-width: 760px), (max-height: 640px) {
+/* Any narrow or short screen: drop what the controls do not need, so the panel fits
+   one screen without scrolling. */
+@media (max-width: 760px), (max-height: 900px) {
   .text-swarm-panel {
     gap: 10px;
     padding: 12px 16px;
   }
 
+  .group {
+    gap: 10px;
+  }
+
   .text-swarm-panel h2,
   .hint-dots,
-  .hint-install {
+  .hint-pairing,
+  .hint-stagger,
+  .hint-install,
+  .hint-count:not(.has-warning) {
     display: none;
   }
 
@@ -605,9 +730,9 @@
 }
 
 /* When the panel itself is wide enough, all three buttons share one row;
-   the command gets the extra room its longer label needs. */
+   the prompt gets the extra room. */
 @container (min-width: 260px) {
-  @media (max-width: 760px), (max-height: 640px) {
+  @media (max-width: 760px), (max-height: 900px) {
     .buttons {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
     }
@@ -616,13 +741,8 @@
       font-size: 12.5px;
     }
 
-    .buttons button.snippet {
-      grid-column: 1 / -1;
-    }
-
-    .buttons button.command {
+    .buttons button.prompt {
       grid-column: auto;
-      font-size: 12px;
     }
   }
 }
@@ -668,6 +788,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .chip,
+  .tab,
   .buttons button,
   .num,
   .picker-hex,
