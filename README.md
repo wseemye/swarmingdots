@@ -26,15 +26,28 @@ changes; words that already fit keep their swarm.
 
 ## Use it in your project
 
-The text swarm is one component, `<DotSwarmText>`, published as a
-[shadcn](https://ui.shadcn.com) registry item. In a project set up for shadcn (if it
-has no `components.json` yet, shadcn offers to create one; say yes):
+The text swarm is one component, `<DotSwarmText>`, in one file that needs only React.
+
+1. **Try it.** Run the editor (`npm run dev`, above) or open
+   [swarmingdots.vercel.app](https://swarmingdots.vercel.app), set the text, typeface, size and colour.
+2. **Copy the component.** The site's "Copy the component" button copies the whole file; save it as
+   `components/dot-swarm-text.tsx`. It is also served at
+   `https://swarmingdots.vercel.app/r/dot-swarm-text.tsx`, and `npm run registry` rebuilds it from
+   `src/text-swarm/` into `public/r/`.
+3. **Copy the snippet.** "Copy the `<DotSwarmText />` tag" gives the tag with your settings; paste it where the text goes.
+
+Nothing else is added to your project, and your colours and fonts are not touched.
+
+Already use [shadcn](https://ui.shadcn.com)? The same file is a registry item:
 
 ```sh
 npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json
 ```
 
-That adds a single file, `components/dot-swarm-text.tsx`, that needs only React:
+In a project that has no `components.json`, shadcn runs its own setup first, which rewrites theme
+variables in your CSS and adds a font. Use the copy above there instead.
+
+Then use it like this:
 
 ```tsx
 <DotSwarmText text="hello world" fontSize={40} variant="grid" anchor="top-left" stagger />

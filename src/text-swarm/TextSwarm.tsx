@@ -17,7 +17,9 @@ const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 300;
-// Adds components/dot-swarm-text.tsx (built by scripts/registry.ts) to a shadcn project.
+// The component as one file (built by scripts/registry.ts), for pasting into any React project.
+const FILE_URL = '/r/dot-swarm-text.tsx';
+// The same file as a shadcn registry item, for projects that already use shadcn.
 const COMMAND = 'npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json';
 // The full command is too long for the button; it still copies all of it.
 const COMMAND_LABEL = 'npx shadcn add …';
@@ -69,6 +71,7 @@ export default function TextSwarm() {
   const [skipped, setSkipped] = useState<string[]>([]);
   const [copied, setCopied] = useState<'done' | 'failed' | null>(null);
   const [copiedJsx, setCopiedJsx] = useState<'done' | 'failed' | null>(null);
+  const [copiedFile, setCopiedFile] = useState<'done' | 'failed' | null>(null);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
   // Changing how the swarm moves replays it, so the change is visible at once.
@@ -81,6 +84,18 @@ export default function TextSwarm() {
     const ok = await copyText(COMMAND);
     setCopied(ok ? 'done' : 'failed');
     window.setTimeout(() => setCopied(null), 1800);
+  }
+
+  async function copyFile() {
+    let ok = false;
+    try {
+      const res = await fetch(FILE_URL);
+      ok = res.ok && (await copyText(await res.text()));
+    } catch {
+      // Offline, or the file is not served here: the button says so below.
+    }
+    setCopiedFile(ok ? 'done' : 'failed');
+    window.setTimeout(() => setCopiedFile(null), 1800);
   }
 
   async function copyJsx() {
@@ -271,14 +286,19 @@ export default function TextSwarm() {
           <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
             Reset
           </button>
+          <button type="button" className="primary snippet" onClick={copyFile}>
+            <span aria-live="polite">
+              {copiedFile === 'done' ? 'Copied' : copiedFile === 'failed' ? 'Copy blocked' : 'Copy the component (one file)'}
+            </span>
+          </button>
           <button type="button" className="snippet" onClick={copyJsx}>
             <span aria-live="polite">
-              {copiedJsx === 'done' ? 'Copied' : copiedJsx === 'failed' ? 'Copy blocked' : 'Copy <DotSwarmText /> with these settings'}
+              {copiedJsx === 'done' ? 'Copied' : copiedJsx === 'failed' ? 'Copy blocked' : 'Copy the <DotSwarmText /> tag'}
             </span>
           </button>
           <button
             type="button"
-            className="primary command"
+            className="command"
             aria-label={`Copy the install command: ${COMMAND}`}
             title={COMMAND}
             onClick={copyCommand}
@@ -289,8 +309,9 @@ export default function TextSwarm() {
           </button>
         </div>
         <p className="hint hint-install">
-          Run the shadcn command in your project to add the component (if shadcn asks to create a components.json, say yes), then
-          paste the snippet where you want the text.
+          Paste the component into your project as components/dot-swarm-text.tsx (it needs only React), then paste the snippet where
+          you want the text. Already use shadcn? The command adds the same file; in a project without shadcn it also changes your
+          theme and fonts.
         </p>
       </aside>
     </div>
