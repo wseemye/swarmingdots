@@ -18,6 +18,8 @@ const MIN_SPACING = -2;
 const MAX_SPACING = 12;
 const MAX_LINE_SPACING = 60;
 const MAX_CHARS = 300;
+const MIN_SPEED = 0.25;
+const MAX_SPEED = 2;
 // The controls, split in three for a phone; a wide screen shows them all.
 const TABS = [
   ['text', 'Text'],
@@ -39,6 +41,7 @@ function snippet(s: Settings): string {
   if (s.pairing !== DEFAULT_SETTINGS.pairing) props.push(`pairing="${s.pairing}"`);
   if (s.swarmBy !== DEFAULT_SETTINGS.swarmBy) props.push(`swarmBy="${s.swarmBy}"`);
   if (s.stagger) props.push('stagger');
+  if (s.speed !== DEFAULT_SETTINGS.speed) props.push(`speed={${s.speed}}`);
   const line = `<DotSwarmText ${props.join(' ')} />`;
   const stacked = props.map((p) => `  ${p}`).join('\n');
   return line.length <= 80 ? line : `<DotSwarmText\n${stacked}\n/>`;
@@ -139,6 +142,7 @@ export default function TextSwarm() {
           pairing={settings.pairing}
           swarmBy={settings.swarmBy}
           stagger={settings.stagger}
+          speed={settings.speed}
           fontUrl={`/fonts/${fontFile(settings.variant)}`}
           onMissingGlyphs={setSkipped}
         />
@@ -249,6 +253,29 @@ export default function TextSwarm() {
         </div>
 
         <div className="group group-motion">
+          <div className="sliders">
+            <div className="row">
+              <label htmlFor="speed">Speed</label>
+              <input
+                id="speed"
+                type="range"
+                min={MIN_SPEED}
+                max={MAX_SPEED}
+                step={0.05}
+                value={settings.speed}
+                style={fill(settings.speed, MIN_SPEED, MAX_SPEED)}
+                onChange={(e) => set({ speed: Number(e.target.value) })}
+                // The speed is read as it plays; letting go replays the swarm at the new one.
+                onPointerUp={() => setRun((r) => r + 1)}
+                onKeyUp={() => setRun((r) => r + 1)}
+              />
+              <span className="row-value">
+                <output htmlFor="speed">{settings.speed.toFixed(2)}</output>
+                <span className="unit">×</span>
+              </span>
+            </div>
+          </div>
+
           <div className="field field-inline">
             <span className="picker-label" id="pairing-label">
               Pairing

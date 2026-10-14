@@ -53,6 +53,8 @@ export type DotSwarmTextProps = {
   swarmBy?: SwarmBy;
   /** Start the turns of swarmBy one after another, nearest the anchor first, instead of all together. Default false. */
   stagger?: boolean;
+  /** How fast the swarm plays. 1 takes about a second a word, 0.5 twice as long, 2 half as long. Default 0.75. */
+  speed?: number;
   /** How the text block sits in the width it is given. Default 'start'. */
   align?: 'start' | 'center' | 'end';
   /** The element that holds the text. Default 'p'. */
@@ -103,6 +105,7 @@ export default function DotSwarmText({
   pairing = 'scatter',
   swarmBy = 'word',
   stagger = false,
+  speed = 0.75,
   align = 'start',
   as: Tag = 'p',
   className,
@@ -274,9 +277,10 @@ export default function DotSwarmText({
                   lineSpacing={lineSpacing}
                   color={resolved ?? inherited}
                   variant={variant}
-                  delay={layout.intro ? INTRO_MS + (schedule.word[li]?.[wi] ?? 0) : 0}
+                  delay={layout.intro ? INTRO_MS + (schedule.word[li]?.[wi] ?? 0) / speed : 0}
                   wave={wave}
                   pairing={pairing}
+                  speed={speed}
                   letterDelays={schedule.letters?.[li]?.[wi]}
                   trailingSpace={piece.gap}
                 />

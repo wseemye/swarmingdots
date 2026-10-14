@@ -64,12 +64,14 @@ type Props = {
   wave: Wave;
   /** How brick dots are matched to letter cells: at random, or along a pen path. */
   pairing: Pairing;
+  /** How fast the swarm plays: 1 is the timings above, 0.5 takes twice as long. */
+  speed: number;
   /** When the swarm goes letter by letter: ms after this word starts that each of its letters does. */
   letterDelays?: number[];
   trailingSpace: boolean;
 };
 
-export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, variant, delay, wave, pairing, letterDelays, trailingSpace }: Props) {
+export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, variant, delay, wave, pairing, speed, letterDelays, trailingSpace }: Props) {
   const dot = fontSize * PIXEL_EM;
   const family = fontFamily(variant);
   const pixel = drawPixel(variant);
@@ -91,6 +93,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   const timeRef = useRef(0);
   // Read when the swarm starts, so a resize or a new anchor never restarts one.
   const waveRef = useRef(wave);
+  const speedRef = useRef(speed);
   const lettersRef = useRef(letterDelays);
   const redrawRef = useRef<() => void>(() => {});
 
@@ -363,7 +366,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     let startedAt: number | null = null;
     function step(now: number) {
       if (startedAt === null) startedAt = now;
-      timeRef.current = Math.min(durationRef.current, now - startedAt);
+      timeRef.current = Math.min(durationRef.current, (now - startedAt) * speedRef.current);
       render(timeRef.current);
       if (timeRef.current < durationRef.current) {
         t.frame = requestAnimationFrame(step);
@@ -401,6 +404,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
   useLayoutEffect(() => {
     waveRef.current = wave;
+    speedRef.current = speed;
     lettersRef.current = letterDelays;
   });
 
