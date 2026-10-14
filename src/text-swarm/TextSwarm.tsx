@@ -260,7 +260,10 @@ export default function TextSwarm() {
             </span>
           </button>
         </div>
-        <p className="hint hint-install">Copies the shadcn command that adds this text, as one component, to your project.</p>
+        <p className="hint hint-install">
+          Copies the shadcn command that adds this text, as one component, to your project. No components.json yet? Run
+          npx shadcn@latest init first.
+        </p>
       </aside>
     </div>
   );

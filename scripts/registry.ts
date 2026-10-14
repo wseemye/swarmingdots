@@ -43,7 +43,7 @@ const reactNames = new Set<string>();
 const parts: string[] = [];
 
 for (const file of MODULES) {
-  let src = readFileSync(join(SRC, file), 'utf8');
+  let src = readFileSync(join(SRC, file), 'utf8').replace(/\r\n/g, '\n');
 
   src = src.replace(/^'use client';\n+/m, '');
   src = src.replace(/^import \{([^}]*)\} from 'react';\n/m, (_, names: string) => {
