@@ -144,7 +144,8 @@ export default function TextSwarm() {
 
       <aside className="text-swarm-panel" aria-label="Customize" data-tab={tab}>
         {/* On a phone the controls are split in three; on a wide screen all of them show and this row is hidden. */}
-        <div className="tabs">
+        <div className="tabs" style={{ '--n': TABS.length, '--i': TABS.findIndex(([id]) => id === tab) } as CSSProperties}>
+          <span className="slide" aria-hidden="true" />
           {TABS.map(([id, label]) => (
             <button key={id} type="button" className="tab" aria-pressed={tab === id} onClick={() => setTab(id)}>
               {label}

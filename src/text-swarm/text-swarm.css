@@ -87,6 +87,7 @@
 
 /* Text, Style and Motion: only on a phone (see the portrait query below). */
 .tabs {
+  position: relative;
   display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2px;
@@ -97,6 +98,7 @@
 }
 
 .tab {
+  position: relative;
   height: 30px;
   border: 0;
   border-radius: 6px;
@@ -111,7 +113,7 @@
 }
 
 .tab[aria-pressed='true'] {
-  background: #111;
+  background: transparent;
   color: #fff;
 }
 
@@ -662,7 +664,8 @@
   position: relative;
 }
 
-.variants > .slide {
+.variants > .slide,
+.tabs > .slide {
   position: absolute;
   top: 2px;
   bottom: 2px;
@@ -806,8 +809,7 @@
   }
 }
 
-.pill[aria-checked='true'],
-.tab[aria-pressed='true'] {
+.pill[aria-checked='true'] {
   animation: pop 200ms var(--ease-out);
 }
 
@@ -865,12 +867,12 @@
   .text-swarm-panel,
   .chip,
   .pill,
-  .tab,
   .icon-tick {
     animation: none;
   }
 
-  .variants > .slide {
+  .variants > .slide,
+  .tabs > .slide {
     transition: none;
   }
 
