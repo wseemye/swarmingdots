@@ -352,7 +352,6 @@
   font-size: 12px;
 }
 
-.num,
 .picker-hex {
   height: 32px;
   padding: 0 8px;
@@ -363,12 +362,6 @@
   font-variant-numeric: tabular-nums;
   color: inherit;
   transition: border-color 160ms var(--ease-out);
-}
-
-.num {
-  width: 44px;
-  padding: 0 4px;
-  text-align: right;
 }
 
 /* ── Motion: where the swarm starts, and what takes a turn of its own ── */
@@ -659,7 +652,6 @@
 }
 
 /* ── Focus ── */
-.num:focus-visible,
 .picker-hex:focus-visible,
 .field textarea:focus-visible {
   border-color: #111;
@@ -1109,7 +1101,6 @@
 /* iOS zooms the page into any field with text under 16px. */
 @media (pointer: coarse) {
   .field textarea,
-  .num,
   .picker-hex {
     font-size: 16px;
   }
@@ -1119,7 +1110,6 @@
   .chip,
   .tab,
   .buttons button,
-  .num,
   .picker-hex,
   .picker-swatch,
   .anchor-dot,

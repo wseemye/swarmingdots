@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  balloon
-  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "balloon"
-  obtained from: @iconify-json/pinhead@1.2.33
-  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
-  license text: "CC0 1.0 Universal Public Domain Dedication"
--->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M7.5 0c3 0 5 2.5 5 6c0 4-4.5 7-4.5 7s.5 1 .5 1.5s-2 .5-2 0S7 13 7 13s-4.5-3-4.5-7c0-3.5 2-6 5-6m0 1c-3 0-4.5 3.5-4 5.5c.5-2 2-4.5 4-5.5"/></svg>

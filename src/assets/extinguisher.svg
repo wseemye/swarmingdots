@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  extinguisher
-  source: https://github.com/waysidemapping/pinhead (Pinhead Map Icons by Quincy Morgan), icon "fire-extinguisher"
-  obtained from: @iconify-json/pinhead@1.2.33
-  license: CC0-1.0 - https://creativecommons.org/publicdomain/zero/1.0/
-  license text: "CC0 1.0 Universal Public Domain Dedication"
--->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15"><path fill="#000" d="M5.14 1.5c-1.18.21-1.5.86-1.93 1.39c-.32.54-1.07.11-.75-.43c.22-.53 1.08-1.39 1.72-1.6c-.11-.11.21-.86.86-.86h1.39v1.07h2.14L12.86 0v3.21L8.57 2.14H6.43v1.07c.53.11 2.14.65 2.14 2.15v8.57c0 .21-.43 1.07-.86 1.07H3.86c-.43 0-.65-.86-.65-1.07V5.36c0-1.5 1.5-1.93 1.93-2.04z"/></svg>
