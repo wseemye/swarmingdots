@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ease } from './ease';
 import { drawPixel, fontFamily, type Variant } from './variants';
-import { traceOrder, type Pairing } from './trace';
 import type { Wave } from './wave';
 import { BOX_ROWS, LINE_ASCENT, LINE_DESCENT, PIXEL_EM, type WordData } from './words';
 
@@ -11,16 +10,10 @@ const FLIGHT_MS = 650;
 // leaves first, the farthest one this much later. Every word takes the same
 // time, so words that start together also land together.
 const WAVE_MS = 350;
-// Both pairings take 1s in all: WAVE_MS + FLIGHT_MS, or TRACE_MS + TRACE_FLIGHT_MS.
-// Trace: how long the pen takes to draw a word, start to finish (again the same
-// for every word), and each dot's quicker trip, so the stroke stays crisp.
-const TRACE_MS = 700;
-const TRACE_FLIGHT_MS = 300;
-// Letter by letter: the wave across one letter, and the pen's time on one letter.
+// Letter by letter: the wave across one letter, and each dot's shorter trip,
+// so one letter lands before the next is far along.
 const LETTER_WAVE_MS = 160;
-// Letter by letter, each dot flies for less, so one letter lands before the next is far along.
 const LETTER_FLIGHT_MS = 420;
-const TRACE_LETTER_MS = 200;
 
 type Phase = 'box' | 'swarm' | 'done';
 
@@ -62,8 +55,6 @@ type Props = {
   delay: number;
   /** Where in the word the dots start filling in from. */
   wave: Wave;
-  /** How brick dots are matched to letter cells: at random, or along a pen path. */
-  pairing: Pairing;
   /** How fast the swarm plays: 1 is the timings above, 0.5 takes twice as long. */
   speed: number;
   /** When the swarm goes letter by letter: ms after this word starts that each of its letters does. */
@@ -71,7 +62,7 @@ type Props = {
   trailingSpace: boolean;
 };
 
-export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, variant, delay, wave, pairing, speed, letterDelays, trailingSpace }: Props) {
+export default function Word({ word, fontSize, letterSpacing, lineSpacing, color, variant, delay, wave, speed, letterDelays, trailingSpace }: Props) {
   const dot = fontSize * PIXEL_EM;
   const family = fontFamily(variant);
   const pixel = drawPixel(variant);
@@ -109,7 +100,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     tg: Uint16Array;
     dl: Float32Array;
   } | null>(null);
-  const timers = useRef({ begin: 0, frame: 0, plan: 0 });
+  const timers = useRef({ begin: 0, frame: 0 });
   const beginAt = useRef<number | null>(null);
   // The slot a word takes in the line grows from where it was to its full width
   // as the dots settle, so the boxes are spaced by their own widths at first.
@@ -173,7 +164,6 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     const hadWord = dotsRef.current !== null;
     const t = timers.current;
     window.clearTimeout(t.begin);
-    window.clearTimeout(t.plan);
     cancelAnimationFrame(t.frame);
 
     const n = cells.length / 2;
@@ -188,16 +178,15 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       tg[i] = glyphs[i];
     }
 
-    // The word starts as a block. Scatter: dot i goes to an arbitrary cell
-    // instead of its row-order partner, so dots cross and reassemble (same
-    // method as the shape swarm). Trace pairs them in timeDots instead.
+    // The word starts as a block. Dot i goes to an arbitrary cell instead of
+    // its row-order partner, so dots cross and reassemble.
     const box = boxCells(n, baseline);
     for (let i = 0; i < n; i++) {
       ox[i] = box[i * 2];
       oy[i] = box[i * 2 + 1];
     }
     const byLetter = lettersRef.current;
-    if (byLetter && pairing === 'scatter') {
+    if (byLetter) {
       // The word's brick is cut into one small brick per letter, side by side with no
       // gaps: the brick gives its dots out column by column from the left, to the
       // letters in the order they stand in the word, so each letter's dots start in
@@ -216,7 +205,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       ty.set(y2);
       tg.set(g2);
     }
-    for (let i = n - 1; i > 0 && pairing === 'scatter' && !byLetter; i--) {
+    for (let i = n - 1; i > 0 && !byLetter; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [tx[i], tx[j]] = [tx[j], tx[i]];
       [ty[i], ty[j]] = [ty[j], ty[i]];
@@ -235,7 +224,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
     // Each dot leaves once the wave reaches the place it is heading for, so the
     // word fills in from the chosen point of its own box. Measured in dots.
-    // Letter by letter, scattered: each letter has its own turn, and its dots
+    // Letter by letter: each letter has its own turn, and its dots
     // fill in from the chosen point of that letter alone.
     function letterWave(off: number[]) {
       const { fx, fy } = waveRef.current;
@@ -272,12 +261,8 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       const { fx, fy } = waveRef.current;
       const { wordCols: wc, rows: r, letterSpacing: ls } = live.current;
       const off = lettersRef.current;
-      if (off && pairing === 'scatter') {
+      if (off) {
         letterWave(off);
-        return;
-      }
-      if (pairing === 'trace') {
-        traceDots(path ?? planPath());
         return;
       }
       const ax = fx * wc;
@@ -293,74 +278,6 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
         dl[i] = reach > 0 ? (WAVE_MS * Math.min(dist, reach)) / reach : 0;
       }
       durationRef.current = WAVE_MS + FLIGHT_MS;
-    }
-
-    // Trace: the word is written one letter at a time, left to right, each
-    // letter finished before the next starts, the way a pen would. Each
-    // letter's own short pen path starts at its cell nearest the chosen point.
-    // The brick hands out its dots column by column from the left, k-th dot to
-    // the k-th cell on the path, and they leave in path order: the brick empties
-    // from the left as the pen moves right, so no letter is written inside
-    // what is left of the brick.
-    function planPath() {
-      const { fx, fy } = waveRef.current;
-      const letters = new Map<number, number[]>();
-      for (let i = 0; i < n; i++) {
-        const cellsOf = letters.get(tg[i]);
-        if (cellsOf) cellsOf.push(i);
-        else letters.set(tg[i], [i]);
-      }
-      const turn = lettersRef.current;
-      const order = [...letters.keys()].sort((a, b) => (turn ? (turn[a] ?? 0) - (turn[b] ?? 0) : 0) || a - b);
-      const out = new Uint32Array(n);
-      let at = 0;
-      for (const g of order) {
-        const idx = letters.get(g)!;
-        const xs = idx.map((i) => tx[i]);
-        const ys = idx.map((i) => ty[i]);
-        const left = Math.min(...xs);
-        const right = Math.max(...xs);
-        for (const k of traceOrder(xs, ys, left + fx * (right - left), fy * rows)) out[at++] = idx[k];
-      }
-      return out;
-    }
-    // Worked out while the brick sits, one word per task, so a long sentence
-    // does not stall the frame its words start moving on.
-    let path: Uint32Array | null = null;
-    if (pairing === 'trace') t.plan = window.setTimeout(() => (path = planPath()), 0);
-
-    function traceDots(path: Uint32Array) {
-      const fromBrick = Array.from({ length: n }, (_, i) => i).sort((a, b) => ox[a] - ox[b] || oy[a] - oy[b]);
-      const px = Float32Array.from(path, (c) => tx[c]);
-      const py = Float32Array.from(path, (c) => ty[c]);
-      const pg = Uint16Array.from(path, (c) => tg[c]);
-      const bx = Float32Array.from(fromBrick, (i) => ox[i]);
-      const by = Float32Array.from(fromBrick, (i) => oy[i]);
-      tx.set(px);
-      ty.set(py);
-      tg.set(pg);
-      ox.set(bx);
-      oy.set(by);
-      flightRef.current = TRACE_FLIGHT_MS;
-      const turn = lettersRef.current;
-      if (turn) {
-        // Letter by letter: every letter is drawn on its own turn, in the order of the turns.
-        const count = new Map<number, number>();
-        for (let k = 0; k < n; k++) count.set(tg[k], (count.get(tg[k]) ?? 0) + 1);
-        const seen = new Map<number, number>();
-        let last = 0;
-        for (let k = 0; k < n; k++) {
-          const at = seen.get(tg[k]) ?? 0;
-          seen.set(tg[k], at + 1);
-          const c = count.get(tg[k])!;
-          dl[k] = (turn[tg[k]] ?? 0) + (c > 1 ? (TRACE_LETTER_MS * at) / (c - 1) : 0);
-          last = Math.max(last, dl[k]);
-        }
-        durationRef.current = last + TRACE_FLIGHT_MS;
-        return;
-      }
-      for (let k = 0; k < n; k++) dl[k] = n > 1 ? (TRACE_MS * k) / (n - 1) : 0;
-      durationRef.current = TRACE_MS + TRACE_FLIGHT_MS;
     }
 
     let startedAt: number | null = null;
@@ -400,7 +317,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       t.frame = requestAnimationFrame(step);
     }, wait);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [word, pairing]);
+  }, [word]);
 
   useLayoutEffect(() => {
     waveRef.current = wave;
@@ -412,7 +329,6 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     const t = timers.current;
     return () => {
       window.clearTimeout(t.begin);
-        window.clearTimeout(t.plan);
       cancelAnimationFrame(t.frame);
     };
   }, []);

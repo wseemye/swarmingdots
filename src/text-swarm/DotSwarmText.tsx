@@ -3,7 +3,6 @@
 import { Fragment, memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType } from 'react';
 import { ANCHORS, MAX_SPAN_MS, STAGGER_MS, type Anchor, type SwarmBy } from './anchors';
 import { fitLines, layoutText, type TextLayout } from './rasterize';
-import type { Pairing } from './trace';
 import { fontFamily, fontFile, type Variant } from './variants';
 import { anchorFractions, anchorPoint, letterTurns, placeWords, unitTurns } from './wave';
 import Word from './Word';
@@ -37,13 +36,6 @@ export type DotSwarmTextProps = {
   lineSpacing?: number;
   /** Where the dots fill each word in from; with swarmBy, also which letter, word, line or paragraph goes first. Default 'center'. */
   anchor?: Anchor;
-  /**
-   * How the brick's dots find their places: 'scatter' pairs them at random, so
-   * the brick bursts and reassembles; 'trace' writes each word letter by
-   * letter, left to right, each letter along a short pen path (a
-   * travelling-salesman tour) that starts nearest the anchor. Default 'scatter'.
-   */
-  pairing?: Pairing;
   /**
    * What the swarm is built from: 'letter' makes each letter its own small brick, side by side with no
    * gaps; 'word', 'line' (as it settles on screen) and 'paragraph' (a line you started with Enter) keep a
@@ -108,7 +100,6 @@ export default function DotSwarmText({
   letterSpacing = 0,
   lineSpacing = 6,
   anchor = 'center',
-  pairing = 'scatter',
   swarmBy = 'word',
   stagger = false,
   staggerMs = STAGGER_MS,
@@ -286,7 +277,6 @@ export default function DotSwarmText({
                   variant={variant}
                   delay={layout.intro ? INTRO_MS + (schedule.word[li]?.[wi] ?? 0) : 0}
                   wave={wave}
-                  pairing={pairing}
                   speed={speed}
                   letterDelays={schedule.letters?.[li]?.[wi]}
                   trailingSpace={piece.gap}

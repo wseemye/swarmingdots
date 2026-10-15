@@ -1,5 +1,4 @@
 import { STAGGER_MS, type SwarmBy } from './anchors';
-import type { Pairing } from './trace';
 import type { Variant } from './variants';
 
 export type Settings = {
@@ -19,8 +18,6 @@ export type Settings = {
   lineSpacing: number;
   /** Where the swarm starts, as a cell of a 3x3 grid over the text block, 0-8 in reading order. */
   anchor: number;
-  /** How the brick's dots find their places: at random, or along a pen path. */
-  pairing: Pairing;
   /** What the swarm is built from, and what takes a turn when staggered: letter, word, line or paragraph. */
   swarmBy: SwarmBy;
   /** Whether those turns start one after another, instead of all together. */
@@ -54,7 +51,6 @@ export const DEFAULT_SETTINGS: Settings = {
   letterSpacing: 0,
   lineSpacing: 6,
   anchor: 4,
-  pairing: 'scatter',
   swarmBy: 'word',
   stagger: false,
   staggerMs: STAGGER_MS,

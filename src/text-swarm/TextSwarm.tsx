@@ -8,7 +8,6 @@ import { ANCHORS, SWARM_BY } from './anchors';
 import DotSwarmText from './DotSwarmText';
 import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
 import VariantPicker from './VariantPicker';
-import { PAIRINGS } from './trace';
 import { fontFile } from './variants';
 import './text-swarm.css';
 
@@ -40,7 +39,6 @@ function snippet(s: Settings): string {
   if (s.letterSpacing !== DEFAULT_SETTINGS.letterSpacing) props.push(`letterSpacing={${s.letterSpacing}}`);
   if (s.lineSpacing !== DEFAULT_SETTINGS.lineSpacing) props.push(`lineSpacing={${s.lineSpacing}}`);
   if (s.anchor !== DEFAULT_SETTINGS.anchor) props.push(`anchor="${ANCHORS[s.anchor]}"`);
-  if (s.pairing !== DEFAULT_SETTINGS.pairing) props.push(`pairing="${s.pairing}"`);
   if (s.swarmBy !== DEFAULT_SETTINGS.swarmBy) props.push(`swarmBy="${s.swarmBy}"`);
   if (s.stagger) props.push('stagger');
   // The gap only means something when staggering.
@@ -143,7 +141,6 @@ export default function TextSwarm() {
           letterSpacing={settings.letterSpacing}
           lineSpacing={settings.lineSpacing}
           anchor={ANCHORS[settings.anchor]}
-          pairing={settings.pairing}
           swarmBy={settings.swarmBy}
           stagger={settings.stagger}
           staggerMs={settings.staggerMs}
@@ -279,38 +276,6 @@ export default function TextSwarm() {
                 <span className="unit">×</span>
               </span>
             </div>
-          </div>
-
-          <div className="field field-inline">
-            <span className="picker-label" id="pairing-label">
-              Pairing
-            </span>
-            <div
-              className="variants pairings"
-              role="radiogroup"
-              aria-labelledby="pairing-label"
-              aria-describedby="pairing-note"
-              style={{ '--n': PAIRINGS.length, '--i': PAIRINGS.indexOf(settings.pairing) } as CSSProperties}
-            >
-              <span className="slide" aria-hidden="true" />
-              {PAIRINGS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  role="radio"
-                  className="variant"
-                  aria-checked={settings.pairing === p}
-                  onClick={() => setMotion({ pairing: p })}
-                >
-                  <span className="variant-name">{p === 'scatter' ? 'Scatter' : 'Trace'}</span>
-                </button>
-              ))}
-            </div>
-            <p className="hint hint-pairing" id="pairing-note">
-              {settings.pairing === 'scatter'
-                ? 'Each dot flies to a random place, so the brick bursts and reassembles.'
-                : 'Each word is written letter by letter, left to right; each letter starts from the grid point.'}
-            </p>
           </div>
 
           <div className="motion">

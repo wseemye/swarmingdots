@@ -37,7 +37,6 @@ readable by screen readers and crawlers.
 | `letterSpacing` | `0`         | extra space after each letter, in dots                                      |
 | `lineSpacing`   | `6`         | gap between lines, in dots                                                  |
 | `anchor`        | `'center'`  | where each word fills in from: `top-left`, `top`, …, `bottom-right`         |
-| `pairing`       | `'scatter'` | `scatter` sends dots to random cells; `trace` writes letters along a pen path |
 | `swarmBy`       | `'word'`    | `letter` gives each letter its own brick; `word`, `line`, `paragraph` use one per word. Also the unit `stagger` steps through |
 | `stagger`       | `false`     | start each unit one after another, nearest the anchor first                 |
 | `staggerMs`     | `100`       | ms between units when staggering (the whole run is capped at 3s)            |
@@ -57,10 +56,8 @@ readable by screen readers and crawlers.
 - **Wrapping.** Lines break where the settled words will. A word wider than the
   container is cut between letters into the fewest pieces that fit, and re-cut
   on resize.
-- **Pairing.** `scatter` shuffles target cells (Fisher–Yates), so the brick
-  bursts and reassembles as a wave from the anchor. `trace` builds a short path
-  through each letter (nearest neighbour, then 2-opt) and feeds dots into it
-  column by column, so the brick empties as the pen moves right.
+- **Swarm.** Each dot is sent to a random cell of its word, so the brick
+  bursts and reassembles, filling in as a wave from the anchor.
 
 ## Develop
 
@@ -74,7 +71,7 @@ npm run registry  # regenerate public/r/ only
 
 | path                          | what it is                                                         |
 | ----------------------------- | ------------------------------------------------------------------ |
-| `src/text-swarm/DotSwarmText.tsx` | the component, plus `anchors`, `variants`, `words`, `ease`, `rasterize`, `wave`, `trace`, `Word` it imports |
+| `src/text-swarm/DotSwarmText.tsx` | the component, plus `anchors`, `variants`, `words`, `ease`, `rasterize`, `wave`, `Word` it imports |
 | `src/text-swarm/TextSwarm.tsx`    | the editor at `/`                                              |
 | `src/text-swarm/Intro.tsx`        | the about page at `/intro`                                     |
 | `scripts/registry.ts`             | joins the component's modules into `public/r/dot-swarm-text.{tsx,json,md}` |

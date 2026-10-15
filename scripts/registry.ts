@@ -16,10 +16,10 @@ const NAME = 'dot-swarm-text';
 const SITE = 'https://swarmingdots.vercel.app';
 
 // Dependency order: each module only uses what comes before it.
-const MODULES = ['anchors.ts', 'variants.ts', 'words.ts', 'ease.ts', 'rasterize.ts', 'wave.ts', 'trace.ts', 'Word.tsx', 'DotSwarmText.tsx'];
+const MODULES = ['anchors.ts', 'variants.ts', 'words.ts', 'ease.ts', 'rasterize.ts', 'wave.ts', 'Word.tsx', 'DotSwarmText.tsx'];
 const MAIN = 'DotSwarmText.tsx';
 // Exports from the helper modules that the installed file should still offer.
-const PUBLIC = new Set(['Anchor', 'Variant', 'Pairing', 'SwarmBy']);
+const PUBLIC = new Set(['Anchor', 'Variant', 'SwarmBy']);
 
 const HEADER = `/**
  * DotSwarmText: text in Geist Pixel that arrives as a swarm of dots.
@@ -120,7 +120,6 @@ Text in Geist Pixel that arrives as a swarm of dots. One React component in one 
 | \`letterSpacing\` | \`0\`         | extra space after each letter, in dots                               |
 | \`lineSpacing\`   | \`6\`         | gap between lines, in dots                                           |
 | \`anchor\`        | \`'center'\`  | where each word fills in from (top-left, top, top-right, left, center, ...) |
-| \`pairing\`       | \`'scatter'\` | how dots find their places: scatter (random) or trace (pen path)     |
 | \`swarmBy\`       | \`'word'\`     | what the swarm is built from: letter makes each letter its own small brick, side by side with no gaps; word, line (as it settles on screen) and paragraph (a line started with Enter) keep a brick per word. With stagger, it is also what takes a turn |
 | \`stagger\`       | \`false\`     | start those turns one after another, nearest the anchor first, instead of all together |
 | \`staggerMs\`    | \`100\`       | only with stagger: ms between one turn starting and the next, in real time whatever the speed; ignored when stagger is off |
