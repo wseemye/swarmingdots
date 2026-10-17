@@ -100,6 +100,14 @@ How each dot in the brick is matched to a cell in the letters:
   and a stream runs from the brick to the pen tip. Planning is done while the
   brick sits, one word per task.
 
+While they move, a word's dots are drawn with WebGL: one instanced draw call
+per word on a single shared, hidden WebGL canvas (browsers allow only a few
+contexts per page), copied into the word's own canvas, so the layout and the
+real text are untouched. Round dots are antialiased in the shader, and with an
+opaque colour the GPU's multisampling decides edge coverage, so touching dots
+meet without seams, exactly as one Canvas 2D path draws them. Without WebGL 2,
+or if its context is lost, the same dots are drawn with Canvas 2D.
+
 Whatever the variant, the words are real text in the page from the first
 render, under the dots while they move and on their own once they settle, so
 they can be selected, copied, searched, clicked and read by screen readers and

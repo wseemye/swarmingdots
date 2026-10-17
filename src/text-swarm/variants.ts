@@ -29,3 +29,15 @@ export const variantLabel = (v: Variant) => STYLES[v].name;
 export const fontFamily = (v: Variant) => `Geist Pixel ${STYLES[v].name}`;
 export const fontFile = (v: Variant) => `GeistPixel-${STYLES[v].name}.woff2`;
 export const drawPixel = (v: Variant) => STYLES[v].pixel;
+
+/**
+ * The same pixels for the WebGL renderer: [left, top, width, height, corner
+ * radius], in fractions of a cell, drawn exactly as the shapes above draw them.
+ */
+const BOXES: Record<Variant, readonly [number, number, number, number, number]> = {
+  circle: [0, 0, 1, 1, 0.4],
+  grid: [4 / 38, 4 / 38, 30 / 38, 30 / 38, 0],
+  line: [0, 0.5, 1, 0.5, 0],
+  square: [0, 0, 1, 1, 0],
+};
+export const pixelBox = (v: Variant) => BOXES[v];

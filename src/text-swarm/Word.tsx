@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ease } from './ease';
-import { drawPixel, fontFamily, type Variant } from './variants';
+import { glDots } from './gl';
+import { drawPixel, fontFamily, pixelBox, type Variant } from './variants';
 import { traceOrder, type Pairing } from './trace';
 import type { Wave } from './wave';
 import { BOX_ROWS, LINE_ASCENT, LINE_DESCENT, PIXEL_EM, type WordData } from './words';
@@ -86,7 +87,9 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
   // The animation runs off these so that dragging a control re-sizes, re-spaces
   // and re-colours it live instead of restarting it.
-  const live = useRef({ dot, wordCols, letterSpacing, color, rows, pixel });
+  const live = useRef({ dot, wordCols, letterSpacing, color, rows, pixel, variant });
+  // Each dot's [x, y, atRest] for the frame being drawn, reused from frame to frame.
+  const scratch = useRef(new Float32Array(0));
   // 0 while the dots sit where they started, 1 once they have settled.
   const progressRef = useRef(0);
   // ms since this word's dots started moving.
@@ -146,21 +149,31 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
       canvas.width = bw;
       canvas.height = bh;
     }
+    progressRef.current = ease(Math.min(1, elapsed / durationRef.current));
+    applySlot();
+    // Where every dot is now, and whether it is at rest: [x, y, atRest] in cells.
+    const { n, ox, oy, tx, ty, tg, dl } = dots;
+    if (scratch.current.length < n * 3) scratch.current = new Float32Array(n * 3);
+    const at = scratch.current;
+    for (let i = 0; i < n; i++) {
+      const e = ease(Math.min(1, Math.max(0, (elapsed - dl[i]) / flightRef.current)));
+      at[i * 3] = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * e;
+      at[i * 3 + 1] = oy[i] + (ty[i] - oy[i]) * e;
+      // A dot in flight is a plain square: in motion its shape cannot be seen,
+      // and a square costs about half as much to fill. Dots at rest (in the
+      // brick or in their letter) keep the variant's own pixel.
+      at[i * 3 + 2] = e > 0 && e < 1 ? 0 : 1;
+    }
+    // On the GPU when it can: one draw call for the whole word.
+    if (glDots(ctx, bw, bh, { n, dots: at, box: pixelBox(live.current.variant), cell: d * (bw / w), color: fill })) return;
     ctx.setTransform(bw / w, 0, 0, bh / h, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = fill;
     ctx.beginPath();
-    progressRef.current = ease(Math.min(1, elapsed / durationRef.current));
-    applySlot();
-    const { n, ox, oy, tx, ty, tg, dl } = dots;
     for (let i = 0; i < n; i++) {
-      const e = ease(Math.min(1, Math.max(0, (elapsed - dl[i]) / flightRef.current)));
-      const x = ox[i] + (tx[i] + tg[i] * ls - ox[i]) * e;
-      const y = oy[i] + (ty[i] - oy[i]) * e;
-      // A dot in flight is a plain square: in motion its shape cannot be seen,
-      // and a square costs about half as much to fill. Dots at rest (in the
-      // brick or in their letter) keep the variant's own pixel.
-      if (e > 0 && e < 1) ctx.rect(x * d, y * d, d, d);
+      const x = at[i * 3];
+      const y = at[i * 3 + 1];
+      if (at[i * 3 + 2] === 0) ctx.rect(x * d, y * d, d, d);
       else draw(ctx, x, y, d);
     }
     ctx.fill();
@@ -225,7 +238,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
 
     const dl = new Float32Array(n);
     dotsRef.current = { n, ox, oy, tx, ty, tg, dl };
-    live.current = { dot, wordCols, letterSpacing, color, rows, pixel };
+    live.current = { dot, wordCols, letterSpacing, color, rows, pixel, variant };
     // An edited word's slot eases from the width it had to its new width.
     slotFrom.current = hadWord ? slotNow.current : boxCols;
     durationRef.current = FLIGHT_MS;
@@ -421,7 +434,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
   // inside the line box is not a fixed fraction of the font size. Ask the layout
   // where it actually is and put that on the word's baseline row.
   useLayoutEffect(() => {
-    live.current = { dot, wordCols, letterSpacing, color, rows, pixel };
+    live.current = { dot, wordCols, letterSpacing, color, rows, pixel, variant };
     applySlot();
     redrawRef.current();
 
@@ -442,7 +455,7 @@ export default function Word({ word, fontSize, letterSpacing, lineSpacing, color
     return () => {
       alive = false;
     };
-  }, [dot, wordCols, letterSpacing, color, rows, pixel, baseline, fontSize, boxCols, family]);
+  }, [dot, wordCols, letterSpacing, color, rows, pixel, variant, baseline, fontSize, boxCols, family]);
 
   // Hiding the dots and showing the text land in the same commit; only then
   // is the canvas released, before the browser paints.

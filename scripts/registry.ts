@@ -16,7 +16,7 @@ const NAME = 'dot-swarm-text';
 const SITE = 'https://swarmingdots.vercel.app';
 
 // Dependency order: each module only uses what comes before it.
-const MODULES = ['anchors.ts', 'variants.ts', 'words.ts', 'ease.ts', 'rasterize.ts', 'wave.ts', 'trace.ts', 'Word.tsx', 'DotSwarmText.tsx'];
+const MODULES = ['anchors.ts', 'variants.ts', 'words.ts', 'ease.ts', 'rasterize.ts', 'wave.ts', 'trace.ts', 'gl.ts', 'Word.tsx', 'DotSwarmText.tsx'];
 const MAIN = 'DotSwarmText.tsx';
 // Exports from the helper modules that the installed file should still offer.
 const PUBLIC = new Set(['Anchor', 'Variant', 'Pairing', 'SwarmBy']);
