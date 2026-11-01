@@ -1,76 +1,60 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ease } from '../text-swarm/ease';
 import { painter, STRIDE, type DotPainter } from './dots';
 import { flags, type FlagEntry } from './list';
 import './flags.css';
 
-// /flags/:code — the dots swarm into a flag, and once they settle the real flag (the SVG itself)
-// fades in over them. A flag is never shown wrong, not even in passing: the dots draw only its flat
-// fields of colour, which dots draw exactly, and anything finer (a chakra, stars, a seal, script) is
-// cut from the real flag at build time and fades in over the dots as they land.
+// /flags/:code — a flag drawn entirely in dots, all the same size, swarming in from wherever the
+// last one was.
+//
+// Each flag is about 60,000 dots, enough that every part of it stays exact: the chakra keeps its
+// 24 spokes, every star its five points. A dot's colour is the flag rendered at the grid's size
+// (public/flags/dots/<code>.png, one pixel per dot), so a dot a fine line crosses takes its share
+// of the line, as a pixel on a screen does.
 //
 // Every flag is shown at the same area with about the same number of dots, so the dots are the
-// same size from flag to flag. Pick another and each dot keeps its place in the flag: the one at
-// the top left goes to the top left of the next, the one in the middle to the middle, so the old
-// flag stretches into the new one in a wave from left to right.
+// same size from flag to flag. Pick another and each dot keeps its place in the flag (top left to
+// top left, middle to middle), so one flag stretches into the next in a wave from left to right.
 
-type FlagGrid = { cols: number; rows: number; palette: string[]; cells: string };
+type FlagDots = { cols: number; rows: number; rgba: Uint8ClampedArray };
 type Box = { x: number; y: number; w: number; h: number };
-type Dot = {
-  // Where it starts: centre, size (CSS px) and colour.
-  fx: number;
-  fy: number;
-  fw: number;
-  fh: number;
-  fc: [number, number, number];
-  // The cell it lands on, and whether it fades out there (the new flag has fewer dots).
-  cell: number;
-  leaves: boolean;
-  delay: number;
-};
 
 const DURATION = 1100;
 // The wave crosses the flag in this long; each dot also starts up to JITTER late, so the front is
 // soft.
 const WAVE = 500;
 const JITTER = 160;
-const REVEAL_DELAY = 120;
-// The detail fades in over this last share of the arrival.
-const DETAIL_FROM = 0.55;
 // The settled dot's share of its cell, and its corner radius as a share of its side.
-const FILL = 0.84;
-const ROUND = 0.32;
-const MAX_FLAG_WIDTH = 960;
+const FILL = 0.9;
+const ROUND = 0.3;
+const MAX_FLAG_WIDTH = 1100;
 const PICKER_SPACE = 88;
 const MARGIN = 32;
 
-const ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-// A cell with no dot (outside a flag that is not a rectangle, such as Nepal's).
-const NO_DOT = '.';
-const grids = new Map<string, Promise<FlagGrid>>();
+const loaded = new Map<string, Promise<FlagDots>>();
 
-function loadFlag(code: string): Promise<FlagGrid> {
-  let p = grids.get(code);
+function loadFlag(code: string): Promise<FlagDots> {
+  let p = loaded.get(code);
   if (!p) {
-    const grid = fetch(`/flags/data/${code}.json`).then((r) => {
-      if (!r.ok) throw new Error(`flag ${code}: ${r.status}`);
-      return r.json() as Promise<FlagGrid>;
-    });
-    // Decoded up front so the reveal never waits on the image.
-    const decode = (src: string) => {
+    p = new Promise<FlagDots>((resolve, reject) => {
       const img = new Image();
-      img.src = src;
-      return img.decode().catch(() => undefined);
-    };
-    const entry = flags.find((f) => f.code === code);
-    p = Promise.all([grid, decode(`/flags/svg/${code}.svg`), entry?.detail ? decode(`/flags/detail/${code}.png`) : null]).then(([g]) => g);
-    grids.set(code, p);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return reject(new Error('no 2d canvas'));
+        ctx.drawImage(img, 0, 0);
+        resolve({ cols: canvas.width, rows: canvas.height, rgba: ctx.getImageData(0, 0, canvas.width, canvas.height).data });
+      };
+      img.onerror = () => reject(new Error(`flag ${code}`));
+      img.src = `/flags/dots/${code}.png`;
+    });
+    loaded.set(code, p);
   }
   return p;
 }
-
-const rgb = (hex: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as [number, number, number];
 
 // Every flag gets the same area: the largest at which every flag on offer still fits. Same area
 // and about the same number of dots means the same dot size for all of them.
@@ -89,6 +73,17 @@ function layout(stageW: number, stageH: number, ratio: number): Box {
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Per dot, start and end of the move: centre x, y, width, height (CSS px) and r, g, b (0..1).
+const F = 7;
+type Swarm = {
+  n: number;
+  from: Float32Array; // n * F
+  to: Float32Array; // n * F
+  cell: Int32Array; // the cell each dot lands on
+  leaves: Uint8Array; // 1: shrinks away there (the new flag has fewer dots)
+  delay: Float32Array;
+};
+
 // /flags, or a code it does not know, goes to the first flag.
 export default function FlagRoute() {
   const { code = '' } = useParams();
@@ -99,28 +94,20 @@ export default function FlagRoute() {
 
 function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
   const navigate = useNavigate();
-  // Each visit to a flag is its own arrival: the real flag shows once that arrival's dots settle.
-  const { key: visit } = useLocation();
-
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const detailRef = useRef<HTMLImageElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const [settledVisit, setSettledVisit] = useState<string | null>(null);
-  const [dotsOnly, setDotsOnly] = useState(false);
 
   // Animation state lives outside React: it changes every frame.
   const anim = useRef({
-    dots: [] as Dot[],
-    grid: null as FlagGrid | null,
-    // Where the current flag sits; kept apart from the render's box so the old flag's dots still
-    // know where they were when the next flag takes over.
+    swarm: null as Swarm | null,
+    flag: null as FlagDots | null,
+    // Where the current flag sits, so its dots still know where they were when the next one comes.
     box: null as Box | null,
-    colours: [] as [number, number, number][],
     start: 0,
     frame: 0,
-    visit: '',
     data: new Float32Array(0),
+    scratch: new Float32Array(0),
     paint: null as DotPainter | null,
   });
 
@@ -137,81 +124,100 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
   const boxRef = useRef(box);
   useLayoutEffect(() => {
     boxRef.current = box;
-    anim.current.visit = visit;
   });
 
-  // Where a dot is at time `now`: centre, size and colour.
-  const place = useCallback((d: Dot, now: number) => {
+  // Where each dot ends: its cell's centre, a dot's size, and its colour.
+  const aim = useCallback((s: Swarm, f: FlagDots, b: Box) => {
+    const cw = b.w / f.cols, ch = b.h / f.rows;
+    for (let i = 0; i < s.n; i++) {
+      const c = s.cell[i];
+      const o = i * F;
+      s.to[o] = b.x + ((c % f.cols) + 0.5) * cw;
+      s.to[o + 1] = b.y + (Math.floor(c / f.cols) + 0.5) * ch;
+      s.to[o + 2] = s.leaves[i] ? 0 : cw * FILL;
+      s.to[o + 3] = s.leaves[i] ? 0 : ch * FILL;
+      s.to[o + 4] = f.rgba[c * 4] / 255;
+      s.to[o + 5] = f.rgba[c * 4 + 1] / 255;
+      s.to[o + 6] = f.rgba[c * 4 + 2] / 255;
+    }
+  }, []);
+
+  // Fills `out` (n * F) with every dot where it is at `now`; returns whether all have landed.
+  const positions = useCallback((now: number, out: Float32Array) => {
     const a = anim.current;
-    const g = a.grid!;
-    const b = a.box!;
-    const cw = b.w / g.cols, ch = b.h / g.rows;
-    const col = d.cell % g.cols, row = Math.floor(d.cell / g.cols);
-    const tx = b.x + (col + 0.5) * cw, ty = b.y + (row + 0.5) * ch;
-    const tw = d.leaves ? 0 : cw * FILL, th = d.leaves ? 0 : ch * FILL;
-    const tc = a.colours[d.cell];
-    const t = Math.min(1, Math.max(0, (now - a.start - d.delay) / DURATION));
-    const e = ease(t);
-    const mix = (from: number, to: number) => from + (to - from) * e;
-    return {
-      x: mix(d.fx, tx),
-      y: mix(d.fy, ty),
-      w: mix(d.fw, tw),
-      h: mix(d.fh, th),
-      c: [mix(d.fc[0], tc[0]), mix(d.fc[1], tc[1]), mix(d.fc[2], tc[2])] as [number, number, number],
-      done: t >= 1,
-    };
+    const s = a.swarm!;
+    let done = true;
+    for (let i = 0; i < s.n; i++) {
+      const t = (now - a.start - s.delay[i]) / DURATION;
+      const e = t <= 0 ? 0 : t >= 1 ? 1 : ease(t);
+      if (t < 1) done = false;
+      const o = i * F;
+      for (let k = 0; k < F; k++) out[o + k] = s.from[o + k] + (s.to[o + k] - s.from[o + k]) * e;
+    }
+    return done;
   }, []);
 
   const draw = useCallback(
     (now: number) => {
       const a = anim.current;
       const canvas = canvasRef.current;
-      if (!canvas || !a.paint || !a.grid || !a.box) return true;
+      const s = a.swarm;
+      if (!canvas || !a.paint || !s) return true;
+      if (a.scratch.length < s.n * F) a.scratch = new Float32Array(s.n * F);
+      const p = a.scratch;
+      const done = positions(now, p);
       const dpr = canvas.width / Math.max(1, canvas.clientWidth);
-      const n = a.dots.length;
-      if (a.data.length < n * STRIDE) a.data = new Float32Array(n * STRIDE);
-      let done = true;
-      for (let i = 0; i < n; i++) {
-        const p = place(a.dots[i], now);
-        if (!p.done) done = false;
-        const o = i * STRIDE;
-        a.data[o] = (p.x - p.w / 2) * dpr;
-        a.data[o + 1] = (p.y - p.h / 2) * dpr;
-        a.data[o + 2] = p.w * dpr;
-        a.data[o + 3] = p.h * dpr;
-        a.data[o + 4] = p.c[0];
-        a.data[o + 5] = p.c[1];
-        a.data[o + 6] = p.c[2];
-        a.data[o + 7] = ROUND;
+      if (a.data.length < s.n * STRIDE) a.data = new Float32Array(s.n * STRIDE);
+      const d = a.data;
+      for (let i = 0; i < s.n; i++) {
+        const o = i * F, q = i * STRIDE;
+        d[q] = (p[o] - p[o + 2] / 2) * dpr;
+        d[q + 1] = (p[o + 1] - p[o + 3] / 2) * dpr;
+        d[q + 2] = p[o + 2] * dpr;
+        d[q + 3] = p[o + 3] * dpr;
+        d[q + 4] = p[o + 4];
+        d[q + 5] = p[o + 5];
+        d[q + 6] = p[o + 6];
+        d[q + 7] = ROUND;
       }
-      a.paint(a.data, n);
-      // The detail comes in as the dots land around it.
-      if (detailRef.current) {
-        const t = (now - a.start) / (DURATION + WAVE + JITTER);
-        detailRef.current.style.opacity = String(Math.min(1, Math.max(0, (t - DETAIL_FROM) / (1 - DETAIL_FROM))));
-      }
+      a.paint(d, s.n);
       return done;
     },
-    [place],
+    [positions],
   );
+
+  // Drops the dots that shrank away, so a settled flag holds only its own.
+  const settle = useCallback(() => {
+    const s = anim.current.swarm;
+    if (!s) return;
+    let m = 0;
+    for (let i = 0; i < s.n; i++) {
+      if (s.leaves[i]) continue;
+      if (m !== i) {
+        s.from.copyWithin(m * F, i * F, i * F + F);
+        s.to.copyWithin(m * F, i * F, i * F + F);
+        s.cell[m] = s.cell[i];
+        s.delay[m] = s.delay[i];
+        s.leaves[m] = 0;
+      }
+      m++;
+    }
+    s.n = m;
+  }, []);
 
   const run = useCallback(() => {
     const a = anim.current;
     cancelAnimationFrame(a.frame);
-    const visit = a.visit;
     const tick = (now: number) => {
       if (draw(now)) {
-        // Settled: drop the dots that faded out, then show the real flag.
-        a.dots = a.dots.filter((d) => !d.leaves);
+        settle();
         draw(now);
-        window.setTimeout(() => setSettledVisit(visit), REVEAL_DELAY);
         return;
       }
       a.frame = requestAnimationFrame(tick);
     };
     a.frame = requestAnimationFrame(tick);
-  }, [draw]);
+  }, [draw, settle]);
 
   // Canvas backing store follows the stage size; a resize lands every dot where it is going.
   useEffect(() => {
@@ -222,86 +228,115 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
     canvas.height = Math.round(size.h * dpr);
     const a = anim.current;
     a.paint ??= painter(canvas);
-    if (a.grid && boxRef.current) {
+    if (a.swarm && a.flag && boxRef.current) {
       a.box = boxRef.current;
+      settle();
+      aim(a.swarm, a.flag, a.box);
       a.start = -Infinity;
-      a.dots = a.dots.filter((d) => !d.leaves);
       draw(performance.now());
     }
-  }, [size, draw]);
+  }, [size, draw, aim, settle]);
 
   // A new flag: every dot leaves from wherever it is now.
   useEffect(() => {
     let cancelled = false;
-    loadFlag(flag.code).then((g) => {
-      if (cancelled || !boxRef.current) return;
+    loadFlag(flag.code).then((f) => {
+      const b = boxRef.current;
+      if (cancelled || !b) return;
       const a = anim.current;
       const now = performance.now();
-      const palette = g.palette.map(rgb);
-      const colours = Array.from(g.cells, (ch) => palette[Math.max(0, ALPHABET.indexOf(ch))]);
-      const from = a.grid ? a.dots.filter((d) => !d.leaves).map((d) => place(d, now)) : [];
+      const stage = size;
+
+      // Where the old dots are now (ones already leaving are dropped).
+      const old = a.swarm;
       const oldBox = a.box;
-
-      a.grid = g;
-      a.colours = colours;
-      const b = boxRef.current;
-      a.box = b;
-      const s = size;
-      const motion = !reducedMotion();
-      // A wave from left to right, by where the dot lands.
-      const delay = (cell: number) => (motion ? ((cell % g.cols) / g.cols) * WAVE + Math.random() * JITTER : -DURATION - WAVE - JITTER);
-
-      const dots: Dot[] = [];
-      if (!from.length) {
-        // First load: the dots come in from all over the stage.
-        for (let cell = 0; cell < g.cells.length; cell++) {
-          if (g.cells[cell] === NO_DOT) continue;
-          dots.push({ fx: Math.random() * s.w, fy: Math.random() * s.h, fw: 0, fh: 0, fc: colours[cell], cell, leaves: false, delay: delay(cell) });
-        }
-      } else {
-        // Each old dot falls in the new grid's cell at the same place in the flag. The first dot in
-        // a cell moves there; a cell left empty grows a dot out of a neighbour's; a spare dot
-        // shrinks away into its cell.
-        const old = oldBox!;
-        const claimed = new Int32Array(g.cells.length).fill(-1);
-        const spare: number[] = [];
-        from.forEach((p, i) => {
-          const u = Math.min(0.9999, Math.max(0, (p.x - old.x) / old.w));
-          const v = Math.min(0.9999, Math.max(0, (p.y - old.y) / old.h));
-          const cell = Math.floor(v * g.rows) * g.cols + Math.floor(u * g.cols);
-          if (g.cells[cell] !== NO_DOT && claimed[cell] < 0) claimed[cell] = i;
-          else spare.push(i);
-        });
-        for (let cell = 0; cell < g.cells.length; cell++) {
-          if (g.cells[cell] === NO_DOT) continue;
-          let src = claimed[cell];
-          let grow = false;
-          if (src < 0) {
-            // The nearest claimed cell, searching outwards ring by ring.
-            const cx = cell % g.cols, cy = Math.floor(cell / g.cols);
-            for (let r = 1; src < 0 && r < Math.max(g.cols, g.rows); r++) {
-              for (let dy = -r; src < 0 && dy <= r; dy++) {
-                for (let dx = -r; src < 0 && dx <= r; dx++) {
-                  if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-                  const x = cx + dx, y = cy + dy;
-                  if (x >= 0 && y >= 0 && x < g.cols && y < g.rows && claimed[y * g.cols + x] >= 0) src = claimed[y * g.cols + x];
-                }
-              }
-            }
-            grow = true;
-          }
-          const p = from[src];
-          dots.push({ fx: p.x, fy: p.y, fw: grow ? 0 : p.w, fh: grow ? 0 : p.h, fc: p.c, cell, leaves: false, delay: delay(cell) });
-        }
-        for (const i of spare) {
-          const p = from[i];
-          const u = Math.min(0.9999, Math.max(0, (p.x - old.x) / old.w));
-          const v = Math.min(0.9999, Math.max(0, (p.y - old.y) / old.h));
-          const cell = Math.floor(v * g.rows) * g.cols + Math.floor(u * g.cols);
-          dots.push({ fx: p.x, fy: p.y, fw: p.w, fh: p.h, fc: p.c, cell, leaves: true, delay: delay(cell) });
+      let fromN = 0;
+      let from = new Float32Array(0);
+      if (old && oldBox) {
+        const all = new Float32Array(old.n * F);
+        positions(now, all);
+        from = new Float32Array(old.n * F);
+        for (let i = 0; i < old.n; i++) {
+          if (old.leaves[i]) continue;
+          from.set(all.subarray(i * F, i * F + F), fromN * F);
+          fromN++;
         }
       }
-      a.dots = dots;
+
+      const total = f.cols * f.rows;
+      const hasDot = (c: number) => f.rgba[c * 4 + 3] >= 128;
+      const motion = !reducedMotion();
+      const delayOf = (c: number) => (motion ? ((c % f.cols) / f.cols) * WAVE + Math.random() * JITTER : -DURATION - WAVE - JITTER);
+      const cellAt = (x: number, y: number, bx: Box) => {
+        const u = Math.min(0.9999, Math.max(0, (x - bx.x) / bx.w));
+        const v = Math.min(0.9999, Math.max(0, (y - bx.y) / bx.h));
+        return Math.floor(v * f.rows) * f.cols + Math.floor(u * f.cols);
+      };
+
+      // Each old dot falls in the new grid's cell at the same place in the flag. The first in a
+      // cell moves there; a spare one shrinks away into its cell; a cell left empty grows a dot out
+      // of the nearest claimed one (claims spread outwards ring by ring).
+      const claimed = new Int32Array(total).fill(-1);
+      const spare: number[] = [];
+      for (let i = 0; i < fromN; i++) {
+        const c = cellAt(from[i * F], from[i * F + 1], oldBox!);
+        if (hasDot(c) && claimed[c] < 0) claimed[c] = i;
+        else spare.push(i);
+      }
+      const source = claimed.slice();
+      let frontier: number[] = [];
+      for (let c = 0; c < total; c++) if (source[c] >= 0) frontier.push(c);
+      while (frontier.length) {
+        const next: number[] = [];
+        for (const c of frontier) {
+          const x = c % f.cols, y = Math.floor(c / f.cols);
+          for (const nb of [x > 0 ? c - 1 : -1, x < f.cols - 1 ? c + 1 : -1, y > 0 ? c - f.cols : -1, y < f.rows - 1 ? c + f.cols : -1]) {
+            if (nb < 0 || source[nb] >= 0) continue;
+            source[nb] = source[c];
+            next.push(nb);
+          }
+        }
+        frontier = next;
+      }
+
+      let cellCount = 0;
+      for (let c = 0; c < total; c++) if (hasDot(c)) cellCount++;
+      const n = cellCount + spare.length;
+      const s: Swarm = { n, from: new Float32Array(n * F), to: new Float32Array(n * F), cell: new Int32Array(n), leaves: new Uint8Array(n), delay: new Float32Array(n) };
+      let i = 0;
+      for (let c = 0; c < total; c++) {
+        if (!hasDot(c)) continue;
+        const o = i * F;
+        s.cell[i] = c;
+        s.delay[i] = delayOf(c);
+        if (!fromN) {
+          // First load: the dots come in from all over the stage.
+          s.from[o] = Math.random() * stage.w;
+          s.from[o + 1] = Math.random() * stage.h;
+          s.from[o + 4] = f.rgba[c * 4] / 255;
+          s.from[o + 5] = f.rgba[c * 4 + 1] / 255;
+          s.from[o + 6] = f.rgba[c * 4 + 2] / 255;
+        } else {
+          const src = source[c];
+          s.from.set(from.subarray(src * F, src * F + F), o);
+          // A dot the old flag did not have grows out of its neighbour.
+          if (claimed[c] < 0) s.from[o + 2] = s.from[o + 3] = 0;
+        }
+        i++;
+      }
+      for (const src of spare) {
+        s.from.set(from.subarray(src * F, src * F + F), i * F);
+        const c = cellAt(from[src * F], from[src * F + 1], oldBox!);
+        s.cell[i] = c;
+        s.leaves[i] = 1;
+        s.delay[i] = delayOf(c);
+        i++;
+      }
+
+      a.swarm = s;
+      a.flag = f;
+      a.box = b;
+      aim(s, f, b);
       a.start = now;
       run();
     });
@@ -310,7 +345,7 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
     };
     // `size` is read once when the flag arrives; a resize is handled on its own.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flag, run, place]);
+  }, [flag, run, aim, positions]);
 
   useEffect(() => () => cancelAnimationFrame(anim.current.frame), []);
 
@@ -323,7 +358,7 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLElement && e.target.closest('input:not([type=checkbox]), textarea')) return;
+      if (e.target instanceof HTMLElement && e.target.closest('input, textarea')) return;
       if (e.key === 'ArrowRight') go(1);
       if (e.key === 'ArrowLeft') go(-1);
     };
@@ -337,26 +372,7 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
 
   return (
     <div className="flags" ref={stageRef}>
-      <canvas className="flags-canvas" ref={canvasRef} aria-hidden="true" />
-      {box && flag.detail && (
-        <img
-          key={`detail-${flag.code}`}
-          ref={detailRef}
-          className="flags-detail"
-          src={`/flags/detail/${flag.code}.png`}
-          alt=""
-          style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
-        />
-      )}
-      {box && (
-        <img
-          key={flag.code}
-          className={`flags-real${settledVisit === visit && !dotsOnly ? ' is-shown' : ''}`}
-          src={`/flags/svg/${flag.code}.svg`}
-          alt={`Flag of ${flag.name}`}
-          style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
-        />
-      )}
+      <canvas className="flags-canvas" ref={canvasRef} role="img" aria-label={`Flag of ${flag.name}, drawn in dots`} />
 
       <Link to="/text" className="corner-button flags-corner" aria-label="Back to the text swarm">
         ←
@@ -378,10 +394,6 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
           <button type="button" className="flags-chip" onClick={() => go(1)} aria-label="Next flag">
             →
           </button>
-          <label className="flags-toggle">
-            <input type="checkbox" checked={dotsOnly} onChange={(e) => setDotsOnly(e.target.checked)} />
-            Stay on dots
-          </label>
         </div>
       </div>
     </div>

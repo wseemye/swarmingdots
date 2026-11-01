@@ -5,21 +5,17 @@ export type FlagEntry = {
   name: string;
   /** height / width */
   ratio: number;
-  /** Whether the flag has detail the dots cannot draw, laid over them from /flags/detail/<code>.png. */
-  detail: boolean;
 };
 
 export const flags: FlagEntry[] = [
   {
     "code": "us",
     "name": "United States",
-    "ratio": 0.526316,
-    "detail": true
+    "ratio": 0.526316
   },
   {
     "code": "in",
     "name": "India",
-    "ratio": 0.666667,
-    "detail": true
+    "ratio": 0.666667
   }
 ];
