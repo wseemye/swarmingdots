@@ -358,7 +358,7 @@ export default function FlagSwarm() {
 
       {!flag && size.w > 0 && (
         <div className="flags-title" style={{ bottom: PICKER_SPACE + MARGIN }}>
-          <DotSwarmText as="h1" className="flags-title-text" align="center" text={TITLE} color="#ffffff" fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} />
+          <DotSwarmText as="h1" className="flags-title-text" align="center" text={TITLE.toLowerCase()} letterSpacing={2} color="#ffffff" fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} />
         </div>
       )}
 

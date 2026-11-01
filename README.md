@@ -22,7 +22,8 @@ the text swarm: type anything and watch its dots swarm into text, at
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
 type a country's name in the field under the flag and pick it from the
-suggestions. It opens on "Fun with Flags" swarming in as white dot text (the same
+suggestions. It opens on "fun with flags" swarming in as white dot text, lowercase and
+spaced out, (the same
 `<DotSwarmText>` as `/text`) until a country is picked. It is one page: the flag shown is not part of the address, and old
 `/flags/<code>` links land on `/flags`. See [Flags](#flags).
 
