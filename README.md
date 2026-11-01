@@ -18,7 +18,10 @@ The site lives at [dots.wseem.com](https://dots.wseem.com). For now it is only
 the text swarm: type anything and watch its dots swarm into text, at
 [`/text`](https://dots.wseem.com/text). `/` goes there too, and the old
 `swarmingdots.vercel.app` redirects every path to the same path on
-`dots.wseem.com`. The icons page is not routed; its engine (`src/icons.ts`,
+`dots.wseem.com`.
+
+[`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags
+(`/flags/us`, `/flags/in`; ← and → step through them). See [Flags](#flags). The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
 documented below, for when it comes back.
 
@@ -248,3 +251,32 @@ under
 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). No CC0
 silhouette of those objects existed in the public-domain vector libraries
 reachable from the environment this was built in.
+
+## Flags
+
+`/flags/:code` swarms coloured dots into a country's flag on a dark stage. Once
+they settle, **the real flag fades in over them**: the SVG itself, lined up
+with the dots. The dots are only the arrival. Flags carry seals, script and fine
+detail that no grid of dots can draw faithfully, and a flag drawn wrong can
+offend, so the dots never have the last word. "Dots only" hides the real flag to
+check the dot stage.
+
+The flags come from [`svg-country-flags`](https://github.com/hjnilsson/country-flags)
+(Wikipedia's flags, public domain, in their official proportions and colours).
+`npm run flags` builds, for each code in `CODES` in `scripts/flags.ts`:
+
+- `public/flags/svg/<code>.svg`: the flag, with its source noted at the top;
+- `public/flags/data/<code>.json`: the grid the dots settle into;
+- `src/flags/list.ts`: the flags the page offers.
+
+The grid is fitted to each flag. Of the widths from 80 to 104 columns (the
+height following the flag's own proportions), it keeps the one whose cells best
+line up with the flag's stripes and edges: the US flag gets 100 × 52, four rows
+to a stripe, and India 96 × 63, 21 rows to a band. Each cell takes the colour
+covering most of it, snapped to one of the flag's own colours, so no dot is a
+blend of two. The script prints how much of each cell agrees with its colour,
+and flags anything under 90% for a look.
+
+To add a flag, add its code to `CODES`, run `npm run flags`, and check it at
+`/flags/<code>` with and without "Dots only" before shipping.
+
