@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import DotSwarmText from '../text-swarm/DotSwarmText';
 import CountryPicker from './CountryPicker';
 import { painter, STRIDE, type DotPainter } from './dots';
@@ -37,6 +36,8 @@ const ROUND = 0.3;
 const MAX_FLAG_WIDTH = 1100;
 const PICKER_SPACE = 88;
 const MARGIN = 32;
+// Room for the navbar floating at the top of the page.
+const NAV_SPACE = 48;
 
 const loaded = new Map<string, Promise<FlagDots>>();
 
@@ -67,7 +68,7 @@ function loadFlag(code: string): Promise<FlagDots> {
 // fit every flag on offer (Nepal is tall, Qatar long).
 function layout(stageW: number, stageH: number, ratio: number): Box {
   const availW = Math.max(0, stageW - MARGIN * 2);
-  const availH = Math.max(0, stageH - MARGIN * 2 - PICKER_SPACE);
+  const availH = Math.max(0, stageH - MARGIN * 2 - PICKER_SPACE - NAV_SPACE);
   const fit = (r: number) => {
     const w = Math.min(availW, availH / r, MAX_FLAG_WIDTH);
     return w * w * r;
@@ -77,7 +78,7 @@ function layout(stageW: number, stageH: number, ratio: number): Box {
   for (const f of flags) area = Math.min(area, fit(f.ratio));
   const w = Math.sqrt(area / ratio);
   const h = Math.sqrt(area * ratio);
-  return { x: (stageW - w) / 2, y: MARGIN + (availH - h) / 2, w, h };
+  return { x: (stageW - w) / 2, y: NAV_SPACE + MARGIN + (availH - h) / 2, w, h };
 }
 
 // The flight's easing: CSS cubic-bezier(0.4, 0, 0.2, 1). A gentle start and a long, soft landing,
@@ -126,7 +127,7 @@ function Staircase({ fontSize, bottom }: { fontSize: number; bottom: number }) {
       <div className="flags-stairs" role="heading" aria-level={1} aria-label={TITLE.toLowerCase()} style={{ width: STAIRS_WIDTH * dot, gap: 6 * dot }}>
         {STAIRS.map(({ word, indent }) => (
           <div key={word} aria-hidden="true" style={{ paddingLeft: indent * dot }}>
-            <DotSwarmText as="span" text={word} letterSpacing={STAIR_SPACING} color="#ffffff" fontSize={fontSize} />
+            <DotSwarmText as="span" text={word} letterSpacing={STAIR_SPACING} color="#0a0a0a" fontSize={fontSize} />
           </div>
         ))}
       </div>
@@ -146,6 +147,19 @@ type Swarm = {
   leaves: Uint8Array; // 1: shrinks away there (the new flag has fewer dots)
   delay: Float32Array;
 };
+
+// The stage is white, so white parts of a flag (Japan's field, the stars of the US) are drawn a
+// pale grey instead, or they would vanish into it. Only near-whites change; every other colour is
+// the flag's own.
+const PALE = 0.88;
+const WHITE_TO = 0.9;
+function tone(rgba: Uint8ClampedArray, c: number, out: Float32Array, o: number) {
+  const r = rgba[c * 4] / 255, g = rgba[c * 4 + 1] / 255, b = rgba[c * 4 + 2] / 255;
+  const k = Math.min(r, g, b) >= PALE ? WHITE_TO : 1;
+  out[o] = r * k;
+  out[o + 1] = g * k;
+  out[o + 2] = b * k;
+}
 
 // Until a country is picked the stage shows this, swarming in as dot text the way /text does
 // (The Big Bang Theory).
@@ -198,9 +212,7 @@ export default function FlagSwarm() {
       s.to[o + 1] = b.y + (Math.floor(c / f.cols) + 0.5) * ch;
       s.to[o + 2] = s.leaves[i] ? 0 : cw * FILL;
       s.to[o + 3] = s.leaves[i] ? 0 : ch * FILL;
-      s.to[o + 4] = f.rgba[c * 4] / 255;
-      s.to[o + 5] = f.rgba[c * 4 + 1] / 255;
-      s.to[o + 6] = f.rgba[c * 4 + 2] / 255;
+      tone(f.rgba, c, s.to, o + 4);
     }
   }, []);
 
@@ -354,9 +366,7 @@ export default function FlagSwarm() {
           // First load: the dots come in from all over the stage.
           s.from[o] = Math.random() * stage.w;
           s.from[o + 1] = Math.random() * stage.h;
-          s.from[o + 4] = f.rgba[c * 4] / 255;
-          s.from[o + 5] = f.rgba[c * 4 + 1] / 255;
-          s.from[o + 6] = f.rgba[c * 4 + 2] / 255;
+          tone(f.rgba, c, s.from, o + 4);
         } else if (i < fromN) {
           s.from.set(from.subarray(i * F, i * F + F), o);
         } else {
@@ -389,9 +399,6 @@ export default function FlagSwarm() {
     <div className="flags" ref={stageRef}>
       <canvas className="flags-canvas" ref={canvasRef} role="img" aria-label={flag ? `Flag of ${flag.name}, drawn in dots` : TITLE} />
 
-      <Link to="/text" className="corner-button flags-corner" aria-label="Back to the text swarm">
-        ←
-      </Link>
 
       {!flag && size.w > 0 && <Staircase fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} bottom={PICKER_SPACE + MARGIN} />}
 

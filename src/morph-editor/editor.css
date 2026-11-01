@@ -1,0 +1,854 @@
+@font-face {
+  font-family: 'Geist Pixel Square';
+  src: url('/fonts/GeistPixel-Square.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Grid';
+  src: url('/fonts/GeistPixel-Grid.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Circle';
+  src: url('/fonts/GeistPixel-Circle.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Line';
+  src: url('/fonts/GeistPixel-Line.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Geist Pixel Triangle';
+  src: url('/fonts/GeistPixel-Triangle.woff2') format('woff2');
+  font-display: block;
+}
+
+.editor {
+  --panel-w: 320px;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+  color: #111;
+  transition: background-color 200ms var(--ease-out);
+}
+
+.editor :where(button, input, textarea) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(.editor) .stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  /* The text wraps inside the stage; it never scrolls sideways. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Reserve the scrollbar so it appearing cannot change the width the text wraps to. */
+  scrollbar-gutter: stable;
+  /* The text centres in what the floating panel leaves free. */
+  padding: 56px calc(var(--panel-w) + 48px) 56px 24px;
+}
+
+:where(.editor) .stage-text {
+  /* Full width so the text knows its room; auto margins centre it vertically,
+     and fall back to the top when it overflows so the top is never cut off. */
+  width: 100%;
+  min-width: 0;
+  margin: auto 0;
+}
+
+/* ── Top left: the repository ── */
+:where(.editor) .chips {
+  position: absolute;
+  z-index: 10;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+:where(.editor) .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: #111;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: chip-in 320ms var(--ease-out) both;
+  transition:
+    border-color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+:where(.editor) .chip:active {
+  transform: scale(0.97);
+}
+
+:where(.editor) .chip:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+:where(.editor) .chip:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+:where(.editor) .chip:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+/* ── Customize panel: a card floating over the stage, sized to fit one screen ── */
+:where(.editor) .panel {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  right: 16px;
+  translate: 0 -50%;
+  width: var(--panel-w);
+  max-height: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  overflow-y: auto;
+  border: 1px solid rgb(0 0 0 / 0.1);
+  border-radius: 16px;
+  background: #fff;
+  color: #111;
+  animation: panel-in 360ms var(--ease-out) both;
+  font-size: 13px;
+}
+
+:where(.editor) .panel > * {
+  flex-shrink: 0;
+}
+
+:where(.editor) .group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Text, Style and Color: only on a phone (see the portrait query below). */
+:where(.editor) .tabs {
+  position: relative;
+  display: none;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+:where(.editor) .tab {
+  position: relative;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: color 180ms var(--ease-out);
+}
+
+:where(.editor) .tab[aria-pressed='true'] {
+  color: #fff;
+}
+
+:where(.editor) .tab:active {
+  transform: scale(0.97);
+}
+
+:where(.editor) .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:where(.editor) .field label,
+:where(.editor) .picker-label,
+:where(.editor) .row label {
+  font-weight: 500;
+}
+
+:where(.editor) .hint {
+  margin: 0;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+:where(.editor) .has-warning {
+  color: #a15c00;
+}
+
+/* Label and control on one line. */
+:where(.editor) .field-inline {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 12px;
+}
+
+:where(.editor) .field textarea {
+  resize: vertical;
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  line-height: 1.4;
+  color: inherit;
+}
+
+/* ── Typeface: a sample of each face in one segmented row ── */
+:where(.editor) .variants {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+:where(.editor) .variant {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  color: #666;
+  cursor: pointer;
+  transition: color 180ms var(--ease-out);
+}
+
+:where(.editor) .variant-sample {
+  font-size: 22px;
+  line-height: 1;
+  color: #111;
+  transition: color 180ms var(--ease-out);
+}
+
+:where(.editor) .variant-name {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+:where(.editor) .variant[aria-checked='true'],
+:where(.editor) .variant[aria-checked='true'] .variant-sample {
+  color: #fff;
+}
+
+:where(.editor) .variant:active {
+  transform: scale(0.97);
+}
+
+:where(.editor) .variant:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+:where(.editor) .segments .variant {
+  padding: 6px 0;
+}
+
+:where(.editor) .segments .variant-name {
+  font-size: 12px;
+}
+
+/* ── Segmented choices: one pill that slides to the option you pick ── */
+:where(.editor) .variants > .slide,
+:where(.editor) .tabs > .slide {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n));
+  border-radius: 6px;
+  background: #111;
+  transform: translateX(calc(var(--i) * (100% + 2px)));
+  transition: transform 280ms var(--ease-out);
+  pointer-events: none;
+}
+
+/* ── Autoplay: the label and the track are one button, so the whole row is the target ── */
+:where(.editor) .switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+}
+
+:where(.editor) .switch {
+  flex: none;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #d4d4d4;
+  transition: background-color 200ms var(--ease-out);
+}
+
+/* The thumb stretches while pressed, then settles at the end it was sent to. */
+:where(.editor) .switch-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition:
+    transform 220ms var(--ease-out),
+    width 160ms var(--ease-out);
+}
+
+:where(.editor) .switch-row[aria-checked='true'] .switch {
+  background: #111;
+}
+
+:where(.editor) .switch-row[aria-checked='true'] .switch-thumb {
+  transform: translateX(16px);
+}
+
+:where(.editor) .switch-row:active .switch-thumb {
+  width: 20px;
+}
+
+:where(.editor) .switch-row[aria-checked='true']:active .switch-thumb {
+  transform: translateX(12px);
+}
+
+:where(.editor) .switch-row:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Sliders: label, track and value share one row ── */
+:where(.editor) .sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:where(.editor) .row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+:where(.editor) .row-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.editor) .row-value output {
+  font-weight: 500;
+}
+
+:where(.editor) .unit {
+  color: #666;
+  font-size: 12px;
+}
+
+:where(.editor) .row input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+:where(.editor) .row input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #111 var(--p, 50%), rgb(0 0 0 / 0.12) var(--p, 50%));
+}
+
+:where(.editor) .row input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #111 var(--p, 50%), rgb(0 0 0 / 0.12) var(--p, 50%));
+}
+
+:where(.editor) .row input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: #111;
+  transition: transform 160ms var(--ease-out);
+}
+
+:where(.editor) .row input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: #111;
+  transition: transform 160ms var(--ease-out);
+}
+
+:where(.editor) .row input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.3);
+}
+
+:where(.editor) .row input[type='range']:active::-moz-range-thumb {
+  transform: scale(1.3);
+}
+
+/* ── Colours: two side by side, each opening a picker above it ── */
+:where(.editor) .colors {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+:where(.editor) .picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+:where(.editor) .picker-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:where(.editor) .picker-swatch {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    transform 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
+}
+
+:where(.editor) .picker-swatch:active {
+  transform: scale(0.94);
+}
+
+:where(.editor) .picker-swatch[aria-expanded='true'] {
+  border-color: #111;
+}
+
+:where(.editor) .picker-hex {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-transform: lowercase;
+  transition: border-color 160ms var(--ease-out);
+}
+
+:where(.editor) .picker-pop {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgb(0 0 0 / 0.1);
+  border-radius: 12px;
+  background: #fff;
+  /* Grows out of the swatch that opened it, never from nothing. */
+  transform-origin: 25% 100%;
+  animation: picker-in 160ms var(--ease-out);
+}
+
+:where(.editor) .picker:nth-child(2) .picker-pop {
+  transform-origin: 75% 100%;
+}
+
+:where(.editor) .picker-sv,
+:where(.editor) .picker-hue {
+  position: relative;
+  border-radius: 8px;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+:where(.editor) .picker-sv {
+  height: 128px;
+  background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+}
+
+:where(.editor) .picker-hue {
+  height: 14px;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+}
+
+:where(.editor) .picker-thumb {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ── Focus ── */
+:where(.editor) .picker-hex:focus-visible,
+:where(.editor) .field textarea:focus-visible {
+  border-color: #111;
+  outline: 2px solid #111;
+  outline-offset: 1px;
+}
+
+:where(.editor) .picker-sv:focus-visible,
+:where(.editor) .picker-hue:focus-visible,
+:where(.editor) .picker-swatch:focus-visible,
+:where(.editor) .row input[type='range']:focus-visible,
+:where(.editor) .panel button:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+/* ── Buttons: replay and reset ── */
+:where(.editor) .buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+:where(.editor) .buttons button {
+  height: 36px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+:where(.editor) .buttons button:active {
+  transform: scale(0.97);
+}
+
+:where(.editor) .buttons button.primary {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+/* The prompt gets the whole row. */
+:where(.editor) .buttons button.prompt {
+  grid-column: 1 / -1;
+}
+
+:where(.editor) .buttons button.prompt span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ── Microinteractions ── */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+@keyframes panel-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes picker-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+}
+
+/* A copy that worked: the icon turns into a tick that pops in. */
+@keyframes tick {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+}
+
+:where(.editor) .icon-tick {
+  animation: tick 260ms var(--ease-out);
+}
+
+/* Small lifts for a pointer that hovers; nothing moves for a finger. */
+@media (hover: hover) and (pointer: fine) {
+  :where(.editor) .chip:hover,
+  :where(.editor) .buttons button:hover {
+    border-color: #999;
+    transform: translateY(-1px);
+  }
+
+  :where(.editor) .chip:active,
+  :where(.editor) .buttons button:active {
+    transform: scale(0.97);
+  }
+
+  :where(.editor) .buttons button.primary:hover {
+    border-color: #333;
+    background: #333;
+  }
+
+  :where(.editor) .variant:not([aria-checked='true']):hover .variant-sample,
+  :where(.editor) .variant:not([aria-checked='true']):hover {
+    color: #111;
+  }
+
+  :where(.editor) .row input[type='range']:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+  }
+
+  :where(.editor) .row input[type='range']:hover::-moz-range-thumb {
+    transform: scale(1.2);
+  }
+}
+
+@media (pointer: coarse) {
+  :where(.editor) .row input[type='range']::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+  }
+
+  :where(.editor) .row input[type='range']::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
+
+/* iOS zooms the page into any field with text under 16px. */
+
+  
+  :where(.editor) .field textarea,
+  :where(.editor) .picker-hex {
+    font-size: 16px;
+  }
+}
+
+/* ── Phones and short screens: everything in one viewport ── */
+
+@media (max-width: 900px) {
+  .editor {
+    --panel-w: 290px;
+  }
+}
+
+/* Phone portrait: the stage on top takes whatever height the panel leaves, and
+   the controls below the typeface are split into Text, Style and Color. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .editor {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  :where(.editor) .stage {
+    position: static;
+    /* Room at the top for the button in the corner. */
+    padding: 52px 16px 16px;
+  }
+
+  :where(.editor) .panel {
+    position: static;
+    translate: none;
+    animation-name: panel-up;
+    width: auto;
+    max-height: none;
+    margin: 0 12px 12px;
+    /* No inner scroll here, so the colour popover can open over the stage. */
+    overflow: visible;
+  }
+
+  :where(.editor) .tabs {
+    display: grid;
+  }
+
+/* The same height on every tab, so the stage does not jump when switching. */
+
+  
+  :where(.editor) .group {
+    min-height: 126px;
+  }
+
+  :where(.editor) .panel[data-tab='text'] .group:not(.group-text),
+  :where(.editor) .panel[data-tab='style'] .group:not(.group-style),
+  :where(.editor) .panel[data-tab='color'] .group:not(.group-color) {
+    display: none;
+  }
+
+/* The samples say what they are; the label stays for screen readers. */
+
+  
+  :where(.editor) .field-face > .picker-label {
+    display: none;
+  }
+}
+
+/* Any narrow or short screen: drop what the controls do not need, so the panel
+   fits one screen without scrolling. */
+@media (max-width: 760px), (max-height: 760px) {
+  :where(.editor) .panel {
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  :where(.editor) .group {
+    gap: 10px;
+  }
+
+  :where(.editor) .hint-keys,
+  :where(.editor) .hint-install,
+  :where(.editor) .hint-count:not(.has-warning) {
+    display: none;
+  }
+
+  :where(.editor) .field {
+    gap: 4px;
+  }
+
+  :where(.editor) .field textarea {
+    min-height: 48px;
+    padding: 6px 10px;
+  }
+
+  :where(.editor) .sliders {
+    gap: 2px;
+  }
+
+  :where(.editor) .row {
+    min-height: 30px;
+  }
+
+  :where(.editor) .buttons button {
+    height: 34px;
+  }
+}
+
+/* Landscape phones: the tightest spacing. */
+@media (max-height: 420px) {
+  :where(.editor) .panel {
+    gap: 8px;
+    padding: 10px 16px;
+  }
+
+  :where(.editor) .field textarea {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  :where(.editor) .row {
+    min-height: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.editor) .panel,
+  :where(.editor) .chip,
+  :where(.editor) .icon-tick,
+  :where(.editor) .picker-pop {
+    animation: none;
+  }
+
+  :where(.editor) .variants > .slide,
+  :where(.editor) .tabs > .slide,
+  .editor,
+  :where(.editor) .chip,
+  :where(.editor) .tab,
+  :where(.editor) .variant,
+  :where(.editor) .variant-sample,
+  :where(.editor) .buttons button,
+  :where(.editor) .switch,
+  :where(.editor) .switch-thumb,
+  :where(.editor) .picker-hex,
+  :where(.editor) .picker-swatch,
+  :where(.editor) .row input[type='range']::-webkit-slider-thumb,
+  :where(.editor) .row input[type='range']::-moz-range-thumb {
+    transition: none;
+  }
+
+  :where(.editor) .chip:hover,
+  :where(.editor) .buttons button:hover {
+    transform: none;
+  }
+}

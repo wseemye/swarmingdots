@@ -9,24 +9,45 @@ nothing else.
 npm install
 npm run dev        # picker on http://localhost:5173
 npm run vectorize  # regenerate src/icons.ts from src/assets/*.svg
+npm run glyphs     # regenerate src/morph/glyph-data.ts from Geist Pixel (for /morph)
+npm test           # unit tests for /morph: glyphs, layout, shapes, spring, settings
 npm run build
 ```
 
 ## Routes
 
-The site lives at [dots.wseem.com](https://dots.wseem.com). For now it is only
-the text swarm: type anything and watch its dots swarm into text, at
-[`/text`](https://dots.wseem.com/text). `/` goes there too, and the old
+The site lives at [dots.wseem.com](https://dots.wseem.com), all in light mode. A
+navbar floats at the top of every page: the title, "dots" in Geist Pixel Circle,
+which swarms in out of its own dots when the site first opens, then
+text | morph | flags | github (`src/Nav.tsx`, styles in `src/shell.css`).
+
+The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
+watch its dots swarm into text. `/` goes there too, and the old
 `swarmingdots.vercel.app` redirects every path to the same path on
 `dots.wseem.com`.
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
 type a country's name in the field under the flag and pick it from the
-suggestions. It opens on "fun with flags" swarming in as white dot text, lowercase and
+suggestions. Flags sit on the same white page as everything else; a flag's near-white parts
+are drawn a pale grey so they do not vanish into it. It opens on "fun with flags" swarming in as dark dot text, lowercase and
 spaced out, as a staircase (a word to a line, each starting one space after
 the end of the word above), (the same
 `<DotSwarmText>` as `/text`) until a country is picked. It is one page: the flag shown is not part of the address, and old
 `/flags/<code>` links land on `/flags`. See [Flags](#flags).
+
+[`/morph`](https://dots.wseem.com/morph) is Morphing Pixels, merged in from its own
+repository: type anything in Geist Pixel and watch every pixel morph between
+Square, Triangle, Circle, Grid and Line. The engine is `src/morph/` (the
+`<PixelMorph>` component), the editor `src/morph-editor/`. The editor keeps its
+settings in the address (`/morph?text=hello&face=circle`), so Share copies a link
+that opens it as it is; 1–5 switch faces. `scripts/registry-morph.ts` builds the
+copy-in component at `/r/pixel-morph.tsx`, `.json` and `.md`. The old
+`morphing-pixels.vercel.app` redirects to `/morph`.
+
+The text editor and the morph editor share class names (`.chip`, `.row`,
+`.variant`, ...) with different styles, so each stylesheet is scoped to its own
+page with a zero-specificity `:where(.text-swarm, .intro)` / `:where(.editor)`
+prefix.
 
 The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
