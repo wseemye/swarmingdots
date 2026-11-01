@@ -64,11 +64,13 @@ body {
   }
 }
 
-/* ── The floating bar at the top: "dots", then text | morph | flags | github ──
-   Its own white surface, so it reads the same over any page or colours picked. */
+/* ── The floating bar at the top: "dots", then text, morph, flags, github ──
+   Quiet on purpose: a hairline, a soft shadow, small type, and one highlight
+   that glides to the current page. Its own translucent white surface, so it
+   reads the same over any page or colours picked. */
 :root {
   /* How far down the bar reaches, for anything else pinned to the top of a page. */
-  --nav-bottom: 64px;
+  --nav-bottom: 56px;
 }
 
 .nav {
@@ -78,40 +80,44 @@ body {
   left: 50%;
   display: flex;
   align-items: center;
-  gap: 14px;
-  height: 44px;
-  padding: 0 16px 0 14px;
-  border: 1px solid #e5e5e5;
-  border-radius: 14px;
-  background: rgb(255 255 255 / 0.9);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  gap: 10px;
+  height: 36px;
+  padding: 0 4px 0 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
   color: #0a0a0a;
+  /* A hairline ring and two soft shadows instead of a border, so the edge never looks drawn on. */
   box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.06),
     0 1px 2px rgb(0 0 0 / 0.04),
-    0 8px 24px rgb(0 0 0 / 0.06);
+    0 4px 16px rgb(0 0 0 / 0.04);
   transform: translateX(-50%);
-  animation: nav-in 420ms var(--ease-out) both;
+  animation: nav-in 500ms var(--ease-out) both;
 }
 
+/* Arrives from just above, out of a blur. */
 @keyframes nav-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -8px);
+    filter: blur(4px);
+    transform: translate(-50%, -6px) scale(0.98);
   }
 }
 
 .nav-title {
   display: flex;
   flex: none;
-  /* The dot text wraps to the width it is given; "dots" must stay on one line. */
-  width: 66px;
   align-items: center;
+  /* The dot text wraps to the width it is given; "dots" must stay on one line. */
+  width: 50px;
   /* The dot text sits a touch high in its line box; this centres it optically. */
-  padding-top: 2px;
+  padding-top: 3px;
+  border-radius: 6px;
   color: inherit;
   text-decoration: none;
-  border-radius: 6px;
+  outline: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -119,64 +125,79 @@ body {
   width: 100%;
 }
 
-.nav-title:focus-visible,
-.nav-link:focus-visible {
-  outline: 2px solid #111;
-  outline-offset: 3px;
-}
-
-.nav-rule {
-  align-self: stretch;
-  width: 1px;
-  margin: 10px 0;
-  background: #e5e5e5;
+/* One dot between the title and the pages, in keeping with the rest. */
+.nav-dot {
+  flex: none;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #d4d4d4;
 }
 
 .nav-links {
+  position: relative;
   display: flex;
   align-items: center;
 }
 
-.nav-item {
-  display: flex;
-  align-items: center;
+/* The highlight behind the current page. */
+.nav-mark {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--w);
+  height: 28px;
+  margin-top: -14px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.05);
+  transform: translateX(var(--x));
+  pointer-events: none;
 }
 
-.nav-sep {
-  padding: 0 2px;
-  font-size: 13px;
-  color: #d4d4d4;
-  user-select: none;
+.nav-mark.is-ready {
+  transition:
+    transform 320ms var(--ease-out),
+    width 320ms var(--ease-out);
 }
 
 .nav-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  gap: 2px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 450;
+  letter-spacing: -0.005em;
   line-height: 1;
-  color: #737373;
+  color: #8a8a8a;
   text-decoration: none;
+  outline: none;
   -webkit-tap-highlight-color: transparent;
   transition:
-    color 160ms var(--ease-out),
-    background-color 160ms var(--ease-out);
+    color 150ms ease,
+    transform 150ms var(--ease-out);
 }
 
 .nav-link svg {
-  opacity: 0.7;
+  margin-top: -1px;
+  opacity: 0.6;
 }
 
 .nav-link.active {
   color: #0a0a0a;
-  background: #f4f4f4;
 }
 
 .nav-link:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+}
+
+/* A soft ring for the keyboard only; a click never leaves one behind. */
+.nav-title:focus-visible,
+.nav-link:focus-visible {
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.12);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -185,19 +206,14 @@ body {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 400px) {
   .nav {
-    gap: 8px;
-    padding: 0 8px 0 12px;
+    gap: 6px;
+    padding-left: 12px;
   }
 
   .nav-link {
-    padding: 6px 6px;
-    font-size: 13px;
-  }
-
-  .nav-sep {
-    padding: 0;
+    padding: 0 8px;
   }
 }
 
@@ -253,7 +269,8 @@ body {
     animation: none;
   }
 
-  .nav-link {
+  .nav-link,
+  .nav-mark.is-ready {
     transition: none;
   }
 
