@@ -52,7 +52,7 @@ function snippet(s: Settings): string {
 }
 
 // The page an AI assistant reads to install the component (built by scripts/registry.ts).
-const GUIDE_URL = 'https://swarmingdots.vercel.app/r/dot-swarm-text.md';
+const GUIDE_URL = 'https://dots.wseem.com/r/dot-swarm-text.md';
 
 // What to paste into an AI assistant: where the instructions are and what to put on the page.
 function prompt(s: Settings): string {

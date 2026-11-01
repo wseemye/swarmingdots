@@ -35,7 +35,7 @@ export default function Intro() {
 
   return (
     <div className="intro" style={{ background, color }}>
-      <Link to="/" className="corner-button" aria-label="Back to the editor">
+      <Link to="/text" className="corner-button" aria-label="Back to the editor">
         ←
       </Link>
       <div className="intro-body">

@@ -14,8 +14,11 @@ npm run build
 
 ## Routes
 
-For now the site is only the text swarm: type anything and watch its dots swarm
-into text, at `/`. The icons page is not routed; its engine (`src/icons.ts`,
+The site lives at [dots.wseem.com](https://dots.wseem.com). For now it is only
+the text swarm: type anything and watch its dots swarm into text, at
+[`/text`](https://dots.wseem.com/text). `/` goes there too, and the old
+`swarmingdots.vercel.app` redirects every path to the same path on
+`dots.wseem.com`. The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
 documented below, for when it comes back.
 
@@ -29,13 +32,13 @@ changes; words that already fit keep their swarm.
 The text swarm is one component, `<DotSwarmText>`, in one file that needs only React.
 
 1. **Try it.** Run the editor (`npm run dev`, above) or open
-   [swarmingdots.vercel.app](https://swarmingdots.vercel.app), set the text, typeface, size and colour.
+   [dots.wseem.com/text](https://dots.wseem.com/text), set the text, typeface, size and colour.
 2. **Using an AI assistant?** "Copy Prompt" copies a prompt with your settings. The assistant reads
-   [`/r/dot-swarm-text.md`](https://swarmingdots.vercel.app/r/dot-swarm-text.md), which holds the instructions, the props
+   [`/r/dot-swarm-text.md`](https://dots.wseem.com/r/dot-swarm-text.md), which holds the instructions, the props
    and the code, and adds the component for you.
 3. **Or do it by hand.** "Copy .TSX" in the top left copies the whole component; save it as
    `components/dot-swarm-text.tsx`. It is also served at
-   `https://swarmingdots.vercel.app/r/dot-swarm-text.tsx`, and `npm run registry` rebuilds it from
+   `https://dots.wseem.com/r/dot-swarm-text.tsx`, and `npm run registry` rebuilds it from
    `src/text-swarm/` into `public/r/`.
 
 Nothing else is added to your project, and your colours and fonts are not touched.
@@ -118,7 +121,7 @@ modules in `src/text-swarm/` that the site itself renders (`DotSwarmText.tsx`
 and what it imports) into one file and wraps it as
 `public/r/dot-swarm-text.json`. `npm run registry` regenerates it on its own.
 
-Any other path, including the old `/text` and `/icons`, redirects to `/` and
+Any other path, including `/` and the old `/icons`, redirects to `/text` and
 keeps its query string. `vercel.json` rewrites every path to `index.html` so
 that redirect also works on a direct load or refresh.
 

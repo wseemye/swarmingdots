@@ -5,7 +5,7 @@ import { join } from 'node:path';
 // that make up <DotSwarmText>, joined into one self-contained .tsx file, plus a
 // shadcn registry item wrapping it, so
 //
-//   npx shadcn@latest add https://swarmingdots.vercel.app/r/dot-swarm-text.json
+//   npx shadcn@latest add https://dots.wseem.com/r/dot-swarm-text.json
 //
 // drops that one file into a project. The site renders the same modules, so
 // what people install is exactly what the page shows.
@@ -13,7 +13,7 @@ import { join } from 'node:path';
 const SRC = join(process.cwd(), 'src', 'text-swarm');
 const OUT = join(process.cwd(), 'public', 'r');
 const NAME = 'dot-swarm-text';
-const SITE = 'https://swarmingdots.vercel.app';
+const SITE = 'https://dots.wseem.com';
 
 // Dependency order: each module only uses what comes before it.
 const MODULES = ['anchors.ts', 'variants.ts', 'words.ts', 'ease.ts', 'rasterize.ts', 'wave.ts', 'trace.ts', 'gl.ts', 'Word.tsx', 'DotSwarmText.tsx'];
