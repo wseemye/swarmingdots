@@ -20,9 +20,10 @@ the text swarm: type anything and watch its dots swarm into text, at
 `swarmingdots.vercel.app` redirects every path to the same path on
 `dots.wseem.com`.
 
-[`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags
-(`/flags/us`, `/flags/in`, … every country); type a country's name in the field
-under the flag and pick it from the suggestions. See [Flags](#flags).
+[`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
+type a country's name in the field under the flag and pick it from the
+suggestions. It is one page: the flag shown is not part of the address, and
+old `/flags/<code>` links land on `/flags`. See [Flags](#flags).
 
 The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
@@ -257,7 +258,7 @@ reachable from the environment this was built in.
 
 ## Flags
 
-`/flags/:code` draws a country's flag entirely in dots, all the same size, on a
+`/flags` draws a country's flag entirely in dots, all the same size, on a
 dark stage. Nothing else is drawn: no image of the flag is laid over the dots.
 
 **Accurate in dots.** A flag drawn wrong can offend, so the dots have to carry
@@ -302,4 +303,4 @@ colours, so stripes land on whole rows: the US flag gets 345 × 182, fourteen
 rows to a stripe, and India 301 × 201, 67 to a band.
 
 When a flag changes, add its new SVG to `scripts/flag-overrides/` (and its code
-to `OVERRIDES`), run `npm run flags`, and check it at `/flags/<code>`.
+to `OVERRIDES`), run `npm run flags`, and check it on `/flags`.

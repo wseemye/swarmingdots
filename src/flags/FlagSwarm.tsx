@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import CountryPicker from './CountryPicker';
 import { painter, STRIDE, type DotPainter } from './dots';
-import { flags, type FlagEntry } from './list';
+import { flags } from './list';
 import './flags.css';
 
-// /flags/:code — a flag drawn entirely in dots, all the same size, swarming in from wherever the
+// /flags — a flag drawn entirely in dots, all the same size, swarming in from wherever the
 // last one was.
 //
 // Each flag is about 60,000 dots, enough that every part of it stays exact: the chakra keeps its
@@ -109,16 +109,14 @@ type Swarm = {
   delay: Float32Array;
 };
 
-// /flags, or a code it does not know, goes to the first flag.
-export default function FlagRoute() {
-  const { code = '' } = useParams();
-  const index = flags.findIndex((f) => f.code === code);
-  if (index < 0) return <Navigate to="/flags/us" replace />;
-  return <FlagSwarm flag={flags[index]} />;
-}
+// The flag shown when the page opens.
+const FIRST = 'us';
 
-function FlagSwarm({ flag }: { flag: FlagEntry }) {
-  const navigate = useNavigate();
+// /flags is one page: the flag shown is the page's own state, picked in the field below it, not
+// part of the address.
+export default function FlagSwarm() {
+  const [code, setCode] = useState(FIRST);
+  const flag = flags.find((f) => f.code === code) ?? flags[0];
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -359,7 +357,7 @@ function FlagSwarm({ flag }: { flag: FlagEntry }) {
         <h1 className="flags-name" aria-live="polite">
           {flag.name}
         </h1>
-        <CountryPicker flags={flags} current={flag.code} onPick={(code) => navigate(`/flags/${code}`)} />
+        <CountryPicker flags={flags} current={flag.code} onPick={setCode} />
       </div>
     </div>
   );
