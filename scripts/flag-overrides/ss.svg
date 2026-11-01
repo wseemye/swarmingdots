@@ -1,0 +1,13 @@
+<!--
+  Flag of South Sudan, from svg-country-flags@1.2.10 (public domain), unchanged except that the
+  star's points are written out at the flag's own scale: the original draws it with coordinates in
+  the hundreds of thousands scaled by 0.000003, which librsvg (the build's renderer) loses.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 10">
+<rect fill="#078930" width="20" height="10"/>
+<rect fill="#FFF" width="20" height="7"/>
+<rect width="20" height="3"/>
+<rect fill="#DA121A" y="3.5" width="20" height="3"/>
+<polygon fill="#0F47AF" points="0,0 8.660254,5 0,10"/>
+<polygon fill="#FCDD09" points="1.286750,5.000000 4.181177,5.940456 2.392323,3.478310 2.392323,6.521690 4.181177,4.059544"/>
+</svg>

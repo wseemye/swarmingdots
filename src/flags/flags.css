@@ -1,3 +1,11 @@
+/* Geist Serif (SIL Open Font License, public/fonts/OFL-Geist.txt), for the country's name. */
+@font-face {
+  font-family: 'Geist Serif';
+  src: url('/fonts/GeistSerif-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
 /* The flags sit on a dark stage, so white stripes and white dots both read. */
 .flags {
   position: relative;
@@ -38,9 +46,12 @@
 
 .flags-name {
   margin: 0;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  font-family: 'Geist Serif', 'Times New Roman', Times, serif;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .flags-picker-box {
@@ -117,6 +128,10 @@
 .flags-option.is-active {
   background: #262626;
   color: #fff;
+}
+
+.flags-option-alias {
+  color: #737373;
 }
 
 .flags-option.is-current::after {

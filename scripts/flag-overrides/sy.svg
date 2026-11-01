@@ -1,0 +1,12 @@
+<!--
+  Flag of Syria (2025), at its official proportions (2:3).
+  Drawing from flag-icons@7.6.0 (https://github.com/lipis/flag-icons, MIT licence), widened from 4:3:
+  the bands run the full width and the three stars, unchanged, are re-centred, landing at 1/4, 1/2 and 3/4 of it.
+  svg-country-flags (last updated 2021) still has the flag this one replaced.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480">
+  <path d="M0 0h720v480H0Z"/>
+  <path fill="#fff" d="M0 0h720v320H0Z"/>
+  <path fill="#007a3d" d="M0 0h720v160H0Z"/>
+  <g transform="translate(40 0)"><path fill="#ce1126" d="m101 300 39-120 39 120-102-74.2h126M461 300l39-120 39 120-102-74.2h126M281 300l39-120 39 120-102.1-74.2h126.2"/></g>
+</svg>

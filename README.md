@@ -21,8 +21,8 @@ the text swarm: type anything and watch its dots swarm into text, at
 `dots.wseem.com`.
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags
-(`/flags/us`, `/flags/in`); type a country's name in the field under the flag
-and pick it from the suggestions. See [Flags](#flags).
+(`/flags/us`, `/flags/in`, … every country); type a country's name in the field
+under the flag and pick it from the suggestions. See [Flags](#flags).
 
 The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
@@ -279,13 +279,27 @@ flag. Dots set off at random over 0.7 s and each glides for 1.4 s on
 swarm is always moving rather than all leaving and all landing together. The
 dots are drawn in one instanced WebGL call.
 
-The flags come from [`svg-country-flags`](https://github.com/hjnilsson/country-flags)
-(Wikipedia's flags, public domain, in their official proportions and colours).
-`npm run flags` builds, for each code in `CODES` in `scripts/flags.ts`, the dot
-image and `src/flags/list.ts`. Of the grids near 60,000 dots with square cells,
+**Every flag.** 253 flags: every country and territory in
+[`svg-country-flags`](https://github.com/hjnilsson/country-flags) (Wikipedia's
+flags, public domain, in their official proportions and colours) except the
+Netherlands Antilles (dissolved 2010), Antarctica (no official flag) and the EU.
+That package was last updated in 2021, so `scripts/flag-overrides/` holds the
+flags adopted since (Kyrgyzstan 2023, Syria 2025, from
+[`flag-icons`](https://github.com/lipis/flag-icons), MIT, re-centred on their
+official proportions) and South Sudan, whose source draws its star in a way the
+build's SVG renderer drops. Names are the ones people use now (Türkiye, Czechia,
+Eswatini, North Macedonia), with other names searchable (Turkey, UK, Ivory
+Coast, Burma). `npm run flags` builds every flag's dot image and
+`src/flags/list.ts` in about 25 seconds.
+
+Every built flag has been checked against Chromium's own rendering of its SVG at
+the same size: no flag differs in more than 0.2% of its dots (anti-aliasing),
+which is how the missing South Sudan star was caught.
+
+The country's name is set in Geist Serif (`public/fonts`, SIL Open Font License). Of the grids near 60,000 dots with square cells,
 it keeps the one that puts the most dots wholly in one of the flag's own
 colours, so stripes land on whole rows: the US flag gets 345 × 182, fourteen
 rows to a stripe, and India 301 × 201, 67 to a band.
 
-To add a flag, add its code to `CODES`, run `npm run flags`, and check it at
-`/flags/<code>` before shipping, closely for flags with emblems or script.
+When a flag changes, add its new SVG to `scripts/flag-overrides/` (and its code
+to `OVERRIDES`), run `npm run flags`, and check it at `/flags/<code>`.

@@ -24,8 +24,12 @@ type Box = { x: number; y: number; w: number; h: number };
 // the swarm is always moving rather than all leaving and all landing together.
 const DURATION = 1400;
 const STAGGER = 700;
-// Flags are shown at this share of the largest size that fits (by width and height).
+// Flags are shown at this share (by width and height) of the size a 10:19 flag (the US) would
+// fill the stage at; on a narrow screen, nearly the full width.
 const SCALE = 0.5;
+const NARROW = 640;
+const NARROW_SCALE = 0.9;
+const REFERENCE_RATIO = 10 / 19;
 // The settled dot's share of its cell, and its corner radius as a share of its side.
 const FILL = 0.9;
 const ROUND = 0.3;
@@ -57,18 +61,21 @@ function loadFlag(code: string): Promise<FlagDots> {
   return p;
 }
 
-// Every flag gets the same area: the largest at which every flag on offer still fits. Same area
-// and about the same number of dots means the same dot size for all of them.
+// Every flag gets the same area, so with about the same number of dots the dots are the same size
+// for all of them: a share of the area a 10:19 flag would fill, made smaller only if that would not
+// fit every flag on offer (Nepal is tall, Qatar long).
 function layout(stageW: number, stageH: number, ratio: number): Box {
   const availW = Math.max(0, stageW - MARGIN * 2);
   const availH = Math.max(0, stageH - MARGIN * 2 - PICKER_SPACE);
-  let area = Infinity;
-  for (const f of flags) {
-    const w = Math.min(availW, availH / f.ratio, MAX_FLAG_WIDTH);
-    area = Math.min(area, w * w * f.ratio);
-  }
-  const w = Math.sqrt(area / ratio) * SCALE;
-  const h = Math.sqrt(area * ratio) * SCALE;
+  const fit = (r: number) => {
+    const w = Math.min(availW, availH / r, MAX_FLAG_WIDTH);
+    return w * w * r;
+  };
+  const scale = stageW < NARROW ? NARROW_SCALE : SCALE;
+  let area = fit(REFERENCE_RATIO) * scale * scale;
+  for (const f of flags) area = Math.min(area, fit(f.ratio));
+  const w = Math.sqrt(area / ratio);
+  const h = Math.sqrt(area * ratio);
   return { x: (stageW - w) / 2, y: MARGIN + (availH - h) / 2, w, h };
 }
 
@@ -106,7 +113,7 @@ type Swarm = {
 export default function FlagRoute() {
   const { code = '' } = useParams();
   const index = flags.findIndex((f) => f.code === code);
-  if (index < 0) return <Navigate to={`/flags/${flags[0].code}`} replace />;
+  if (index < 0) return <Navigate to="/flags/us" replace />;
   return <FlagSwarm flag={flags[index]} />;
 }
 
