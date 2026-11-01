@@ -19,7 +19,19 @@ import sharp from 'sharp';
 
 // Every flag in svg-country-flags except those that are not a country's or territory's current
 // flag: the Netherlands Antilles (dissolved in 2010), Antarctica (no official flag) and the EU.
-const EXCLUDE = new Set(['an', 'aq', 'eu']);
+const NOT_CURRENT = ['an', 'aq', 'eu'];
+// And except those where showing a flag at all takes a side: the government, the sovereignty or
+// the flag itself is disputed.
+const DISPUTED = [
+  'af', // Afghanistan: the republic's flag and the de facto government's flag compete.
+  'tw', // Taiwan: sovereignty disputed with the PRC.
+  'xk', // Kosovo: independence recognised by some countries and not others.
+  'eh', // Western Sahara: territory disputed between Morocco and the Sahrawi Republic.
+  'fk', // Falkland Islands: sovereignty disputed (Argentina: Malvinas).
+  'gs', // South Georgia and the South Sandwich Islands: the same dispute.
+  'io', // British Indian Ocean Territory: sovereignty passing to Mauritius under a 2025 treaty.
+];
+const EXCLUDE = new Set([...NOT_CURRENT, ...DISPUTED]);
 
 // Flags adopted since svg-country-flags was last updated, and one it draws in a way the renderer
 // gets wrong; see each file for its source.
@@ -33,7 +45,6 @@ const NAMES: Record<string, string> = {
   cg: 'Republic of the Congo',
   cv: 'Cabo Verde',
   cz: 'Czechia',
-  fk: 'Falkland Islands',
   fm: 'Micronesia',
   ir: 'Iran',
   kp: 'North Korea',
@@ -69,7 +80,6 @@ const ALIASES: Record<string, string[]> = {
   cv: ['Cape Verde'],
   cz: ['Czech Republic'],
   de: ['Deutschland'],
-  fk: ['Malvinas'],
   gb: ['UK', 'Britain', 'Great Britain'],
   'gb-eng': ['England'],
   ir: ['Persia'],

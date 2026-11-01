@@ -22,8 +22,9 @@ the text swarm: type anything and watch its dots swarm into text, at
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
 type a country's name in the field under the flag and pick it from the
-suggestions. It is one page: the flag shown is not part of the address, and
-old `/flags/<code>` links land on `/flags`. See [Flags](#flags).
+suggestions. It opens on an empty stage under "Fun with Flags" until a country
+is picked. It is one page: the flag shown is not part of the address, and old
+`/flags/<code>` links land on `/flags`. See [Flags](#flags).
 
 The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
@@ -280,10 +281,15 @@ flag. Dots set off at random over 0.7 s and each glides for 1.4 s on
 swarm is always moving rather than all leaving and all landing together. The
 dots are drawn in one instanced WebGL call.
 
-**Every flag.** 253 flags: every country and territory in
+**Every flag.** 246 flags: every country and territory in
 [`svg-country-flags`](https://github.com/hjnilsson/country-flags) (Wikipedia's
 flags, public domain, in their official proportions and colours) except the
-Netherlands Antilles (dissolved 2010), Antarctica (no official flag) and the EU.
+Netherlands Antilles (dissolved 2010), Antarctica (no official flag), the EU,
+and those where showing a flag at all takes a side because the government, the
+sovereignty or the flag itself is disputed: Afghanistan, Taiwan, Kosovo,
+Western Sahara, the Falkland Islands, South Georgia and the South Sandwich
+Islands, and the British Indian Ocean Territory (`DISPUTED` in
+`scripts/flags.ts`).
 That package was last updated in 2021, so `scripts/flag-overrides/` holds the
 flags adopted since (Kyrgyzstan 2023, Syria 2025, from
 [`flag-icons`](https://github.com/lipis/flag-icons), MIT, re-centred on their

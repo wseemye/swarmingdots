@@ -11,11 +11,6 @@ export type FlagEntry = {
 
 export const flags: FlagEntry[] = [
   {
-    "code": "af",
-    "name": "Afghanistan",
-    "ratio": 0.666667
-  },
-  {
     "code": "ax",
     "name": "Åland Islands",
     "ratio": 0.653846
@@ -162,11 +157,6 @@ export const flags: FlagEntry[] = [
     "code": "br",
     "name": "Brazil",
     "ratio": 0.7
-  },
-  {
-    "code": "io",
-    "name": "British Indian Ocean Territory",
-    "ratio": 0.5
   },
   {
     "code": "vg",
@@ -398,14 +388,6 @@ export const flags: FlagEntry[] = [
     "ratio": 0.5
   },
   {
-    "code": "fk",
-    "name": "Falkland Islands",
-    "aliases": [
-      "Malvinas"
-    ],
-    "ratio": 0.5
-  },
-  {
     "code": "fo",
     "name": "Faroe Islands",
     "ratio": 0.727273
@@ -630,11 +612,6 @@ export const flags: FlagEntry[] = [
     "code": "ki",
     "name": "Kiribati",
     "ratio": 0.5
-  },
-  {
-    "code": "xk",
-    "name": "Kosovo",
-    "ratio": 0.714286
   },
   {
     "code": "kw",
@@ -1111,11 +1088,6 @@ export const flags: FlagEntry[] = [
     "ratio": 0.666667
   },
   {
-    "code": "gs",
-    "name": "South Georgia and the South Sandwich Islands",
-    "ratio": 0.5
-  },
-  {
     "code": "kr",
     "name": "South Korea",
     "aliases": [
@@ -1167,11 +1139,6 @@ export const flags: FlagEntry[] = [
   {
     "code": "sy",
     "name": "Syria",
-    "ratio": 0.666667
-  },
-  {
-    "code": "tw",
-    "name": "Taiwan",
     "ratio": 0.666667
   },
   {
@@ -1340,11 +1307,6 @@ export const flags: FlagEntry[] = [
     "code": "wf",
     "name": "Wallis and Futuna",
     "ratio": 0.666667
-  },
-  {
-    "code": "eh",
-    "name": "Western Sahara",
-    "ratio": 0.5
   },
   {
     "code": "ye",

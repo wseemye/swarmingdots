@@ -109,14 +109,14 @@ type Swarm = {
   delay: Float32Array;
 };
 
-// The flag shown when the page opens.
-const FIRST = 'us';
+// Until a country is picked the stage is empty and the heading says this (The Big Bang Theory).
+const TITLE = 'Fun with Flags';
 
 // /flags is one page: the flag shown is the page's own state, picked in the field below it, not
 // part of the address.
 export default function FlagSwarm() {
-  const [code, setCode] = useState(FIRST);
-  const flag = flags.find((f) => f.code === code) ?? flags[0];
+  const [code, setCode] = useState<string | null>(null);
+  const flag = flags.find((f) => f.code === code) ?? null;
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -143,7 +143,7 @@ export default function FlagSwarm() {
     return () => ro.disconnect();
   }, []);
 
-  const box = size.w ? layout(size.w, size.h, flag.ratio) : null;
+  const box = size.w && flag ? layout(size.w, size.h, flag.ratio) : null;
   const boxRef = useRef(box);
   useLayoutEffect(() => {
     boxRef.current = box;
@@ -263,6 +263,7 @@ export default function FlagSwarm() {
   // A new flag: every dot leaves from wherever it is now.
   useEffect(() => {
     let cancelled = false;
+    if (!flag) return;
     loadFlag(flag.code).then((f) => {
       const b = boxRef.current;
       if (cancelled || !b) return;
@@ -342,12 +343,12 @@ export default function FlagSwarm() {
   useEffect(() => () => cancelAnimationFrame(anim.current.frame), []);
 
   useEffect(() => {
-    document.title = `${flag.name} · Dot Swarm Flags`;
+    document.title = flag ? `${flag.name} · ${TITLE}` : TITLE;
   }, [flag]);
 
   return (
     <div className="flags" ref={stageRef}>
-      <canvas className="flags-canvas" ref={canvasRef} role="img" aria-label={`Flag of ${flag.name}, drawn in dots`} />
+      <canvas className="flags-canvas" ref={canvasRef} role="img" aria-label={flag ? `Flag of ${flag.name}, drawn in dots` : TITLE} />
 
       <Link to="/text" className="corner-button flags-corner" aria-label="Back to the text swarm">
         ←
@@ -355,9 +356,9 @@ export default function FlagSwarm() {
 
       <div className="flags-picker">
         <h1 className="flags-name" aria-live="polite">
-          {flag.name}
+          {flag ? flag.name : TITLE}
         </h1>
-        <CountryPicker flags={flags} current={flag.code} onPick={setCode} />
+        <CountryPicker flags={flags} current={flag?.code} onPick={setCode} />
       </div>
     </div>
   );

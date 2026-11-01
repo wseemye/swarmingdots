@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import './shell.css';
 
 export default function Shell() {
-  useEffect(() => {
+  // A layout effect, so it runs before the pages' own effects and a page can set its own title.
+  useLayoutEffect(() => {
     document.title = 'Dot Swarm';
   }, []);
 

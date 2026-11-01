@@ -15,7 +15,7 @@ const fold = (s: string) =>
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
 
-type Props = { flags: FlagEntry[]; current: string; onPick: (code: string) => void };
+type Props = { flags: FlagEntry[]; current?: string; onPick: (code: string) => void };
 
 export default function CountryPicker({ flags, current, onPick }: Props) {
   const [query, setQuery] = useState('');
