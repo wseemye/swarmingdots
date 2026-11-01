@@ -15,6 +15,15 @@
   height: 100%;
 }
 
+/* The flag's detail (chakra, stars, seals, script), cut from the real flag: dots never draw it.
+   Its opacity follows the dots' arrival, set frame by frame. */
+.flags-detail {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* The flag itself, exactly over the dots; it fades in once they settle. */
 .flags-real {
   position: absolute;

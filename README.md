@@ -254,12 +254,24 @@ reachable from the environment this was built in.
 
 ## Flags
 
-`/flags/:code` swarms coloured dots into a country's flag on a dark stage. Once
-they settle, **the real flag fades in over them**: the SVG itself, lined up
-with the dots. The dots are only the arrival. Flags carry seals, script and fine
-detail that no grid of dots can draw faithfully, and a flag drawn wrong can
-offend, so the dots never have the last word. "Dots only" hides the real flag to
-check the dot stage.
+`/flags/:code` swarms coloured dots into a country's flag on a dark stage, and
+once they settle the real flag (the SVG itself) fades in over them.
+
+**A flag is never shown wrong, not even in passing.** Dots can draw a flat field
+of colour exactly, but not a chakra's 24 spokes, a star's points, a seal or a
+line of script, and a flag drawn wrong can offend. So the build tests every
+shape in each flag: snapped to whole dots, does it keep its form (intersection
+over union of at least 0.9)? Stripes, bands, crosses and large discs do. Anything
+that does not is *detail*: it never becomes dots. The dots under it take the
+colour of the field it sits on, and the detail is cut straight out of the
+rendered flag (`public/flags/detail/<code>.png`) and fades in over the dots as
+they land. India's chakra and the 50 US stars are drawn this way.
+
+**Smooth and uniform.** Every flag is shown at the same area (the largest at
+which every flag on offer fits) with about 5,600 dots, so the dots are the same
+size from flag to flag whatever its proportions. Switching flags, each dot keeps
+its place in the flag (top left to top left, middle to middle), so one flag
+stretches into the next in a wave from left to right.
 
 The flags come from [`svg-country-flags`](https://github.com/hjnilsson/country-flags)
 (Wikipedia's flags, public domain, in their official proportions and colours).
@@ -267,16 +279,14 @@ The flags come from [`svg-country-flags`](https://github.com/hjnilsson/country-f
 
 - `public/flags/svg/<code>.svg`: the flag, with its source noted at the top;
 - `public/flags/data/<code>.json`: the grid the dots settle into;
+- `public/flags/detail/<code>.png`: the detail laid over the dots, if any;
 - `src/flags/list.ts`: the flags the page offers.
 
-The grid is fitted to each flag. Of the widths from 80 to 104 columns (the
-height following the flag's own proportions), it keeps the one whose cells best
-line up with the flag's stripes and edges: the US flag gets 100 × 52, four rows
-to a stripe, and India 96 × 63, 21 rows to a band. Each cell takes the colour
-covering most of it, snapped to one of the flag's own colours, so no dot is a
-blend of two. The script prints how much of each cell agrees with its colour,
-and flags anything under 90% for a look.
+Of the grids near 5,600 dots (cells within 3% of square), the build keeps the
+one that leaves the least to detail, then whose cells best keep to one colour:
+the US flag gets 98 × 52, four rows to a stripe, and India 90 × 60, twenty to a
+band. Each dot is one of the flag's own colours, never a blend. The script
+prints each flag's grid, how pure its cells are and how much of it is detail.
 
 To add a flag, add its code to `CODES`, run `npm run flags`, and check it at
-`/flags/<code>` with and without "Dots only" before shipping.
-
+`/flags/<code>`, with and without "Stay on dots", before shipping.
