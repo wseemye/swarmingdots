@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import CountryPicker from './CountryPicker';
 import { painter, STRIDE, type DotPainter } from './dots';
 import { flags, type FlagEntry } from './list';
 import './flags.css';
@@ -106,10 +107,10 @@ export default function FlagRoute() {
   const { code = '' } = useParams();
   const index = flags.findIndex((f) => f.code === code);
   if (index < 0) return <Navigate to={`/flags/${flags[0].code}`} replace />;
-  return <FlagSwarm flag={flags[index]} index={index} />;
+  return <FlagSwarm flag={flags[index]} />;
 }
 
-function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
+function FlagSwarm({ flag }: { flag: FlagEntry }) {
   const navigate = useNavigate();
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -335,23 +336,6 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
 
   useEffect(() => () => cancelAnimationFrame(anim.current.frame), []);
 
-  const go = useCallback(
-    (step: number) => {
-      navigate(`/flags/${flags[(index + step + flags.length) % flags.length].code}`);
-    },
-    [index, navigate],
-  );
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLElement && e.target.closest('input, textarea')) return;
-      if (e.key === 'ArrowRight') go(1);
-      if (e.key === 'ArrowLeft') go(-1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [go]);
-
   useEffect(() => {
     document.title = `${flag.name} · Dot Swarm Flags`;
   }, [flag]);
@@ -368,19 +352,7 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
         <h1 className="flags-name" aria-live="polite">
           {flag.name}
         </h1>
-        <div className="flags-row">
-          <button type="button" className="flags-chip" onClick={() => go(-1)} aria-label="Previous flag">
-            ←
-          </button>
-          {flags.map((f) => (
-            <Link key={f.code} to={`/flags/${f.code}`} className="flags-chip" aria-current={f.code === flag.code ? 'page' : undefined}>
-              {f.name}
-            </Link>
-          ))}
-          <button type="button" className="flags-chip" onClick={() => go(1)} aria-label="Next flag">
-            →
-          </button>
-        </div>
+        <CountryPicker flags={flags} current={flag.code} onPick={(code) => navigate(`/flags/${code}`)} />
       </div>
     </div>
   );

@@ -21,7 +21,8 @@ the text swarm: type anything and watch its dots swarm into text, at
 `dots.wseem.com`.
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags
-(`/flags/us`, `/flags/in`; ← and → step through them). See [Flags](#flags).
+(`/flags/us`, `/flags/in`); type a country's name in the field under the flag
+and pick it from the suggestions. See [Flags](#flags).
 
 The icons page is not routed; its engine (`src/icons.ts`,
 `src/swarm.ts`, `src/DotSwarm.tsx`, the assets and the vectorizer) is still here,
