@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ease } from '../text-swarm/ease';
 import { painter, STRIDE, type DotPainter } from './dots';
 import { flags, type FlagEntry } from './list';
 import './flags.css';
@@ -14,17 +13,18 @@ import './flags.css';
 // of the line, as a pixel on a screen does.
 //
 // Every flag is shown at the same area with about the same number of dots, so the dots are the
-// same size from flag to flag. Pick another and each dot keeps its place in the flag (top left to
-// top left, middle to middle), so one flag stretches into the next in a wave from left to right.
+// same size from flag to flag. Pick another and every dot flies to a random spot in the next flag,
+// each setting off at its own moment and gliding to rest.
 
 type FlagDots = { cols: number; rows: number; rgba: Uint8ClampedArray };
 type Box = { x: number; y: number; w: number; h: number };
 
-const DURATION = 1100;
-// The wave crosses the flag in this long; each dot also starts up to JITTER late, so the front is
-// soft.
-const WAVE = 500;
-const JITTER = 160;
+// Each dot's flight, and the spread of their start times: dots set off at random over STAGGER, so
+// the swarm is always moving rather than all leaving and all landing together.
+const DURATION = 1400;
+const STAGGER = 700;
+// Flags are shown at this share of the largest size that fits (by width and height).
+const SCALE = 0.5;
 // The settled dot's share of its cell, and its corner radius as a share of its side.
 const FILL = 0.9;
 const ROUND = 0.3;
@@ -66,10 +66,27 @@ function layout(stageW: number, stageH: number, ratio: number): Box {
     const w = Math.min(availW, availH / f.ratio, MAX_FLAG_WIDTH);
     area = Math.min(area, w * w * f.ratio);
   }
-  const w = Math.sqrt(area / ratio);
-  const h = Math.sqrt(area * ratio);
+  const w = Math.sqrt(area / ratio) * SCALE;
+  const h = Math.sqrt(area * ratio) * SCALE;
   return { x: (stageW - w) / 2, y: MARGIN + (availH - h) / 2, w, h };
 }
+
+// The flight's easing: CSS cubic-bezier(0.4, 0, 0.2, 1). A gentle start and a long, soft landing,
+// with no rush in the middle. Tabulated once, since it runs for every dot every frame.
+const EASE = (() => {
+  const [x1, y1, x2, y2] = [0.4, 0, 0.2, 1];
+  const n = 1024;
+  const table = new Float32Array(n + 1);
+  const bez = (a: number, b: number, t: number) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+  let t = 0;
+  for (let i = 0; i <= n; i++) {
+    const x = i / n;
+    while (t < 1 && bez(x1, x2, t) < x) t = Math.min(1, t + 1 / 8192);
+    table[i] = bez(y1, y2, t);
+  }
+  return table;
+})();
+const ease = (t: number) => EASE[Math.round(t * (EASE.length - 1))];
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -266,49 +283,27 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
       const total = f.cols * f.rows;
       const hasDot = (c: number) => f.rgba[c * 4 + 3] >= 128;
       const motion = !reducedMotion();
-      const delayOf = (c: number) => (motion ? ((c % f.cols) / f.cols) * WAVE + Math.random() * JITTER : -DURATION - WAVE - JITTER);
-      const cellAt = (x: number, y: number, bx: Box) => {
-        const u = Math.min(0.9999, Math.max(0, (x - bx.x) / bx.w));
-        const v = Math.min(0.9999, Math.max(0, (y - bx.y) / bx.h));
-        return Math.floor(v * f.rows) * f.cols + Math.floor(u * f.cols);
-      };
+      const delayOf = () => (motion ? Math.random() * STAGGER : -DURATION - STAGGER);
 
-      // Each old dot falls in the new grid's cell at the same place in the flag. The first in a
-      // cell moves there; a spare one shrinks away into its cell; a cell left empty grows a dot out
-      // of the nearest claimed one (claims spread outwards ring by ring).
-      const claimed = new Int32Array(total).fill(-1);
-      const spare: number[] = [];
-      for (let i = 0; i < fromN; i++) {
-        const c = cellAt(from[i * F], from[i * F + 1], oldBox!);
-        if (hasDot(c) && claimed[c] < 0) claimed[c] = i;
-        else spare.push(i);
+      // Every dot flies to a random cell of the new flag. With more dots than before, the extra
+      // ones grow out of a random old dot; with fewer, the spare old ones shrink away onto a
+      // random cell.
+      const cells: number[] = [];
+      for (let c = 0; c < total; c++) if (hasDot(c)) cells.push(c);
+      for (let k = cells.length - 1; k > 0; k--) {
+        const j = Math.floor(Math.random() * (k + 1));
+        [cells[k], cells[j]] = [cells[j], cells[k]];
       }
-      const source = claimed.slice();
-      let frontier: number[] = [];
-      for (let c = 0; c < total; c++) if (source[c] >= 0) frontier.push(c);
-      while (frontier.length) {
-        const next: number[] = [];
-        for (const c of frontier) {
-          const x = c % f.cols, y = Math.floor(c / f.cols);
-          for (const nb of [x > 0 ? c - 1 : -1, x < f.cols - 1 ? c + 1 : -1, y > 0 ? c - f.cols : -1, y < f.rows - 1 ? c + f.cols : -1]) {
-            if (nb < 0 || source[nb] >= 0) continue;
-            source[nb] = source[c];
-            next.push(nb);
-          }
-        }
-        frontier = next;
-      }
-
-      let cellCount = 0;
-      for (let c = 0; c < total; c++) if (hasDot(c)) cellCount++;
-      const n = cellCount + spare.length;
+      const spare = Math.max(0, fromN - cells.length);
+      const n = cells.length + spare;
       const s: Swarm = { n, from: new Float32Array(n * F), to: new Float32Array(n * F), cell: new Int32Array(n), leaves: new Uint8Array(n), delay: new Float32Array(n) };
-      let i = 0;
-      for (let c = 0; c < total; c++) {
-        if (!hasDot(c)) continue;
+      for (let i = 0; i < n; i++) {
         const o = i * F;
+        const leaving = i >= cells.length;
+        const c = leaving ? cells[Math.floor(Math.random() * cells.length)] : cells[i];
         s.cell[i] = c;
-        s.delay[i] = delayOf(c);
+        s.leaves[i] = leaving ? 1 : 0;
+        s.delay[i] = delayOf();
         if (!fromN) {
           // First load: the dots come in from all over the stage.
           s.from[o] = Math.random() * stage.w;
@@ -316,23 +311,14 @@ function FlagSwarm({ flag, index }: { flag: FlagEntry; index: number }) {
           s.from[o + 4] = f.rgba[c * 4] / 255;
           s.from[o + 5] = f.rgba[c * 4 + 1] / 255;
           s.from[o + 6] = f.rgba[c * 4 + 2] / 255;
+        } else if (i < fromN) {
+          s.from.set(from.subarray(i * F, i * F + F), o);
         } else {
-          const src = source[c];
+          const src = Math.floor(Math.random() * fromN);
           s.from.set(from.subarray(src * F, src * F + F), o);
-          // A dot the old flag did not have grows out of its neighbour.
-          if (claimed[c] < 0) s.from[o + 2] = s.from[o + 3] = 0;
+          s.from[o + 2] = s.from[o + 3] = 0;
         }
-        i++;
       }
-      for (const src of spare) {
-        s.from.set(from.subarray(src * F, src * F + F), i * F);
-        const c = cellAt(from[src * F], from[src * F + 1], oldBox!);
-        s.cell[i] = c;
-        s.leaves[i] = 1;
-        s.delay[i] = delayOf(c);
-        i++;
-      }
-
       a.swarm = s;
       a.flag = f;
       a.box = b;

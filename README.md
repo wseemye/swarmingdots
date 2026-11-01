@@ -269,12 +269,14 @@ screen does. That keeps thin lines (spokes, star points, script) at an even
 weight whatever their angle, where giving each dot one flag colour breaks them
 up.
 
-**Smooth and uniform.** Every flag is shown at the same area (the largest at
-which every flag on offer fits) with about the same number of dots, so the dots
-are the same size from flag to flag whatever its proportions. Switching flags,
-each dot keeps its place in the flag (top left to top left, middle to middle),
-so one flag stretches into the next in a wave from left to right. The dots are
-drawn in one instanced WebGL call.
+**Effortless and uniform.** Every flag is shown at the same area (half the
+largest at which every flag on offer fits, in width and height) with about the
+same number of dots, so the dots are the same size from flag to flag whatever
+its proportions. Switching flags, every dot flies to a random spot in the next
+flag. Dots set off at random over 0.7 s and each glides for 1.4 s on
+`cubic-bezier(0.4, 0, 0.2, 1)`: a gentle start and a long, soft landing, so the
+swarm is always moving rather than all leaving and all landing together. The
+dots are drawn in one instanced WebGL call.
 
 The flags come from [`svg-country-flags`](https://github.com/hjnilsson/country-flags)
 (Wikipedia's flags, public domain, in their official proportions and colours).
