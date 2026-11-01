@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import DotSwarmText from '../text-swarm/DotSwarmText';
 import CountryPicker from './CountryPicker';
 import { painter, STRIDE, type DotPainter } from './dots';
 import { flags } from './list';
@@ -109,7 +110,8 @@ type Swarm = {
   delay: Float32Array;
 };
 
-// Until a country is picked the stage is empty and the heading says this (The Big Bang Theory).
+// Until a country is picked the stage shows this, swarming in as dot text the way /text does
+// (The Big Bang Theory).
 const TITLE = 'Fun with Flags';
 
 // /flags is one page: the flag shown is the page's own state, picked in the field below it, not
@@ -354,10 +356,16 @@ export default function FlagSwarm() {
         ←
       </Link>
 
+      {!flag && size.w > 0 && (
+        <div className="flags-title" style={{ bottom: PICKER_SPACE + MARGIN }}>
+          <DotSwarmText as="h1" className="flags-title-text" align="center" text={TITLE} color="#ffffff" fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} />
+        </div>
+      )}
+
       <div className="flags-picker">
-        <h1 className="flags-name" aria-live="polite">
-          {flag ? flag.name : TITLE}
-        </h1>
+        <p className="flags-name" aria-live="polite">
+          {flag?.name ?? ''}
+        </p>
         <CountryPicker flags={flags} current={flag?.code} onPick={setCode} />
       </div>
     </div>
