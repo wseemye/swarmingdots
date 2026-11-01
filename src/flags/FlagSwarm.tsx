@@ -97,6 +97,43 @@ const EASE = (() => {
 })();
 const ease = (t: number) => EASE[Math.round(t * (EASE.length - 1))];
 
+// "fun with flags" as a staircase, a word to a line, each starting one space after the end of the
+// word above:
+//
+//   fun
+//       with
+//            flags
+//
+// Widths are in dots of Geist Pixel Circle (which is proportional): "fun" is 39 dots, "with" 55, a
+// space 10, and the 2 dots of extra spacing after each letter are added on.
+const STAIR_SPACING = 2;
+const STAIRS: { word: string; indent: number }[] = (() => {
+  const width: Record<string, number> = { fun: 39, with: 55, flags: 62 };
+  const space = 10;
+  let indent = 0;
+  return ['fun', 'with', 'flags'].map((word) => {
+    const step = { word, indent };
+    indent += width[word] + word.length * STAIR_SPACING + space;
+    return step;
+  });
+})();
+const STAIRS_WIDTH = Math.max(...STAIRS.map((s) => s.indent + 62 + 'flags'.length * STAIR_SPACING)) + 4;
+
+function Staircase({ fontSize, bottom }: { fontSize: number; bottom: number }) {
+  const dot = fontSize * 0.038;
+  return (
+    <div className="flags-title" style={{ bottom }}>
+      <div className="flags-stairs" role="heading" aria-level={1} aria-label={TITLE.toLowerCase()} style={{ width: STAIRS_WIDTH * dot, gap: 6 * dot }}>
+        {STAIRS.map(({ word, indent }) => (
+          <div key={word} aria-hidden="true" style={{ paddingLeft: indent * dot }}>
+            <DotSwarmText as="span" text={word} letterSpacing={STAIR_SPACING} color="#ffffff" fontSize={fontSize} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Per dot, start and end of the move: centre x, y, width, height (CSS px) and r, g, b (0..1).
@@ -356,11 +393,7 @@ export default function FlagSwarm() {
         ←
       </Link>
 
-      {!flag && size.w > 0 && (
-        <div className="flags-title" style={{ bottom: PICKER_SPACE + MARGIN }}>
-          <DotSwarmText as="h1" className="flags-title-text" align="center" text={TITLE.toLowerCase()} letterSpacing={2} color="#ffffff" fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} />
-        </div>
-      )}
+      {!flag && size.w > 0 && <Staircase fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} bottom={PICKER_SPACE + MARGIN} />}
 
       <div className="flags-picker">
         <p className="flags-name" aria-live="polite">

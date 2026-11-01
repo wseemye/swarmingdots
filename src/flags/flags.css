@@ -46,9 +46,10 @@
   pointer-events: none;
 }
 
-/* The component's own wrapper: full width, so the words have room and only wrap when they must. */
-.flags-title-text {
-  width: 100%;
+.flags-stairs {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
 }
 
 .flags-picker {
