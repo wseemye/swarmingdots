@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import EditorActions from '../EditorActions';
+import useAutoHeight from '../useAutoHeight';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
 import { ANCHORS, SWARM_BY } from './anchors';
@@ -96,6 +97,7 @@ export default function TextSwarm() {
   // Replay bumps this, which remounts the text so every word starts as a box again.
   const [skipped, setSkipped] = useState<string[]>([]);
   const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
+  const panelRef = useAutoHeight<HTMLElement>();
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('text');
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
@@ -137,7 +139,7 @@ export default function TextSwarm() {
         />
       </div>
 
-      <aside className="text-swarm-panel" aria-label="Customize" data-tab={tab}>
+      <aside ref={panelRef} className="text-swarm-panel" aria-label="Customize" data-tab={tab}>
         {/* On a phone the controls are split in three; on a wide screen all of them show and this row is hidden. */}
         <div className="tabs" style={{ '--n': TABS.length, '--i': TABS.findIndex(([id]) => id === tab) } as CSSProperties}>
           <span className="slide" aria-hidden="true" />

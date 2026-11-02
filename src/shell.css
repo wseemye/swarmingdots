@@ -239,35 +239,43 @@ body {
   }
 }
 
-/* ── The editors' panels (/text and /morph): one layout for both, sized by the screen ──
-   Wide screens: a column on the right from the navbar's top edge to the bottom of the screen,
-   the buttons pinned to its foot, whatever each editor holds. Phones (portrait): under the
-   stage, the same height on every tab of both editors, a share of the screen's height. */
+/* ── The editors' panels (/text and /morph): one layout for both ──
+   Each panel is exactly as tall as what it holds, so there is never empty space, and glides to
+   its new height when that changes (a tab opens, the window narrows and things wrap):
+   useAutoHeight sets the height, the transition below animates it. Wide screens: a column on the
+   right whose top lines up with the navbar's. Phones (portrait): under the stage. */
 .text-swarm .text-swarm-panel,
 .editor .panel {
   top: var(--nav-top);
   right: 12px;
-  bottom: var(--nav-top);
-  max-height: none;
+  max-height: calc(100% - var(--nav-top) * 2);
   translate: none;
+  transition: height 360ms var(--ease-out);
 }
 
-.text-swarm .ed-buttons,
-.editor .ed-buttons {
-  margin-top: auto;
+.text-swarm .text-swarm-panel[data-resizing],
+.editor .panel[data-resizing] {
+  overflow: hidden;
 }
 
-@media (max-width: 760px) and (orientation: portrait) {
+@media (prefers-reduced-motion: reduce) {
   .text-swarm .text-swarm-panel,
   .editor .panel {
-    height: clamp(400px, 44dvh, 480px);
+    transition: none;
   }
+}
 
-  /* The open tab takes all the room between the tabs and the buttons. */
+/* The editors kept every tab as tall as the tallest, so the panel would not jump; it glides now. */
+@media (max-width: 760px) and (orientation: portrait) {
   .text-swarm .group,
   .editor .group {
-    flex: 1 1 auto;
     min-height: 0;
+  }
+
+  /* Under the stage there is no screen height to stay inside; the stage gives way instead. */
+  .text-swarm .text-swarm-panel,
+  .editor .panel {
+    max-height: none;
   }
 }
 

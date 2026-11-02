@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import EditorActions from '../EditorActions';
+import useAutoHeight from '../useAutoHeight';
 import PixelMorph from '../morph/PixelMorph';
 import type { Align } from '../morph/layout';
 import { VARIANTS, type Variant } from '../morph/variants';
@@ -87,6 +88,7 @@ export default function Editor() {
   const [replay, setReplay] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
+  const panelRef = useAutoHeight<HTMLElement>();
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('text');
   const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
 
@@ -192,7 +194,7 @@ export default function Editor() {
         />
       </div>
 
-      <aside className="panel" aria-label="Customize" data-tab={tab}>
+      <aside ref={panelRef} className="panel" aria-label="Customize" data-tab={tab}>
         {/* On a phone the controls are split in three; on a wide screen all of them show and this row is hidden. */}
         <div className="tabs" style={{ '--n': TABS.length, '--i': TABS.findIndex(([id]) => id === tab) } as CSSProperties}>
           <span className="slide" aria-hidden="true" />
