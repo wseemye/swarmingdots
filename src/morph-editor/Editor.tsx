@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import EditorActions from '../EditorActions';
 import PixelMorph from '../morph/PixelMorph';
 import type { Align } from '../morph/layout';
 import { VARIANTS, type Variant } from '../morph/variants';
 import ColorPicker from './ColorPicker';
-import { Tick } from './icons';
 import { defaultSettings, LIMITS, type Settings } from './settings';
 import { FILE_URL, prompt } from './snippet';
 import { readSettings, writeSettings } from './url';
@@ -191,50 +191,6 @@ export default function Editor() {
 
   return (
     <div className="editor" style={{ background: settings.background }}>
-      <nav className="chips" aria-label="About this project">
-        <button type="button" className="chip" onClick={share}>
-          {shared === 'done' ? (
-            <Tick />
-          ) : (
-            <svg
-              viewBox="0 0 16 16"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M6.5 9.5a3 3 0 0 0 4.24 0l2.12-2.12a3 3 0 0 0-4.24-4.24L7.5 4.26" />
-              <path d="M9.5 6.5a3 3 0 0 0-4.24 0L3.14 8.62a3 3 0 0 0 4.24 4.24l1.12-1.12" />
-            </svg>
-          )}
-          <span aria-live="polite">{shared === 'done' ? 'Link copied' : shared === 'failed' ? 'Copy blocked' : 'Share'}</span>
-        </button>
-        <button type="button" className="chip" onClick={copyFile}>
-          {copiedFile === 'done' ? (
-            <Tick />
-          ) : (
-            <svg
-              viewBox="0 0 16 16"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-              <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" />
-            </svg>
-          )}
-          <span aria-live="polite">{copiedFile === 'done' ? 'Copied' : copiedFile === 'failed' ? 'Copy blocked' : 'Copy .TSX'}</span>
-        </button>
-      </nav>
 
       <div className="stage">
         <PixelMorph
@@ -255,21 +211,7 @@ export default function Editor() {
       </div>
 
       <aside className="panel" aria-label="Customize" data-tab={tab}>
-        <div className="field field-face">
-          <span className="picker-label" id="variant-label">
-            Typeface
-          </span>
-          <VariantPicker value={settings.variant} onChange={choose} labelledBy="variant-label" />
-          <p className="hint hint-keys">Pick a face to morph into it, or press 1–5.</p>
-          <button type="button" role="switch" className="switch-row" aria-checked={autoplay} onClick={() => setAutoplay((a) => !a)}>
-            Autoplay through every face
-            <span className="switch" aria-hidden="true">
-              <span className="switch-thumb" />
-            </span>
-          </button>
-        </div>
-
-        {/* On a phone the rest is split in three; on a wide screen all of it shows and this row is hidden. */}
+        {/* On a phone the controls are split in three; on a wide screen all of them show and this row is hidden. */}
         <div className="tabs" style={{ '--n': TABS.length, '--i': TABS.findIndex(([id]) => id === tab) } as CSSProperties}>
           <span className="slide" aria-hidden="true" />
           {TABS.map(([id, label]) => (
@@ -297,6 +239,20 @@ export default function Editor() {
                 <> Geist Pixel has no glyph for {missing.map((c) => `“${c}”`).join(' ')}, so {missing.length === 1 ? 'it was' : 'they were'} left out.</>
               )}
             </p>
+          </div>
+
+          <div className="field field-face">
+            <span className="picker-label" id="variant-label">
+              Typeface
+            </span>
+            <VariantPicker value={settings.variant} onChange={choose} labelledBy="variant-label" />
+            <p className="hint hint-keys">Pick a face to morph into it, or press 1–5.</p>
+            <button type="button" role="switch" className="switch-row" aria-checked={autoplay} onClick={() => setAutoplay((a) => !a)}>
+              Autoplay through every face
+              <span className="switch" aria-hidden="true">
+                <span className="switch-thumb" />
+              </span>
+            </button>
           </div>
 
           <div className="field field-inline">
@@ -359,27 +315,19 @@ export default function Editor() {
           </div>
         </div>
 
-        <div className="buttons">
-          <button
-            type="button"
-            onClick={() => {
-              setReplay((r) => r + 1);
-              restartTurn.current();
-            }}
-          >
-            Replay
-          </button>
-          <button type="button" onClick={() => setSettings((s) => ({ ...defaultSettings(), text: s.text, variant: s.variant }))}>
-            Reset
-          </button>
-          <button type="button" className="primary prompt" onClick={copyPrompt}>
-            <span aria-live="polite">
-              {copiedPrompt === 'done' && <Tick />}
-              {copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy Prompt'}
-            </span>
-          </button>
-        </div>
-        <p className="hint hint-install">Paste the prompt into your AI assistant and it adds this text to your project.</p>
+        <EditorActions
+          onReplay={() => {
+            setReplay((r) => r + 1);
+            restartTurn.current();
+          }}
+          onReset={() => setSettings((s) => ({ ...defaultSettings(), text: s.text, variant: s.variant }))}
+          onCopyPrompt={copyPrompt}
+          copiedPrompt={copiedPrompt}
+          extras={[
+            { kind: 'copy', label: 'Copy .TSX', done: 'Copied', icon: 'copy', state: copiedFile, onClick: copyFile },
+            { kind: 'copy', label: 'Share link', done: 'Link copied', icon: 'link', state: shared, onClick: share },
+          ]}
+        />
       </aside>
     </div>
   );

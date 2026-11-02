@@ -125,7 +125,7 @@
   max-height: calc(100% - 32px);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   padding: 16px;
   overflow-y: auto;
   border: 1px solid rgb(0 0 0 / 0.1);
@@ -143,7 +143,7 @@
 :where(.editor) .group {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* Text, Style and Color: only on a phone (see the portrait query below). */
@@ -711,7 +711,7 @@
 
 @media (max-width: 900px) {
   .editor {
-    --panel-w: 290px;
+    --panel-w: 280px;
   }
 }
 
@@ -748,7 +748,7 @@
 
   
   :where(.editor) .group {
-    min-height: 126px;
+    min-height: 170px;
   }
 
   :where(.editor) .panel[data-tab='text'] .group:not(.group-text),
@@ -760,14 +760,14 @@
 /* The samples say what they are; the label stays for screen readers. */
 
   
-  :where(.editor) .field-face > .picker-label {
+  :where(.editor) .hint-keys {
     display: none;
   }
 }
 
 /* Any narrow or short screen: drop what the controls do not need, so the panel
    fits one screen without scrolling. */
-@media (max-width: 760px), (max-height: 760px) {
+@media (max-width: 760px), (max-height: 900px) {
   :where(.editor) .panel {
     gap: 10px;
     padding: 12px 16px;

@@ -1,6 +1,5 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import DotSwarmText from './text-swarm/DotSwarmText';
+import { NavLink, useLocation } from 'react-router-dom';
 
 const REPO = 'https://github.com/waseem091/swarmingdots';
 
@@ -11,9 +10,7 @@ const PAGES = [
 ] as const;
 
 /**
- * The bar floating at the top of every page: the title, "dots", which swarms
- * in out of its own dots when the site first opens (the bar stays mounted
- * across pages, so it plays once), then the pages and the repository.
+ * The bar floating at the top of every page, the same everywhere: the pages and the repository.
  *
  * One soft highlight sits behind the current page and glides to the next one
  * when you move, rather than each link lighting up on its own.
@@ -39,19 +36,6 @@ export default function Nav() {
 
   return (
     <header className="nav">
-      <Link to="/text" className="nav-title" aria-label="dots, home">
-        <DotSwarmText
-          as="span"
-          className="nav-title-text"
-          text="dots"
-          fontSize={22}
-          letterSpacing={1}
-          color="#0a0a0a"
-          speed={0.6}
-          fontUrl="/fonts/GeistPixel-Circle.woff2"
-        />
-      </Link>
-      <span className="nav-dot" aria-hidden="true" />
       <nav className="nav-links" aria-label="Pages" ref={listRef}>
         {mark && (
           <span

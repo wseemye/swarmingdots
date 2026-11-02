@@ -148,17 +148,18 @@ type Swarm = {
   delay: Float32Array;
 };
 
-// The stage is white, so white parts of a flag (Japan's field, the stars of the US) are drawn a
-// pale grey instead, or they would vanish into it. Only near-whites change; every other colour is
-// the flag's own.
+// On a white stage the gaps between dots are white, and they wash a flag's colours out: a dot
+// covers only COVER of its cell (FILL squared, less its rounded corners), so the eye sees the
+// dot's colour mixed with that much white. Each dot is drawn darker by just enough that the mix
+// comes out as the flag's own colour. White parts (Japan's field, the US stars) are drawn a pale
+// grey instead, or they would vanish into the page.
+const COVER = FILL * FILL * (1 - (4 - Math.PI) * ROUND * ROUND);
 const PALE = 0.88;
 const WHITE_TO = 0.9;
 function tone(rgba: Uint8ClampedArray, c: number, out: Float32Array, o: number) {
   const r = rgba[c * 4] / 255, g = rgba[c * 4 + 1] / 255, b = rgba[c * 4 + 2] / 255;
-  const k = Math.min(r, g, b) >= PALE ? WHITE_TO : 1;
-  out[o] = r * k;
-  out[o + 1] = g * k;
-  out[o + 2] = b * k;
+  const white = Math.min(r, g, b) >= PALE;
+  for (const [k, v] of [r, g, b].entries()) out[o + k] = white ? v * WHITE_TO : Math.max(0, 1 - (1 - v) / COVER);
 }
 
 // Until a country is picked the stage shows this, swarming in as dot text the way /text does

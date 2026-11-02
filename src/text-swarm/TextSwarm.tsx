@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import About from './About';
-import { Tick } from './icons';
+import EditorActions from '../EditorActions';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
 import { ANCHORS, SWARM_BY } from './anchors';
@@ -129,7 +128,6 @@ export default function TextSwarm() {
 
   return (
     <div className="text-swarm" style={{ background: settings.background }}>
-      <About copied={copiedFile} onCopy={copyFile} />
       <div className="text-swarm-stage">
         <DotSwarmText
           key={run}
@@ -378,21 +376,16 @@ export default function TextSwarm() {
           </div>
         </div>
 
-        <div className="buttons">
-          <button type="button" onClick={() => setRun((r) => r + 1)}>
-            Replay
-          </button>
-          <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
-            Reset
-          </button>
-          <button type="button" className="primary prompt" onClick={copyPrompt}>
-            <span aria-live="polite">
-              {copiedPrompt === 'done' && <Tick />}
-              {copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy Prompt'}
-            </span>
-          </button>
-        </div>
-        <p className="hint hint-install">Paste the prompt into your AI assistant and it adds this text to your project.</p>
+        <EditorActions
+          onReplay={() => setRun((r) => r + 1)}
+          onReset={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}
+          onCopyPrompt={copyPrompt}
+          copiedPrompt={copiedPrompt}
+          extras={[
+            { kind: 'copy', label: 'Copy .TSX', done: 'Copied', icon: 'copy', state: copiedFile, onClick: copyFile },
+            { kind: 'link', label: 'About', icon: 'info', to: '/intro' },
+          ]}
+        />
       </aside>
     </div>
   );

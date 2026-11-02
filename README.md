@@ -16,10 +16,12 @@ npm run build
 
 ## Routes
 
-The site lives at [dots.wseem.com](https://dots.wseem.com), all in light mode. A
-navbar floats at the top of every page: the title, "dots" in Geist Pixel Circle,
-which swarms in out of its own dots when the site first opens, then
-text | morph | flags | github (`src/Nav.tsx`, styles in `src/shell.css`).
+The site lives at [dots.wseem.com](https://dots.wseem.com), all in light mode. The
+same navbar floats at the top of every page: text, morph, flags, github, with one
+highlight that glides to the current page (`src/Nav.tsx`, styles in `src/shell.css`).
+The two editors share one panel layout and one footer (`src/EditorActions.tsx`):
+Replay and Reset, Copy Prompt, then Copy .TSX and About (on /text) or Share link
+(on /morph).
 
 The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
 watch its dots swarm into text. `/` goes there too, and the old
@@ -29,7 +31,9 @@ watch its dots swarm into text. `/` goes there too, and the old
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
 type a country's name in the field under the flag and pick it from the
 suggestions. Flags sit on the same white page as everything else; a flag's near-white parts
-are drawn a pale grey so they do not vanish into it. It opens on "fun with flags" swarming in as dark dot text, lowercase and
+are drawn a pale grey so they do not vanish into it, and every other dot is drawn a
+little darker, by just enough to make up for the white showing between the dots, so
+the flag reads at its true colours. It opens on "fun with flags" swarming in as dark dot text, lowercase and
 spaced out, as a staircase (a word to a line, each starting one space after
 the end of the word above), (the same
 `<DotSwarmText>` as `/text`) until a country is picked. It is one page: the flag shown is not part of the address, and old

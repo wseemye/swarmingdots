@@ -64,7 +64,7 @@ body {
   }
 }
 
-/* ── The floating bar at the top: "dots", then text, morph, flags, github ──
+/* ── The floating bar at the top: text, morph, flags, github ──
    Quiet on purpose: a hairline, a soft shadow, small type, and one highlight
    that glides to the current page. Its own translucent white surface, so it
    reads the same over any page or colours picked. */
@@ -80,9 +80,8 @@ body {
   left: 50%;
   display: flex;
   align-items: center;
-  gap: 10px;
   height: 36px;
-  padding: 0 4px 0 14px;
+  padding: 0 4px;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.8);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
@@ -104,34 +103,6 @@ body {
     filter: blur(4px);
     transform: translate(-50%, -6px) scale(0.98);
   }
-}
-
-.nav-title {
-  display: flex;
-  flex: none;
-  align-items: center;
-  /* The dot text wraps to the width it is given; "dots" must stay on one line. */
-  width: 50px;
-  /* The dot text sits a touch high in its line box; this centres it optically. */
-  padding-top: 3px;
-  border-radius: 6px;
-  color: inherit;
-  text-decoration: none;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.nav-title-text {
-  width: 100%;
-}
-
-/* One dot between the title and the pages, in keeping with the rest. */
-.nav-dot {
-  flex: none;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #d4d4d4;
 }
 
 .nav-links {
@@ -195,7 +166,6 @@ body {
 }
 
 /* A soft ring for the keyboard only; a click never leaves one behind. */
-.nav-title:focus-visible,
 .nav-link:focus-visible {
   box-shadow: 0 0 0 2px rgb(0 0 0 / 0.12);
 }
@@ -207,13 +177,135 @@ body {
 }
 
 @media (max-width: 400px) {
-  .nav {
-    gap: 6px;
-    padding-left: 12px;
-  }
-
   .nav-link {
     padding: 0 8px;
+  }
+}
+
+/* ── The foot of every editor's panel (EditorActions.tsx): the same on /text and /morph ── */
+.ed-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ed-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ed-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0a0a0a;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms var(--ease-out);
+}
+
+.ed-button:active {
+  transform: scale(0.97);
+}
+
+.ed-primary {
+  grid-column: 1 / -1;
+  border-color: #0a0a0a;
+  background: #0a0a0a;
+  color: #fff;
+}
+
+.ed-primary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ed-more {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.ed-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 450;
+  color: #737373;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms var(--ease-out);
+}
+
+.ed-link:active {
+  transform: scale(0.96);
+}
+
+.ed-button:focus-visible,
+.ed-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.15);
+}
+
+.ed-tick {
+  animation: ed-tick-in 260ms var(--ease-out) both;
+}
+
+@keyframes ed-tick-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ed-button:hover {
+    border-color: #a3a3a3;
+  }
+
+  .ed-primary:hover {
+    background: #262626;
+  }
+
+  .ed-link:hover {
+    color: #0a0a0a;
+    background: rgb(0 0 0 / 0.04);
+  }
+}
+
+@media (max-width: 760px), (max-height: 900px) {
+  .ed-actions {
+    gap: 6px;
+  }
+
+  .ed-button {
+    height: 34px;
   }
 }
 
@@ -265,12 +357,15 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .shell-page,
-  .nav {
+  .nav,
+  .ed-tick {
     animation: none;
   }
 
   .nav-link,
-  .nav-mark.is-ready {
+  .nav-mark.is-ready,
+  .ed-button,
+  .ed-link {
     transition: none;
   }
 
