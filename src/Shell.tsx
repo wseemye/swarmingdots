@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import Nav from './Nav.tsx';
 import './shell.css';
 
@@ -19,6 +19,10 @@ export default function Shell() {
   return (
     <div className="shell">
       <Nav />
+      {/* The same intro is behind every page. */}
+      <Link to="/intro" className="info-button" aria-label="About" aria-current={pathname.startsWith('/intro') ? 'page' : undefined}>
+        i
+      </Link>
       <main className="shell-main">
         {/* Keyed by page, so each one fades in as it opens. */}
         <div className="shell-page" key={pathname}>

@@ -5,7 +5,7 @@ import type { Align } from '../morph/layout';
 import { VARIANTS, type Variant } from '../morph/variants';
 import ColorPicker from './ColorPicker';
 import { defaultSettings, LIMITS, type Settings } from './settings';
-import { FILE_URL, prompt } from './snippet';
+import { prompt } from './snippet';
 import { readSettings, writeSettings } from './url';
 import VariantPicker from './VariantPicker';
 import './editor.css';
@@ -88,8 +88,6 @@ export default function Editor() {
   const [autoplay, setAutoplay] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('text');
-  const [shared, setShared] = useState<'done' | 'failed' | null>(null);
-  const [copiedFile, setCopiedFile] = useState<'done' | 'failed' | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
 
   const set = (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch }));
@@ -165,23 +163,7 @@ export default function Editor() {
     return () => window.clearTimeout(timer);
   }, [settings]);
 
-  async function share() {
-    const ok = await copyText(`${window.location.origin}${window.location.pathname}${writeSettings(settings)}`);
-    setShared(ok ? 'done' : 'failed');
-    window.setTimeout(() => setShared(null), 1800);
-  }
 
-  async function copyFile() {
-    let ok = false;
-    try {
-      const res = await fetch(FILE_URL);
-      ok = res.ok && (await copyText(await res.text()));
-    } catch {
-      // Offline, or the file is not served here: the button says so.
-    }
-    setCopiedFile(ok ? 'done' : 'failed');
-    window.setTimeout(() => setCopiedFile(null), 1800);
-  }
 
   async function copyPrompt() {
     const ok = await copyText(prompt(settings, autoplay));
@@ -323,10 +305,6 @@ export default function Editor() {
           onReset={() => setSettings((s) => ({ ...defaultSettings(), text: s.text, variant: s.variant }))}
           onCopyPrompt={copyPrompt}
           copiedPrompt={copiedPrompt}
-          extras={[
-            { kind: 'copy', label: 'Copy .TSX', done: 'Copied', icon: 'copy', state: copiedFile, onClick: copyFile },
-            { kind: 'copy', label: 'Share link', done: 'Link copied', icon: 'link', state: shared, onClick: share },
-          ]}
         />
       </aside>
     </div>

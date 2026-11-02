@@ -16,6 +16,29 @@
   color-scheme: light;
 }
 
+/* Under the dots once they have landed: the flag itself, one pixel per dot, so the seams between
+   dots show its colours rather than the page; and a hairline round it, so a white edge (Japan's
+   field, Poland's top half) still shows against the white page. A new flag remounts it hidden. */
+.flags-frame {
+  position: absolute;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+  pointer-events: none;
+  animation: flags-frame-in 500ms var(--ease-out) 2000ms both;
+}
+
+.flags-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+@keyframes flags-frame-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .flags-canvas {
   position: absolute;
   inset: 0;
@@ -159,7 +182,8 @@
     transition: none;
   }
 
-  .flags-options {
+  .flags-options,
+  .flags-frame {
     animation: none;
   }
 }

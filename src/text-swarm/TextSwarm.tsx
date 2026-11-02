@@ -27,8 +27,6 @@ const TABS = [
   ['style', 'Style'],
   ['motion', 'Motion'],
 ] as const;
-// The component as one file (built by scripts/registry.ts), for pasting into any React project.
-const FILE_URL = '/r/dot-swarm-text.tsx';
 
 // The component tag for what is on screen, with only the props that differ from the component's defaults.
 function snippet(s: Settings): string {
@@ -97,7 +95,6 @@ export default function TextSwarm() {
   const [run, setRun] = useState(0);
   // Replay bumps this, which remounts the text so every word starts as a box again.
   const [skipped, setSkipped] = useState<string[]>([]);
-  const [copiedFile, setCopiedFile] = useState<'done' | 'failed' | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('text');
 
@@ -114,17 +111,6 @@ export default function TextSwarm() {
     window.setTimeout(() => setCopiedPrompt(null), 1800);
   }
 
-  async function copyFile() {
-    let ok = false;
-    try {
-      const res = await fetch(FILE_URL);
-      ok = res.ok && (await copyText(await res.text()));
-    } catch {
-      // Offline, or the file is not served here: the button says so.
-    }
-    setCopiedFile(ok ? 'done' : 'failed');
-    window.setTimeout(() => setCopiedFile(null), 1800);
-  }
 
   return (
     <div className="text-swarm" style={{ background: settings.background }}>
@@ -381,10 +367,6 @@ export default function TextSwarm() {
           onReset={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}
           onCopyPrompt={copyPrompt}
           copiedPrompt={copiedPrompt}
-          extras={[
-            { kind: 'copy', label: 'Copy .TSX', done: 'Copied', icon: 'copy', state: copiedFile, onClick: copyFile },
-            { kind: 'link', label: 'About', icon: 'info', to: '/intro' },
-          ]}
         />
       </aside>
     </div>

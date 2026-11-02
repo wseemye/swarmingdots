@@ -2,8 +2,6 @@ import { DEFAULT_SETTINGS, type Settings } from './settings';
 
 // The page an AI assistant reads to install the component (built by scripts/registry.ts).
 export const GUIDE_URL = 'https://dots.wseem.com/r/pixel-morph.md';
-// The component as one file, for pasting into any React project.
-export const FILE_URL = '/r/pixel-morph.tsx';
 
 // <PixelMorph>'s own defaults, which the tag can leave out.
 const COMPONENT = { variant: 'square', letterSpacing: 0, duration: 800, align: 'left' } as const;

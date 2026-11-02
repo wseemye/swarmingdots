@@ -148,18 +148,18 @@ type Swarm = {
   delay: Float32Array;
 };
 
-// On a white stage the gaps between dots are white, and they wash a flag's colours out: a dot
-// covers only COVER of its cell (FILL squared, less its rounded corners), so the eye sees the
-// dot's colour mixed with that much white. Each dot is drawn darker by just enough that the mix
-// comes out as the flag's own colour. White parts (Japan's field, the US stars) are drawn a pale
-// grey instead, or they would vanish into the page.
-const COVER = FILL * FILL * (1 - (4 - Math.PI) * ROUND * ROUND);
+// A dot's colour is the flag's own. Near-whites are drawn a touch off-white so white dots can still
+// be seen in flight over the white page. Once the dots land, the flag image fades in under them
+// (.flags-frame), so the hairline seams between dots show the flag's colour, not the page's, and
+// the flag reads at full strength.
 const PALE = 0.88;
-const WHITE_TO = 0.9;
+const WHITE_TO = 0.965;
 function tone(rgba: Uint8ClampedArray, c: number, out: Float32Array, o: number) {
   const r = rgba[c * 4] / 255, g = rgba[c * 4 + 1] / 255, b = rgba[c * 4 + 2] / 255;
-  const white = Math.min(r, g, b) >= PALE;
-  for (const [k, v] of [r, g, b].entries()) out[o + k] = white ? v * WHITE_TO : Math.max(0, 1 - (1 - v) / COVER);
+  const k = Math.min(r, g, b) >= PALE ? WHITE_TO : 1;
+  out[o] = r * k;
+  out[o + 1] = g * k;
+  out[o + 2] = b * k;
 }
 
 // Until a country is picked the stage shows this, swarming in as dot text the way /text does
@@ -398,6 +398,11 @@ export default function FlagSwarm() {
 
   return (
     <div className="flags" ref={stageRef}>
+      {flag && box && (
+        <div key={flag.code} className="flags-frame" aria-hidden="true" style={{ left: box.x, top: box.y, width: box.w, height: box.h }}>
+          <img src={`/flags/dots/${flag.code}.png`} alt="" />
+        </div>
+      )}
       <canvas className="flags-canvas" ref={canvasRef} role="img" aria-label={flag ? `Flag of ${flag.name}, drawn in dots` : TITLE} />
 
 

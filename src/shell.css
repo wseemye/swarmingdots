@@ -68,11 +68,6 @@ body {
    Quiet on purpose: a hairline, a soft shadow, small type, and one highlight
    that glides to the current page. Its own translucent white surface, so it
    reads the same over any page or colours picked. */
-:root {
-  /* How far down the bar reaches, for anything else pinned to the top of a page. */
-  --nav-bottom: 56px;
-}
-
 .nav {
   position: fixed;
   z-index: 50;
@@ -182,13 +177,66 @@ body {
   }
 }
 
-/* ── The foot of every editor's panel (EditorActions.tsx): the same on /text and /morph ── */
-.ed-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* ── "i", top left on every page: the intro ──
+   Sits level with the navbar, in the same translucent white and hairline. */
+.info-button {
+  position: fixed;
+  z-index: 50;
+  top: 16px;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.06),
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 4px 16px rgb(0 0 0 / 0.04);
+  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1;
+  color: #737373;
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: nav-in-corner 500ms var(--ease-out) both;
+  transition:
+    color 150ms ease,
+    transform 150ms var(--ease-out);
 }
 
+@keyframes nav-in-corner {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+.info-button[aria-current='page'] {
+  color: #0a0a0a;
+  background: #f0f0f0;
+}
+
+.info-button:active {
+  transform: scale(0.94);
+}
+
+.info-button:focus-visible {
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.15);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info-button:hover {
+    color: #0a0a0a;
+  }
+}
+
+/* ── The foot of every editor's panel (EditorActions.tsx): the same on /text and /morph ── */
 .ed-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -234,41 +282,7 @@ body {
   gap: 6px;
 }
 
-.ed-more {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-}
-
-.ed-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 450;
-  color: #737373;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    color 150ms ease,
-    background-color 150ms ease,
-    transform 150ms var(--ease-out);
-}
-
-.ed-link:active {
-  transform: scale(0.96);
-}
-
-.ed-button:focus-visible,
-.ed-link:focus-visible {
+.ed-button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgb(0 0 0 / 0.15);
 }
@@ -292,27 +306,11 @@ body {
   .ed-primary:hover {
     background: #262626;
   }
-
-  .ed-link:hover {
-    color: #0a0a0a;
-    background: rgb(0 0 0 / 0.04);
-  }
 }
 
 @media (max-width: 760px), (max-height: 900px) {
-  .ed-actions {
-    gap: 6px;
-  }
-
   .ed-button {
     height: 34px;
-  }
-}
-
-/* On a narrow screen the bar spans the top, so a page's own buttons up there drop below it. */
-@media (max-width: 900px) {
-  .shell-page .chips {
-    top: var(--nav-bottom);
   }
 }
 
@@ -358,6 +356,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .shell-page,
   .nav,
+  .info-button,
   .ed-tick {
     animation: none;
   }
@@ -365,7 +364,7 @@ body {
   .nav-link,
   .nav-mark.is-ready,
   .ed-button,
-  .ed-link {
+  .info-button {
     transition: none;
   }
 
