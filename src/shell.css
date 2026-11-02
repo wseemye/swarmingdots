@@ -250,7 +250,21 @@ body {
   right: 12px;
   max-height: calc(100% - var(--nav-top) * 2);
   translate: none;
-  transition: height 360ms var(--ease-out);
+  /* Long enough and even enough to be seen growing and shrinking, not just landing. */
+  transition: height 480ms cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+/* The open tab's controls fade up as the panel makes room for them. */
+.text-swarm .group,
+.editor .group {
+  animation: group-in 420ms cubic-bezier(0.45, 0, 0.2, 1) 80ms both;
+}
+
+@keyframes group-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 .text-swarm .text-swarm-panel[data-resizing],
@@ -262,6 +276,11 @@ body {
   .text-swarm .text-swarm-panel,
   .editor .panel {
     transition: none;
+  }
+
+  .text-swarm .group,
+  .editor .group {
+    animation: none;
   }
 }
 
