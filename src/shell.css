@@ -67,10 +67,19 @@ body {
 /* ── The floating bar at the top: text, morph, flags, github ──
    Styled like the editors' segmented pickers (Typeface, Pairing, Align): a white box with a grey
    border, and a black highlight with white text behind the current page that glides to the next. */
+:root {
+  /* The navbar's place and height (1px border + 2px padding + 30px links, top and bottom), which
+     the "i" button sizes and centres itself on. */
+  --nav-top: 12px;
+  --nav-h: 36px;
+}
+
 .nav {
   position: fixed;
   z-index: 50;
-  top: 12px;
+  top: var(--nav-top);
+  box-sizing: border-box;
+  height: var(--nav-h);
   left: 50%;
   display: flex;
   align-items: center;
@@ -170,21 +179,23 @@ body {
 }
 
 /* ── "i", top left on every page: the intro ──
-   As tall as the navbar, in the same white, grey border and corners; black when hovered or open. */
+   80% of the navbar's height and centred on it, in the same white, grey border and corners;
+   black when hovered or open. */
 .info-button {
+  --size: calc(var(--nav-h) * 0.8);
   position: fixed;
   z-index: 50;
-  top: 12px;
+  top: calc(var(--nav-top) + (var(--nav-h) - var(--size)) / 2);
   left: 12px;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: var(--size);
+  height: var(--size);
   border: 1px solid #d4d4d4;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #fff;
   font-family: 'Geist Pixel Circle', ui-monospace, monospace;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1;
   color: #111;
   text-decoration: none;
