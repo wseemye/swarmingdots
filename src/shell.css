@@ -162,7 +162,7 @@ body {
 }
 
 .nav-link:focus-visible {
-  box-shadow: 0 0 0 2px #111;
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.2);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -236,6 +236,38 @@ body {
     border-color: #111;
     background: #111;
     color: #fff;
+  }
+}
+
+/* ── The editors' panels (/text and /morph): one layout for both, sized by the screen ──
+   Wide screens: a column on the right from the navbar's top edge to the bottom of the screen,
+   the buttons pinned to its foot, whatever each editor holds. Phones (portrait): under the
+   stage, the same height on every tab of both editors, a share of the screen's height. */
+.text-swarm .text-swarm-panel,
+.editor .panel {
+  top: var(--nav-top);
+  right: 12px;
+  bottom: var(--nav-top);
+  max-height: none;
+  translate: none;
+}
+
+.text-swarm .ed-buttons,
+.editor .ed-buttons {
+  margin-top: auto;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .text-swarm .text-swarm-panel,
+  .editor .panel {
+    height: clamp(400px, 44dvh, 480px);
+  }
+
+  /* The open tab takes all the room between the tabs and the buttons. */
+  .text-swarm .group,
+  .editor .group {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 
