@@ -64,6 +64,248 @@ body {
   }
 }
 
+/* ── The floating bar at the top: text, morph, flags, github ──
+   Styled like the editors' segmented pickers (Typeface, Pairing, Align): a white box with a grey
+   border, and a black highlight with white text behind the current page that glides to the next. */
+.nav {
+  position: fixed;
+  z-index: 50;
+  top: 12px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  transform: translateX(-50%);
+  animation: nav-in 500ms var(--ease-out) both;
+}
+
+/* Arrives from just above, out of a blur. */
+@keyframes nav-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translate(-50%, -6px) scale(0.98);
+  }
+}
+
+.nav-links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* The highlight behind the current page. */
+.nav-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--w);
+  border-radius: 6px;
+  background: #111;
+  transform: translateX(var(--x));
+  pointer-events: none;
+}
+
+.nav-mark.is-ready {
+  transition:
+    transform 320ms var(--ease-out),
+    width 320ms var(--ease-out);
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: #666;
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    transform 150ms var(--ease-out);
+}
+
+.nav-link svg {
+  margin-top: -1px;
+  opacity: 0.7;
+}
+
+.nav-link.active {
+  color: #fff;
+}
+
+.nav-link:active {
+  transform: scale(0.97);
+}
+
+.nav-link:focus-visible {
+  box-shadow: 0 0 0 2px #111;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:not(.active):hover {
+    background: #f0f0f0;
+    color: #111;
+  }
+}
+
+@media (max-width: 400px) {
+  .nav-link {
+    padding: 0 10px;
+  }
+}
+
+/* ── "i", top left on every page: the intro ──
+   As tall as the navbar, in the same white, grey border and corners; black when hovered or open. */
+.info-button {
+  position: fixed;
+  z-index: 50;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1;
+  color: #111;
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: nav-in-corner 500ms var(--ease-out) both;
+  transition:
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    transform 150ms var(--ease-out);
+}
+
+@keyframes nav-in-corner {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+.info-button[aria-current='page'] {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+.info-button:active {
+  transform: scale(0.95);
+}
+
+.info-button:focus-visible {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info-button:hover {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+  }
+}
+
+/* ── The foot of every editor's panel (EditorActions.tsx): the same on /text and /morph ── */
+.ed-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ed-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0a0a0a;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms var(--ease-out);
+}
+
+.ed-button:active {
+  transform: scale(0.97);
+}
+
+.ed-primary {
+  grid-column: 1 / -1;
+  border-color: #0a0a0a;
+  background: #0a0a0a;
+  color: #fff;
+}
+
+.ed-primary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ed-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.15);
+}
+
+.ed-tick {
+  animation: ed-tick-in 260ms var(--ease-out) both;
+}
+
+@keyframes ed-tick-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ed-button:hover {
+    border-color: #a3a3a3;
+  }
+
+  .ed-primary:hover {
+    background: #262626;
+  }
+}
+
+@media (max-width: 760px), (max-height: 900px) {
+  .ed-button {
+    height: 34px;
+  }
+}
+
 /* ── The round button in the top left: "?" to the intro, "←" back to the editor ── */
 .corner-button {
   position: absolute;
@@ -104,8 +346,18 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shell-page {
+  .shell-page,
+  .nav,
+  .info-button,
+  .ed-tick {
     animation: none;
+  }
+
+  .nav-link,
+  .nav-mark.is-ready,
+  .ed-button,
+  .info-button {
+    transition: none;
   }
 
   .corner-button {

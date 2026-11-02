@@ -1,5 +1,4 @@
 import { useState, useSyncExternalStore } from 'react';
-import { Link } from 'react-router-dom';
 import ColorPicker from './ColorPicker';
 import DotSwarmText from './DotSwarmText';
 import VariantPicker from './VariantPicker';
@@ -35,9 +34,6 @@ export default function Intro() {
 
   return (
     <div className="intro" style={{ background, color }}>
-      <Link to="/text" className="corner-button" aria-label="Back to the editor">
-        ←
-      </Link>
       <div className="intro-body">
         <DotSwarmText
           as="h1"

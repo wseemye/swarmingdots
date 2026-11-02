@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import About from './About';
-import { Tick } from './icons';
+import EditorActions from '../EditorActions';
 import AnchorGrid from './AnchorGrid';
 import ColorPicker from './ColorPicker';
 import { ANCHORS, SWARM_BY } from './anchors';
@@ -28,8 +27,6 @@ const TABS = [
   ['style', 'Style'],
   ['motion', 'Motion'],
 ] as const;
-// The component as one file (built by scripts/registry.ts), for pasting into any React project.
-const FILE_URL = '/r/dot-swarm-text.tsx';
 
 // The component tag for what is on screen, with only the props that differ from the component's defaults.
 function snippet(s: Settings): string {
@@ -98,7 +95,6 @@ export default function TextSwarm() {
   const [run, setRun] = useState(0);
   // Replay bumps this, which remounts the text so every word starts as a box again.
   const [skipped, setSkipped] = useState<string[]>([]);
-  const [copiedFile, setCopiedFile] = useState<'done' | 'failed' | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState<'done' | 'failed' | null>(null);
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('text');
 
@@ -115,21 +111,9 @@ export default function TextSwarm() {
     window.setTimeout(() => setCopiedPrompt(null), 1800);
   }
 
-  async function copyFile() {
-    let ok = false;
-    try {
-      const res = await fetch(FILE_URL);
-      ok = res.ok && (await copyText(await res.text()));
-    } catch {
-      // Offline, or the file is not served here: the button says so.
-    }
-    setCopiedFile(ok ? 'done' : 'failed');
-    window.setTimeout(() => setCopiedFile(null), 1800);
-  }
 
   return (
     <div className="text-swarm" style={{ background: settings.background }}>
-      <About copied={copiedFile} onCopy={copyFile} />
       <div className="text-swarm-stage">
         <DotSwarmText
           key={run}
@@ -378,21 +362,12 @@ export default function TextSwarm() {
           </div>
         </div>
 
-        <div className="buttons">
-          <button type="button" onClick={() => setRun((r) => r + 1)}>
-            Replay
-          </button>
-          <button type="button" onClick={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}>
-            Reset
-          </button>
-          <button type="button" className="primary prompt" onClick={copyPrompt}>
-            <span aria-live="polite">
-              {copiedPrompt === 'done' && <Tick />}
-              {copiedPrompt === 'done' ? 'Copied' : copiedPrompt === 'failed' ? 'Copy blocked' : 'Copy Prompt'}
-            </span>
-          </button>
-        </div>
-        <p className="hint hint-install">Paste the prompt into your AI assistant and it adds this text to your project.</p>
+        <EditorActions
+          onReplay={() => setRun((r) => r + 1)}
+          onReset={() => setSettings((s) => ({ ...DEFAULT_SETTINGS, text: s.text }))}
+          onCopyPrompt={copyPrompt}
+          copiedPrompt={copiedPrompt}
+        />
       </aside>
     </div>
   );

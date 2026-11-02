@@ -31,7 +31,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.text-swarm-stage {
+:where(.text-swarm, .intro) .text-swarm-stage {
   position: absolute;
   inset: 0;
   display: flex;
@@ -44,7 +44,7 @@
   padding: 56px calc(var(--panel-w) + 48px) 56px 24px;
 }
 
-.text-swarm-sentence {
+:where(.text-swarm, .intro) .text-swarm-sentence {
   /* Full width so the text knows its room; auto margins centre it vertically,
      and fall back to the top when it overflows so the top is never cut off. */
   width: 100%;
@@ -53,7 +53,7 @@
 }
 
 /* ── Customize panel: a card floating over the canvas, sized to fit one screen ── */
-.text-swarm-panel {
+:where(.text-swarm, .intro) .text-swarm-panel {
   position: absolute;
   z-index: 5;
   top: 50%;
@@ -75,18 +75,18 @@
   container-type: inline-size;
 }
 
-.text-swarm-panel > * {
+:where(.text-swarm, .intro) .text-swarm-panel > * {
   flex-shrink: 0;
 }
 
-.group {
+:where(.text-swarm, .intro) .group {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 /* Text, Style and Motion: only on a phone (see the portrait query below). */
-.tabs {
+:where(.text-swarm, .intro) .tabs {
   position: relative;
   display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -97,7 +97,7 @@
   background: #fff;
 }
 
-.tab {
+:where(.text-swarm, .intro) .tab {
   position: relative;
   height: 30px;
   border: 0;
@@ -112,17 +112,17 @@
     color 180ms var(--ease-out);
 }
 
-.tab[aria-pressed='true'] {
+:where(.text-swarm, .intro) .tab[aria-pressed='true'] {
   background: transparent;
   color: #fff;
 }
 
-.tab:active {
+:where(.text-swarm, .intro) .tab:active {
   transform: scale(0.97);
 }
 
 /* ── Top left: the intro, the repository, the component file ── */
-.chips {
+:where(.text-swarm, .intro) .chips {
   position: absolute;
   z-index: 10;
   top: 12px;
@@ -131,7 +131,7 @@
   gap: 6px;
 }
 
-.chip {
+:where(.text-swarm, .intro) .chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -155,28 +155,28 @@
     transform 160ms var(--ease-out);
 }
 
-.chip-icon {
+:where(.text-swarm, .intro) .chip-icon {
   width: 28px;
   padding: 0;
   font-family: 'Geist Pixel Circle', ui-monospace, monospace;
 }
 
-.chip:active {
+:where(.text-swarm, .intro) .chip:active {
   transform: scale(0.97);
 }
 
-.chip:focus-visible {
+:where(.text-swarm, .intro) .chip:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .chip:hover {
+  :where(.text-swarm, .intro) .chip:hover {
     border-color: #999;
   }
 }
 
-.text-swarm-panel h2 {
+:where(.text-swarm, .intro) .text-swarm-panel h2 {
   margin: 0;
   font-size: 12px;
   font-weight: 600;
@@ -185,19 +185,19 @@
   color: #666;
 }
 
-.field {
+:where(.text-swarm, .intro) .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.field label,
-.picker-label,
-.row label {
+:where(.text-swarm, .intro) .field label,
+:where(.text-swarm, .intro) .picker-label,
+:where(.text-swarm, .intro) .row label {
   font-weight: 500;
 }
 
-.hint {
+:where(.text-swarm, .intro) .hint {
   margin: 0;
   color: #666;
   font-size: 12px;
@@ -205,18 +205,18 @@
 }
 
 /* Label and control on one line; a hint, when shown, goes underneath. */
-.field-inline {
+:where(.text-swarm, .intro) .field-inline {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 4px 12px;
 }
 
-.field-inline .hint {
+:where(.text-swarm, .intro) .field-inline .hint {
   grid-column: 1 / -1;
 }
 
-.field textarea {
+:where(.text-swarm, .intro) .field textarea {
   resize: vertical;
   min-height: 56px;
   padding: 8px 10px;
@@ -229,7 +229,7 @@
 }
 
 /* ── Typeface: four samples in one segmented row ── */
-.variants {
+:where(.text-swarm, .intro) .variants {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 2px;
@@ -239,7 +239,7 @@
   background: #fff;
 }
 
-.variant {
+:where(.text-swarm, .intro) .variant {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -257,61 +257,61 @@
     color 180ms var(--ease-out);
 }
 
-.pairings {
+:where(.text-swarm, .intro) .pairings {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.pairings .variant {
+:where(.text-swarm, .intro) .pairings .variant {
   padding: 6px 0;
 }
 
-.pairings .variant-name {
+:where(.text-swarm, .intro) .pairings .variant-name {
   font-size: 12px;
 }
 
-.variant-sample {
+:where(.text-swarm, .intro) .variant-sample {
   font-size: 22px;
   line-height: 1;
   color: #111;
 }
 
-.variant-name {
+:where(.text-swarm, .intro) .variant-name {
   font-size: 11px;
   font-weight: 500;
 }
 
-.variant[aria-checked='true'] {
+:where(.text-swarm, .intro) .variant[aria-checked='true'] {
   background: #111;
   color: #fff;
 }
 
-.variant[aria-checked='true'] .variant-sample {
+:where(.text-swarm, .intro) .variant[aria-checked='true'] .variant-sample {
   color: #fff;
 }
 
-.variant:active {
+:where(.text-swarm, .intro) .variant:active {
   transform: scale(0.97);
 }
 
-.variant:focus-visible {
+:where(.text-swarm, .intro) .variant:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .variant:not([aria-checked='true']):hover {
+  :where(.text-swarm, .intro) .variant:not([aria-checked='true']):hover {
     background: #f0f0f0;
   }
 }
 
 /* ── Sliders: label, track and value share one row ── */
-.sliders {
+:where(.text-swarm, .intro) .sliders {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.row {
+:where(.text-swarm, .intro) .row {
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr) 56px;
   align-items: center;
@@ -320,22 +320,22 @@
 }
 
 /* A row whose control cannot be used right now. */
-.row {
+:where(.text-swarm, .intro) .row {
   transition: opacity 200ms var(--ease-out);
 }
 
-.row-off {
+:where(.text-swarm, .intro) .row-off {
   opacity: 0.4;
   pointer-events: none;
 }
 
-.row input[type='range'] {
+:where(.text-swarm, .intro) .row input[type='range'] {
   min-width: 0;
   margin: 0;
   accent-color: #111;
 }
 
-.row-value {
+:where(.text-swarm, .intro) .row-value {
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
@@ -343,17 +343,17 @@
   font-variant-numeric: tabular-nums;
 }
 
-.row-value output {
+:where(.text-swarm, .intro) .row-value output {
   font-weight: 500;
 }
 
-.unit {
+:where(.text-swarm, .intro) .unit {
   color: #666;
   font-size: 12px;
 }
 
-.num,
-.picker-hex {
+:where(.text-swarm, .intro) .num,
+:where(.text-swarm, .intro) .picker-hex {
   height: 32px;
   padding: 0 8px;
   border: 1px solid #d4d4d4;
@@ -365,21 +365,21 @@
   transition: border-color 160ms var(--ease-out);
 }
 
-.num {
+:where(.text-swarm, .intro) .num {
   width: 44px;
   padding: 0 4px;
   text-align: right;
 }
 
 /* ── Motion: where the swarm starts, and what takes a turn of its own ── */
-.motion {
+:where(.text-swarm, .intro) .motion {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
 
-.motion-item {
+:where(.text-swarm, .intro) .motion-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -387,7 +387,7 @@
 }
 
 /* The 3x3 picker: a dot per cell, the chosen one grown into a filled square. */
-.anchor {
+:where(.text-swarm, .intro) .anchor {
   display: grid;
   grid-template-columns: repeat(3, 24px);
   grid-template-rows: repeat(3, 24px);
@@ -398,7 +398,7 @@
   background: #fff;
 }
 
-.anchor-cell {
+:where(.text-swarm, .intro) .anchor-cell {
   display: grid;
   place-items: center;
   padding: 0;
@@ -408,7 +408,7 @@
   cursor: pointer;
 }
 
-.anchor-dot {
+:where(.text-swarm, .intro) .anchor-dot {
   width: 4px;
   height: 4px;
   border-radius: 1.6px;
@@ -418,36 +418,36 @@
     background-color 180ms var(--ease-out);
 }
 
-.anchor-cell[aria-checked='true'] .anchor-dot {
+:where(.text-swarm, .intro) .anchor-cell[aria-checked='true'] .anchor-dot {
   background: #111;
   transform: scale(2.5);
 }
 
-.anchor-cell:active .anchor-dot {
+:where(.text-swarm, .intro) .anchor-cell:active .anchor-dot {
   transform: scale(1.6);
 }
 
-.anchor-cell[aria-checked='true']:active .anchor-dot {
+:where(.text-swarm, .intro) .anchor-cell[aria-checked='true']:active .anchor-dot {
   transform: scale(2.2);
 }
 
-.anchor-cell:focus-visible {
+:where(.text-swarm, .intro) .anchor-cell:focus-visible {
   outline: 2px solid #111;
   outline-offset: -2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .anchor-cell:hover .anchor-dot {
+  :where(.text-swarm, .intro) .anchor-cell:hover .anchor-dot {
     background: #888;
   }
 
-  .anchor-cell[aria-checked='true']:hover .anchor-dot {
+  :where(.text-swarm, .intro) .anchor-cell[aria-checked='true']:hover .anchor-dot {
     background: #111;
   }
 }
 
 /* Stagger: the label and the track are one button, so the whole row is the target. */
-.switch-row {
+:where(.text-swarm, .intro) .switch-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -462,7 +462,7 @@
   cursor: pointer;
 }
 
-.switch {
+:where(.text-swarm, .intro) .switch {
   flex: none;
   width: 36px;
   height: 20px;
@@ -473,7 +473,7 @@
 }
 
 /* The thumb stretches while pressed, then settles at the end it was sent to. */
-.switch-thumb {
+:where(.text-swarm, .intro) .switch-thumb {
   display: block;
   width: 16px;
   height: 16px;
@@ -484,36 +484,36 @@
     width 160ms var(--ease-out);
 }
 
-.switch-row[aria-checked='true'] .switch {
+:where(.text-swarm, .intro) .switch-row[aria-checked='true'] .switch {
   background: #111;
 }
 
-.switch-row[aria-checked='true'] .switch-thumb {
+:where(.text-swarm, .intro) .switch-row[aria-checked='true'] .switch-thumb {
   transform: translateX(16px);
 }
 
-.switch-row:active .switch-thumb {
+:where(.text-swarm, .intro) .switch-row:active .switch-thumb {
   width: 20px;
 }
 
-.switch-row[aria-checked='true']:active .switch-thumb {
+:where(.text-swarm, .intro) .switch-row[aria-checked='true']:active .switch-thumb {
   transform: translateX(12px);
 }
 
-.switch-row:focus-visible {
+:where(.text-swarm, .intro) .switch-row:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
   border-radius: 6px;
 }
 
 /* Swarm by: a few small buttons that wrap, as tall as the grid beside them. */
-.pills {
+:where(.text-swarm, .intro) .pills {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.pill {
+:where(.text-swarm, .intro) .pill {
   height: 26px;
   padding: 0 9px;
   border: 1px solid #d4d4d4;
@@ -531,49 +531,49 @@
     transform 160ms var(--ease-out);
 }
 
-.pill[aria-checked='true'] {
+:where(.text-swarm, .intro) .pill[aria-checked='true'] {
   border-color: #111;
   background: #111;
   color: #fff;
 }
 
-.pill:active {
+:where(.text-swarm, .intro) .pill:active {
   transform: scale(0.97);
 }
 
-.pill:focus-visible {
+:where(.text-swarm, .intro) .pill:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .pill[aria-checked='false']:hover {
+  :where(.text-swarm, .intro) .pill[aria-checked='false']:hover {
     border-color: #999;
   }
 }
 
 /* ── Colours: two side by side, each opening a picker above it ── */
-.colors {
+:where(.text-swarm, .intro) .colors {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.picker {
+:where(.text-swarm, .intro) .picker {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
 
-.picker-field {
+:where(.text-swarm, .intro) .picker-field {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.picker-swatch {
+:where(.text-swarm, .intro) .picker-swatch {
   flex: none;
   width: 32px;
   height: 32px;
@@ -584,21 +584,21 @@
   transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out);
 }
 
-.picker-swatch:active {
+:where(.text-swarm, .intro) .picker-swatch:active {
   transform: scale(0.94);
 }
 
-.picker-swatch[aria-expanded='true'] {
+:where(.text-swarm, .intro) .picker-swatch[aria-expanded='true'] {
   border-color: #111;
 }
 
-.picker-hex {
+:where(.text-swarm, .intro) .picker-hex {
   flex: 1;
   min-width: 0;
   text-transform: lowercase;
 }
 
-.picker-pop {
+:where(.text-swarm, .intro) .picker-pop {
   position: absolute;
   z-index: 5;
   left: 0;
@@ -617,7 +617,7 @@
   animation: picker-in 160ms var(--ease-out);
 }
 
-.picker:nth-child(2) .picker-pop {
+:where(.text-swarm, .intro) .picker:nth-child(2) .picker-pop {
   transform-origin: 75% 100%;
 }
 
@@ -628,8 +628,8 @@
   }
 }
 
-.picker-sv,
-.picker-hue {
+:where(.text-swarm, .intro) .picker-sv,
+:where(.text-swarm, .intro) .picker-hue {
   position: relative;
   border-radius: 8px;
   cursor: crosshair;
@@ -637,17 +637,17 @@
   user-select: none;
 }
 
-.picker-sv {
+:where(.text-swarm, .intro) .picker-sv {
   height: 128px;
   background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
 }
 
-.picker-hue {
+:where(.text-swarm, .intro) .picker-hue {
   height: 14px;
   background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
 }
 
-.picker-thumb {
+:where(.text-swarm, .intro) .picker-thumb {
   position: absolute;
   width: 14px;
   height: 14px;
@@ -659,31 +659,31 @@
 }
 
 /* ── Focus ── */
-.num:focus-visible,
-.picker-hex:focus-visible,
-.field textarea:focus-visible {
+:where(.text-swarm, .intro) .num:focus-visible,
+:where(.text-swarm, .intro) .picker-hex:focus-visible,
+:where(.text-swarm, .intro) .field textarea:focus-visible {
   border-color: #111;
   outline: 2px solid #111;
   outline-offset: 1px;
 }
 
-.picker-sv:focus-visible,
-.picker-hue:focus-visible,
-.picker-swatch:focus-visible,
-.row input[type='range']:focus-visible,
-.text-swarm-panel button:focus-visible {
+:where(.text-swarm, .intro) .picker-sv:focus-visible,
+:where(.text-swarm, .intro) .picker-hue:focus-visible,
+:where(.text-swarm, .intro) .picker-swatch:focus-visible,
+:where(.text-swarm, .intro) .row input[type='range']:focus-visible,
+:where(.text-swarm, .intro) .text-swarm-panel button:focus-visible {
   outline: 2px solid #111;
   outline-offset: 2px;
 }
 
 /* ── Buttons: replay and reset, then the prompt ── */
-.buttons {
+:where(.text-swarm, .intro) .buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.buttons button {
+:where(.text-swarm, .intro) .buttons button {
   height: 36px;
   border: 1px solid #d4d4d4;
   border-radius: 8px;
@@ -698,44 +698,44 @@
     transform 160ms var(--ease-out);
 }
 
-.buttons button:active {
+:where(.text-swarm, .intro) .buttons button:active {
   transform: scale(0.97);
 }
 
-.buttons button.primary {
+:where(.text-swarm, .intro) .buttons button.primary {
   border-color: #111;
   background: #111;
   color: #fff;
 }
 
 /* The prompt gets the whole row. */
-.buttons button.prompt {
+:where(.text-swarm, .intro) .buttons button.prompt {
   grid-column: 1 / -1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .buttons button:hover {
+  :where(.text-swarm, .intro) .buttons button:hover {
     border-color: #999;
   }
 
-  .buttons button.primary:hover {
+  :where(.text-swarm, .intro) .buttons button.primary:hover {
     background: #333;
   }
 }
 
 /* The colour popover has an edge of its own instead of a shadow. */
-.text-swarm-panel .picker-pop {
+:where(.text-swarm, .intro) .text-swarm-panel .picker-pop {
   border-color: rgb(0 0 0 / 0.1);
   box-shadow: none;
 }
 
 /* ── Segmented choices: one pill that slides to the option you pick ── */
-.variants {
+:where(.text-swarm, .intro) .variants {
   position: relative;
 }
 
-.variants > .slide,
-.tabs > .slide {
+:where(.text-swarm, .intro) .variants > .slide,
+:where(.text-swarm, .intro) .tabs > .slide {
   position: absolute;
   top: 2px;
   bottom: 2px;
@@ -748,16 +748,16 @@
   pointer-events: none;
 }
 
-.variants .variant {
+:where(.text-swarm, .intro) .variants .variant {
   position: relative;
 }
 
-.variant[aria-checked='true'] {
+:where(.text-swarm, .intro) .variant[aria-checked='true'] {
   background: transparent;
 }
 
 /* ── Sliders: a filled track and a thumb that answers the pointer ── */
-.row input[type='range'] {
+:where(.text-swarm, .intro) .row input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   height: 20px;
@@ -765,19 +765,19 @@
   cursor: pointer;
 }
 
-.row input[type='range']::-webkit-slider-runnable-track {
+:where(.text-swarm, .intro) .row input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
   background: linear-gradient(to right, #111 var(--p, 50%), rgb(0 0 0 / 0.12) var(--p, 50%));
 }
 
-.row input[type='range']::-moz-range-track {
+:where(.text-swarm, .intro) .row input[type='range']::-moz-range-track {
   height: 4px;
   border-radius: 2px;
   background: linear-gradient(to right, #111 var(--p, 50%), rgb(0 0 0 / 0.12) var(--p, 50%));
 }
 
-.row input[type='range']::-webkit-slider-thumb {
+:where(.text-swarm, .intro) .row input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
@@ -788,7 +788,7 @@
   transition: transform 160ms var(--ease-out);
 }
 
-.row input[type='range']::-moz-range-thumb {
+:where(.text-swarm, .intro) .row input[type='range']::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border: 0;
@@ -797,48 +797,48 @@
   transition: transform 160ms var(--ease-out);
 }
 
-.row input[type='range']:active::-webkit-slider-thumb {
+:where(.text-swarm, .intro) .row input[type='range']:active::-webkit-slider-thumb {
   transform: scale(1.3);
 }
 
-.row input[type='range']:active::-moz-range-thumb {
+:where(.text-swarm, .intro) .row input[type='range']:active::-moz-range-thumb {
   transform: scale(1.3);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .row input[type='range']:hover::-webkit-slider-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']:hover::-webkit-slider-thumb {
     transform: scale(1.2);
   }
 
-  .row input[type='range']:hover::-moz-range-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']:hover::-moz-range-thumb {
     transform: scale(1.2);
   }
 
-  .row input[type='range']:active:hover::-webkit-slider-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']:active:hover::-webkit-slider-thumb {
     transform: scale(1.3);
   }
 
-  .row input[type='range']:active:hover::-moz-range-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']:active:hover::-moz-range-thumb {
     transform: scale(1.3);
   }
 }
 
 @media (pointer: coarse) {
-  .row input[type='range']::-webkit-slider-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']::-webkit-slider-thumb {
     width: 18px;
     height: 18px;
     margin-top: -7px;
   }
 
-  .row input[type='range']::-moz-range-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']::-moz-range-thumb {
     width: 18px;
     height: 18px;
   }
 }
 
-/* ── Microinteractions ── */
+/* ── Microinteractions ── *//* The panel and the corner buttons arrive instead of just appearing. */
 
-/* The panel and the corner buttons arrive instead of just appearing. */
+
 @keyframes panel-in {
   from {
     opacity: 0;
@@ -860,15 +860,15 @@
   }
 }
 
-.chip {
+:where(.text-swarm, .intro) .chip {
   animation: chip-in 320ms var(--ease-out) both;
 }
 
-.chip:nth-child(2) {
+:where(.text-swarm, .intro) .chip:nth-child(2) {
   animation-delay: 60ms;
 }
 
-.chip:nth-child(3) {
+:where(.text-swarm, .intro) .chip:nth-child(3) {
   animation-delay: 120ms;
 }
 
@@ -879,7 +879,7 @@
   }
 }
 
-.pill[aria-checked='true'] {
+:where(.text-swarm, .intro) .pill[aria-checked='true'] {
   animation: pop 200ms var(--ease-out);
 }
 
@@ -891,11 +891,11 @@
   }
 }
 
-.icon-tick {
+:where(.text-swarm, .intro) .icon-tick {
   animation: tick 260ms var(--ease-out);
 }
 
-.buttons button.prompt span {
+:where(.text-swarm, .intro) .buttons button.prompt span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -904,57 +904,57 @@
 
 /* Small lifts for a pointer that hovers; nothing moves for a finger. */
 @media (hover: hover) and (pointer: fine) {
-  .chip:hover {
+  :where(.text-swarm, .intro) .chip:hover {
     transform: translateY(-1px);
   }
 
-  .chip:active {
+  :where(.text-swarm, .intro) .chip:active {
     transform: translateY(0) scale(0.97);
   }
 
-  .chip svg {
+  :where(.text-swarm, .intro) .chip svg {
     transition: transform 200ms var(--ease-out);
   }
 
-  .chip:hover svg {
+  :where(.text-swarm, .intro) .chip:hover svg {
     transform: scale(1.12);
   }
 
-  .buttons button:hover {
+  :where(.text-swarm, .intro) .buttons button:hover {
     transform: translateY(-1px);
   }
 
-  .buttons button:active {
+  :where(.text-swarm, .intro) .buttons button:active {
     transform: scale(0.97);
   }
 
-  .corner-button:hover {
+  :where(.text-swarm, .intro) .corner-button:hover {
     transform: translateY(-1px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .text-swarm-panel,
-  .chip,
-  .pill,
-  .icon-tick {
+  :where(.text-swarm, .intro) .text-swarm-panel,
+  :where(.text-swarm, .intro) .chip,
+  :where(.text-swarm, .intro) .pill,
+  :where(.text-swarm, .intro) .icon-tick {
     animation: none;
   }
 
-  .variants > .slide,
-  .tabs > .slide {
+  :where(.text-swarm, .intro) .variants > .slide,
+  :where(.text-swarm, .intro) .tabs > .slide {
     transition: none;
   }
 
-  .chip:hover,
-  .buttons button:hover,
-  .corner-button:hover,
-  .chip:hover svg {
+  :where(.text-swarm, .intro) .chip:hover,
+  :where(.text-swarm, .intro) .buttons button:hover,
+  :where(.text-swarm, .intro) .corner-button:hover,
+  :where(.text-swarm, .intro) .chip:hover svg {
     transform: none;
   }
 
-  .row input[type='range']::-webkit-slider-thumb,
-  .row input[type='range']::-moz-range-thumb {
+  :where(.text-swarm, .intro) .row input[type='range']::-webkit-slider-thumb,
+  :where(.text-swarm, .intro) .row input[type='range']::-moz-range-thumb {
     transition: none;
   }
 }
@@ -976,13 +976,13 @@
     overflow: visible;
   }
 
-  .text-swarm-stage {
+  :where(.text-swarm, .intro) .text-swarm-stage {
     position: static;
     /* Room at the top for the buttons in the corner. */
     padding: 52px 16px 16px;
   }
 
-  .text-swarm-panel {
+  :where(.text-swarm, .intro) .text-swarm-panel {
     position: static;
     translate: none;
     animation-name: panel-up;
@@ -993,18 +993,20 @@
     overflow: visible;
   }
 
-  .tabs {
+  :where(.text-swarm, .intro) .tabs {
     display: grid;
   }
 
-  /* The same height on every tab, so the canvas does not jump when switching. */
-  .group {
+/* The same height on every tab, so the canvas does not jump when switching. */
+
+  
+  :where(.text-swarm, .intro) .group {
     min-height: 170px;
   }
 
-  .text-swarm-panel[data-tab='text'] .group:not(.group-text),
-  .text-swarm-panel[data-tab='style'] .group:not(.group-style),
-  .text-swarm-panel[data-tab='motion'] .group:not(.group-motion) {
+  :where(.text-swarm, .intro) .text-swarm-panel[data-tab='text'] .group:not(.group-text),
+  :where(.text-swarm, .intro) .text-swarm-panel[data-tab='style'] .group:not(.group-style),
+  :where(.text-swarm, .intro) .text-swarm-panel[data-tab='motion'] .group:not(.group-motion) {
     display: none;
   }
 }
@@ -1012,45 +1014,45 @@
 /* Any narrow or short screen: drop what the controls do not need, so the panel fits
    one screen without scrolling. */
 @media (max-width: 760px), (max-height: 900px) {
-  .text-swarm-panel {
+  :where(.text-swarm, .intro) .text-swarm-panel {
     gap: 10px;
     padding: 12px 16px;
   }
 
-  .group {
+  :where(.text-swarm, .intro) .group {
     gap: 10px;
   }
 
-  .text-swarm-panel h2,
-  .hint-dots,
-  .hint-pairing,
-  .hint-install,
-  .hint-count:not(.has-warning) {
+  :where(.text-swarm, .intro) .text-swarm-panel h2,
+  :where(.text-swarm, .intro) .hint-dots,
+  :where(.text-swarm, .intro) .hint-pairing,
+  :where(.text-swarm, .intro) .hint-install,
+  :where(.text-swarm, .intro) .hint-count:not(.has-warning) {
     display: none;
   }
 
-  .field {
+  :where(.text-swarm, .intro) .field {
     gap: 4px;
   }
 
-  .field textarea {
+  :where(.text-swarm, .intro) .field textarea {
     min-height: 48px;
     padding: 6px 10px;
   }
 
-  .sliders {
+  :where(.text-swarm, .intro) .sliders {
     gap: 2px;
   }
 
-  .row {
+  :where(.text-swarm, .intro) .row {
     min-height: 30px;
   }
 
-  .buttons {
+  :where(.text-swarm, .intro) .buttons {
     gap: 6px;
   }
 
-  .buttons button {
+  :where(.text-swarm, .intro) .buttons button {
     height: 34px;
     padding: 0 4px;
     white-space: nowrap;
@@ -1061,15 +1063,15 @@
    the prompt gets the extra room. */
 @container (min-width: 260px) {
   @media (max-width: 760px), (max-height: 900px) {
-    .buttons {
+    :where(.text-swarm, .intro) .buttons {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
     }
 
-    .buttons button {
+    :where(.text-swarm, .intro) .buttons button {
       font-size: 12.5px;
     }
 
-    .buttons button.prompt {
+    :where(.text-swarm, .intro) .buttons button.prompt {
       grid-column: auto;
     }
   }
@@ -1077,59 +1079,61 @@
 
 /* Landscape phones: the tightest spacing, with slider rows kept at 28px. */
 @media (max-height: 420px) {
-  .text-swarm-panel {
+  :where(.text-swarm, .intro) .text-swarm-panel {
     gap: 8px;
     padding: 10px 16px;
   }
 
-  .field textarea {
+  :where(.text-swarm, .intro) .field textarea {
     height: 34px;
     min-height: 34px;
   }
 
-  /* The count can go; a warning about letters left out cannot. */
-  .hint-count:not(.has-warning) {
+/* The count can go; a warning about letters left out cannot. */
+
+  
+  :where(.text-swarm, .intro) .hint-count:not(.has-warning) {
     display: none;
   }
 
-  .row {
+  :where(.text-swarm, .intro) .row {
     min-height: 28px;
   }
 
-  .anchor {
+  :where(.text-swarm, .intro) .anchor {
     grid-template-columns: repeat(3, 18px);
     grid-template-rows: repeat(3, 18px);
   }
 
-  .motion-item {
+  :where(.text-swarm, .intro) .motion-item {
     gap: 4px;
   }
 }
 
 /* iOS zooms the page into any field with text under 16px. */
 @media (pointer: coarse) {
-  .field textarea,
-  .num,
-  .picker-hex {
+  :where(.text-swarm, .intro) .field textarea,
+  :where(.text-swarm, .intro) .num,
+  :where(.text-swarm, .intro) .picker-hex {
     font-size: 16px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chip,
-  .tab,
-  .buttons button,
-  .num,
-  .picker-hex,
-  .picker-swatch,
-  .anchor-dot,
-  .switch,
-  .switch-thumb,
-  .pill {
+  :where(.text-swarm, .intro) .chip,
+  :where(.text-swarm, .intro) .tab,
+  :where(.text-swarm, .intro) .buttons button,
+  :where(.text-swarm, .intro) .num,
+  :where(.text-swarm, .intro) .picker-hex,
+  :where(.text-swarm, .intro) .picker-swatch,
+  :where(.text-swarm, .intro) .anchor-dot,
+  :where(.text-swarm, .intro) .switch,
+  :where(.text-swarm, .intro) .switch-thumb,
+  :where(.text-swarm, .intro) .pill {
     transition: none;
   }
 
-  .picker-pop {
+  :where(.text-swarm, .intro) .picker-pop {
     animation: none;
   }
 }
