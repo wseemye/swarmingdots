@@ -65,9 +65,8 @@ body {
 }
 
 /* ── The floating bar at the top: text, morph, flags, github ──
-   Quiet on purpose: a hairline, a soft shadow, small type, and one highlight
-   that glides to the current page. Its own translucent white surface, so it
-   reads the same over any page or colours picked. */
+   Styled like the editors' segmented pickers (Typeface, Pairing, Align): a white box with a grey
+   border, and a black highlight with white text behind the current page that glides to the next. */
 .nav {
   position: fixed;
   z-index: 50;
@@ -75,18 +74,11 @@ body {
   left: 50%;
   display: flex;
   align-items: center;
-  height: 36px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.8);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
-  color: #0a0a0a;
-  /* A hairline ring and two soft shadows instead of a border, so the edge never looks drawn on. */
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 0.06),
-    0 1px 2px rgb(0 0 0 / 0.04),
-    0 4px 16px rgb(0 0 0 / 0.04);
+  padding: 2px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
   transform: translateX(-50%);
   animation: nav-in 500ms var(--ease-out) both;
 }
@@ -104,18 +96,18 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 2px;
 }
 
 /* The highlight behind the current page. */
 .nav-mark {
   position: absolute;
-  top: 50%;
+  top: 0;
+  bottom: 0;
   left: 0;
   width: var(--w);
-  height: 28px;
-  margin-top: -14px;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 0.05);
+  border-radius: 6px;
+  background: #111;
   transform: translateX(var(--x));
   pointer-events: none;
 }
@@ -130,82 +122,79 @@ body {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  height: 28px;
-  padding: 0 11px;
-  border-radius: 999px;
+  gap: 3px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 6px;
   font-size: 13px;
-  font-weight: 450;
-  letter-spacing: -0.005em;
+  font-weight: 500;
   line-height: 1;
-  color: #8a8a8a;
+  color: #666;
   text-decoration: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
   transition:
-    color 150ms ease,
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
     transform 150ms var(--ease-out);
 }
 
 .nav-link svg {
   margin-top: -1px;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .nav-link.active {
-  color: #0a0a0a;
+  color: #fff;
 }
 
 .nav-link:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
-/* A soft ring for the keyboard only; a click never leaves one behind. */
 .nav-link:focus-visible {
-  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.12);
+  box-shadow: 0 0 0 2px #111;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .nav-link:hover {
-    color: #0a0a0a;
+  .nav-link:not(.active):hover {
+    background: #f0f0f0;
+    color: #111;
   }
 }
 
 @media (max-width: 400px) {
   .nav-link {
-    padding: 0 8px;
+    padding: 0 10px;
   }
 }
 
 /* ── "i", top left on every page: the intro ──
-   Sits level with the navbar, in the same translucent white and hairline. */
+   As tall as the navbar, in the same white, grey border and corners; black when hovered or open. */
 .info-button {
   position: fixed;
   z-index: 50;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 0.8);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 0.06),
-    0 1px 2px rgb(0 0 0 / 0.04),
-    0 4px 16px rgb(0 0 0 / 0.04);
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
   font-family: 'Geist Pixel Circle', ui-monospace, monospace;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
-  color: #737373;
+  color: #111;
   text-decoration: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
   animation: nav-in-corner 500ms var(--ease-out) both;
   transition:
-    color 150ms ease,
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
     transform 150ms var(--ease-out);
 }
 
@@ -218,21 +207,24 @@ body {
 }
 
 .info-button[aria-current='page'] {
-  color: #0a0a0a;
-  background: #f0f0f0;
+  border-color: #111;
+  background: #111;
+  color: #fff;
 }
 
 .info-button:active {
-  transform: scale(0.94);
+  transform: scale(0.95);
 }
 
 .info-button:focus-visible {
-  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.15);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .info-button:hover {
-    color: #0a0a0a;
+    border-color: #111;
+    background: #111;
+    color: #fff;
   }
 }
 
