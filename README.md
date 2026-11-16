@@ -28,11 +28,11 @@ watch its dots swarm into text. `/` goes there too, and the old
 `swarmingdots.vercel.app` redirects every path to the same path on
 `dots.wseem.com`.
 
-[`/casino`](https://dots.wseem.com/casino) is the odometer roll from wseem.com, in dots: type
-and each letter that changes sends its dots rolling up and away, column by column, as the new
-letter's dots roll up in behind them, while the slots grow or shrink to the new letters' widths
-and the rest of the line follows. The logic is `src/casino/reel.ts` (no DOM, covered by
-`tests/reel.test.ts`), the page `src/casino/Casino.tsx`.
+[`/casino`](https://dots.wseem.com/casino) is the odometer roll from wseem.com, in dots, one reel per
+column: the text is a row of dot columns, and as you type each column that changes rolls its dots up
+and away as the new ones roll up in, left to right across the whole text (letters and words don't
+matter), while columns open or close and the rest of the line follows. The logic is
+`src/casino/reel.ts` (no DOM, covered by `tests/reel.test.ts`), the page `src/casino/Casino.tsx`.
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
 type a country's name in the field under the flag and pick it from the

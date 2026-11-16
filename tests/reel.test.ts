@@ -1,64 +1,67 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { COL_SPREAD, DUR, MAX_STAGGER, Reel, widthOf } from '../src/casino/reel.ts';
+import { DUR, MAX_STAGGER, Reel, widthOf } from '../src/casino/reel.ts';
 import { glyph } from '../src/morph/glyphs.ts';
 
-const adv = (ch: string) => glyph(ch.codePointAt(0)!)!.advance;
-const done = DUR + COL_SPREAD + MAX_STAGGER + 100;
-const chars = (r: Reel) => r.lines.map((l) => l.map((s) => s.ch).join(''));
-const count = (r: Reel, now: number) => {
+const adv = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!)!.advance, 0);
+const done = DUR + MAX_STAGGER + 100;
+const dotsAt = (r: Reel, now: number) => {
   let n = 0;
   r.dots(now, () => {}, () => n++);
   return n;
 };
+const total = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!)!.cells.length / 2, 0);
 
-test('a first text grows in from nothing and settles at its width', () => {
+test('every column of the text is its own slot, one cell wide', () => {
   const r = new Reel();
   r.set('cat', 0);
-  assert.equal(r.lineWidth(0, 0), 0);
+  assert.equal(r.lines[0].length, adv('cat'));
   assert.equal(r.tick(done), false);
-  assert.equal(r.lineWidth(0, done), adv('c') + adv('a') + adv('t'));
-  assert.equal(chars(r)[0], 'cat');
+  assert.equal(r.lineWidth(0, done), adv('cat'));
+  assert.equal(dotsAt(r, done), total('cat'));
 });
 
-test('editing keeps the letters either side and rolls only what changed', () => {
+test('an edit rolls only the columns that differ; the shared ones are the same slots', () => {
   const r = new Reel();
   r.set('cat', 0);
   r.tick(done);
-  const [c, a, t] = r.lines[0];
+  const before = [...r.lines[0]];
   r.set('cot', done);
-  assert.equal(r.lines[0][0], c);
-  assert.equal(r.lines[0][2], t);
-  assert.equal(r.lines[0][1], a);
-  assert.equal(a.ch, 'o');
-  // The old letter is rolling out as the new one rolls in.
-  assert.equal(a.layers.length, 2);
-  assert.equal(r.tick(done + 2 * done), false);
-  assert.equal(a.layers.length, 1);
+  const same = r.lines[0].filter((s) => before.includes(s)).length;
+  const rolling = r.lines[0].filter((s) => s.layers.length > 1).length;
+  assert.ok(same > before.length / 2, 'most columns stay');
+  assert.ok(rolling > 0 && rolling < before.length / 2, 'a few columns roll');
+  // Each rolling column has its own start, left to right.
+  const starts = r.lines[0].filter((s) => s.layers.length > 1).map((s) => s.delay);
+  assert.deepEqual(starts, [...starts].sort((a, b) => a - b));
+  assert.ok(new Set(starts).size > 1);
+  assert.equal(r.tick(done * 3), false);
+  assert.equal(dotsAt(r, done * 3), total('cot'));
 });
 
-test('typing at the end opens a slot; deleting closes it and it is gone once shut', () => {
+test('typing at the end opens columns; deleting closes them and they are gone once shut', () => {
   const r = new Reel();
   r.set('ab', 0);
   r.tick(done);
   r.set('abc', done);
-  assert.equal(chars(r)[0], 'abc');
-  assert.equal(widthOf(r.lines[0][2], done), 0);
+  assert.equal(r.lines[0].length, adv('abc'));
+  assert.equal(widthOf(r.lines[0][adv('ab')], done), 0);
   r.tick(3 * done);
+  assert.equal(r.lineWidth(0, 3 * done), adv('abc'));
   r.set('ab', 3 * done);
   assert.equal(r.tick(3 * done), true);
   r.tick(6 * done);
-  assert.equal(r.lines[0].length, 2);
+  assert.equal(r.lines[0].length, adv('ab'));
+  assert.equal(dotsAt(r, 6 * done), total('ab'));
 });
 
-test('mid-roll edits carry on from where the dots are, with nothing lost or doubled when settled', () => {
+test('mid-roll edits carry on, with nothing lost or doubled once settled', () => {
   const r = new Reel();
   r.set('a', 0);
   r.set('b', 100);
   r.set('c', 200);
   assert.equal(r.tick(200 + done), false);
-  assert.equal(r.lines[0][0].layers.length, 1);
-  assert.equal(count(r, 200 + done) > 0, true);
+  assert.equal(dotsAt(r, 200 + done), total('c'));
 });
 
 test('lines roll too, and an emptied last line goes', () => {
@@ -74,5 +77,5 @@ test('lines roll too, and an emptied last line goes', () => {
 test('characters Geist Pixel cannot draw are left out', () => {
   const r = new Reel();
   r.set('a\u{1F600}b', 0);
-  assert.equal(chars(r)[0], 'ab');
+  assert.equal(r.lines[0].length, adv('ab'));
 });
