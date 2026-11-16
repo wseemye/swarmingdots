@@ -7,7 +7,7 @@ const adv = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!
 const done = DUR + CASCADE_MS + 100;
 const dotsAt = (r: Reel, now: number) => {
   let n = 0;
-  r.dots(now, () => {}, () => {}, () => n++);
+  r.dots(now, () => {}, () => n++);
   return n;
 };
 const reelsOf = (s: string) => Math.ceil(adv(s) / REEL_COLUMNS);
@@ -22,18 +22,27 @@ test('the text columns are taken two at a time into reels, each two cells wide',
   assert.equal(dotsAt(r, done), total('cat'));
 });
 
-test('an edit rolls only the columns that differ; the shared ones are the same slots', () => {
+test('an edit moves only the dots that differ: same reels stay, and no reel is replaced wholesale', () => {
   const r = new Reel();
   r.set('cat', 0);
   r.tick(done);
   const before = [...r.lines[0]];
+  const dots = (s: (typeof before)[number]) => s.movers.map((m) => `${m.dx},${m.y1}`).sort().join(' ');
+  const was = before.map(dots);
   r.set('cot', done);
-  const same = r.lines[0].filter((s) => before.includes(s)).length;
-  const rolling = r.lines[0].filter((s) => s.layers.length > 1).length;
-  assert.ok(same > before.length / 2, 'most columns stay');
-  assert.ok(rolling > 0 && rolling < before.length / 2, 'a few columns roll');
-  // Each rolling column has its own start, left to right.
-  const starts = r.lines[0].filter((s) => s.layers.length > 1).map((s) => s.delay);
+  assert.deepEqual(r.lines[0], before, 'the same reels are kept');
+  const changed = r.lines[0].filter((s) => s.start === done);
+  assert.ok(changed.length > 0 && changed.length < before.length);
+  // Dots that were already where the new text wants them are not moved at all.
+  r.lines[0].forEach((s, i) => {
+    if (s.start !== done) assert.equal(dots(s), was[i]);
+    for (const m of s.movers) if (m.a1 > 0 && m.y0 === m.y1) assert.equal(m.a0, 1);
+  });
+  // Dots that move slide within their column (no sideways travel, and the column keeps its dx).
+  const moving = r.lines[0].flatMap((s) => s.movers.filter((m) => m.a1 > 0 && m.y0 !== m.y1 && m.a0 === 1));
+  assert.ok(moving.length > 0);
+  // Changed reels start left to right, each a touch after the one before.
+  const starts = changed.map((s) => s.delay);
   assert.deepEqual(starts, [...starts].sort((a, b) => a - b));
   assert.ok(new Set(starts).size > 1);
   assert.equal(r.tick(done * 3), false);

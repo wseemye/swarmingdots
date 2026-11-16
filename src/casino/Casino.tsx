@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { DUR, ease, LINE_CELLS, LINE_GAP, Reel, WINDOW_PAD } from './reel';
+import { DUR, ease, LINE_CELLS, LINE_GAP, Reel } from './reel';
 import './casino.css';
 
 // /casino — the text, in dots, rolling like an odometer as you type: each letter that changes sends
@@ -64,20 +64,8 @@ export default function Casino() {
         ctx.fill();
         ctx.beginPath();
       };
-      ctx.save();
       r.dots(
         now,
-        (i) => {
-          flush();
-          // Each line rolls inside its own window, as the odometer's slots do: dots appear from its
-          // lower edge and leave through its upper one.
-          ctx.restore();
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(0, oy + (i * (LINE_CELLS + LINE_GAP) - WINDOW_PAD) * cell, v.w, (LINE_CELLS + 2 * WINDOW_PAD) * cell);
-          ctx.clip();
-          ctx.beginPath();
-        },
         (a) => {
           flush();
           alpha = a;
@@ -89,7 +77,6 @@ export default function Casino() {
         },
       );
       flush();
-      ctx.restore();
       ctx.globalAlpha = 1;
 
       v.frame = moving || catching ? requestAnimationFrame(frame) : 0;

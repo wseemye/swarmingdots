@@ -2,28 +2,27 @@ import { LINE_ASCENT, LINE_DESCENT, normalize } from '../morph/layout';
 import { glyph } from '../morph/glyphs';
 
 /**
- * The odometer roll (wseem.com's roll.ts) done in dots, one reel per column of dots. The text is a
- * row of columns, each one dot wide, and a column is a slot: when what is in it changes, its old
- * dots roll up out as the new ones roll up in, and a column that is not needed any more closes to
- * nothing (or a new one opens) while the rest of the line follows. Letters and words do not matter:
- * a column that is the same before and after stays put, and the changed ones roll left to right,
- * each starting a touch after the one before. Nothing here touches the DOM: the page asks for the
- * dots at a moment in time.
+ * The odometer roll (wseem.com's roll.ts) done in dots, with the dots themselves as the digits. The
+ * text is a row of reels, each a column (or two) of dots; when what a reel holds changes, only the
+ * dots that differ move. Each slides up or down its own column to a place the new text needs; a dot
+ * the new text has no place for rolls up out of the column, fading, and a dot with no old one to take
+ * its place rolls up in from below. Dots that are where they should be stay. The text itself never
+ * moves as a block. Reels open and close as the text grows and shrinks, and the changed ones start
+ * left to right, each a touch after the one before. Nothing here touches the DOM: the page asks for
+ * the dots at a moment in time.
  */
 
 /** Everything is in lattice cells (one Geist Pixel dot each) until the page scales it. */
 export const LINE_CELLS = LINE_ASCENT + LINE_DESCENT;
 /** Space between lines, in cells. */
 export const LINE_GAP = 7;
-/** One roll, as the odometer's (ROLL_MS): every column takes this long, in ms. */
+/** One roll, as the odometer's (ROLL_MS): every reel takes this long, in ms. */
 export const DUR = 500;
-/** Each column starts a little after the one before, the whole cascade within CASCADE_MS (the odometer's 14 and 140). */
+/** Each reel starts a little after the one before, the whole cascade within CASCADE_MS (the odometer's 14 and 140). */
 export const STAGGER_MS = 14;
 export const CASCADE_MS = 140;
-/** How far dots travel: 70% of the line, fading as they go, so they are never cut off (the odometer's TRAVEL). */
-export const TRAVEL = LINE_CELLS * 0.7;
-/** The window each line rolls in, a little taller than the line itself, in cells. */
-export const WINDOW_PAD = 6;
+/** How far a dot rolls in from below or out above, in cells, fading as it goes. */
+export const EDGE = 9;
 
 /** A soft landing, as the odometer's: quick off the mark, easing gently to rest (cubic-bezier .22, 1, .36, 1). */
 const X1 = 0.22;
@@ -79,51 +78,72 @@ function reels(columns: Dot[][]): Cell[] {
   return out;
 }
 
-/** One column's dots rolling from (y0, a0) to (y1, a1): their height above where they rest, in cells, and their opacity. */
-type Layer = { dots: Dot[]; start: number; out: boolean; y0: number; a0: number; y1: number; a1: number };
+/** One dot sliding in its column from (y0, a0) to (y1, a1): its height from the baseline, in cells, and its opacity. */
+type Mover = { dx: number; y0: number; a0: number; y1: number; a1: number };
 export type Slot = {
   /** What it holds, as a key, or null once it is closing. */
   key: string | null;
-  /** Its width (its columns, or 0 when closed) as it was when it last changed, what it is becoming, and when and after how long it moved. */
+  /** Its width as it was when it last changed, what it is becoming, and when and after how long it moved. */
   from: number;
   to: number;
   start: number;
   delay: number;
-  layers: Layer[];
+  movers: Mover[];
 };
 
-const layerEnd = (l: Layer) => l.start + DUR;
+const endOf = (s: Slot) => s.start + s.delay + DUR;
 
-/** Where a layer is at `now`. */
-function at(l: Layer, now: number) {
-  const e = ease((now - l.start) / DUR);
-  return { y: l.y0 + (l.y1 - l.y0) * e, a: l.a0 + (l.a1 - l.a0) * e };
-}
+/** How far along the slot's move is at `now`, 0 to 1. */
+const along = (s: Slot, now: number) => ease((now - s.start - s.delay) / DUR);
 
 /** The slot's width at `now`, in cells. */
 export function widthOf(s: Slot, now: number): number {
-  return s.from + (s.to - s.from) * ease((now - s.start - s.delay) / DUR);
+  return s.from + (s.to - s.from) * along(s, now);
 }
 
-/** Sends the dots in the slot rolling up and away from where they are now. */
-function leave(s: Slot, now: number, delay: number) {
-  for (const l of s.layers) {
-    if (l.out) continue;
-    const { y, a } = at(l, now);
-    l.y0 = y;
-    l.a0 = a;
-    l.y1 = -TRAVEL;
-    l.a1 = 0;
-    l.start = now + delay;
-    l.out = true;
-  }
+/** Where a dot is at `now`. */
+function place(m: Mover, e: number) {
+  return { y: m.y0 + (m.y1 - m.y0) * e, a: m.a0 + (m.a1 - m.a0) * e };
 }
 
 function retarget(s: Slot, cell: Cell | null, now: number, delay: number) {
-  const dots = cell?.dots ?? null;
+  const e = along(s, now);
   const width = widthOf(s, now);
-  leave(s, now, delay);
-  if (dots && dots.length > 0) s.layers.push({ dots, start: now + delay, out: false, y0: TRAVEL, a0: 0, y1: 0, a1: 1 });
+  // Every dot sets off from where it is this moment.
+  for (const m of s.movers) {
+    const { y, a } = place(m, e);
+    m.y0 = y;
+    m.a0 = a;
+  }
+  // The dots the slot is meant to hold, by their column; leavers (a1 = 0) are already on their way out.
+  const keep = s.movers.filter((m) => m.a1 > 0);
+  const goal = new Map<number, number[]>();
+  for (const [dx, y] of cell?.dots ?? []) goal.set(dx, [...(goal.get(dx) ?? []), y]);
+  const cols = new Set([...goal.keys(), ...keep.map((m) => m.dx)]);
+  for (const dx of cols) {
+    const here = keep.filter((m) => m.dx === dx);
+    let want = [...(goal.get(dx) ?? [])];
+    // A dot already headed for a place the text needs stays on it.
+    const loose: Mover[] = [];
+    for (const m of here) {
+      const at = want.indexOf(m.y1);
+      if (at >= 0) want.splice(at, 1);
+      else loose.push(m);
+    }
+    // The rest slide, in order, to the places still free: the nearest dot to the nearest place.
+    loose.sort((a, b) => a.y0 - b.y0);
+    want = want.sort((a, b) => a - b);
+    const n = Math.min(loose.length, want.length);
+    for (let i = 0; i < n; i++) {
+      loose[i].y1 = want[i];
+    }
+    // More dots than places: the extra ones roll up and away. More places than dots: new dots roll in from below.
+    for (const m of loose.slice(n)) {
+      m.y1 = m.y0 - EDGE;
+      m.a1 = 0;
+    }
+    for (const y of want.slice(n)) s.movers.push({ dx, y0: y + EDGE, a0: 0, y1: y, a1: 1 });
+  }
   s.key = cell ? keyOf(cell) : null;
   s.from = width;
   s.to = cell ? cell.width : 0;
@@ -164,7 +184,7 @@ export class Reel {
       const n = Math.max(slots.length, next.length);
       for (let i = 0; i < n; i++, index++) {
         const cell = i < next.length ? next[i] : null;
-        if (!slots[i]) slots[i] = { key: null, from: 0, to: 0, start: now, delay: 0, layers: [] };
+        if (!slots[i]) slots[i] = { key: null, from: 0, to: 0, start: now, delay: 0, movers: [] };
         const slot = slots[i];
         const key = cell ? keyOf(cell) : null;
         // A column that is the same keeps its place (and moves with the line as the others open and close).
@@ -180,11 +200,10 @@ export class Reel {
     for (const slots of this.lines) {
       for (let i = slots.length - 1; i >= 0; i--) {
         const s = slots[i];
-        s.layers = s.layers.filter((l) => !l.out || now < layerEnd(l));
-        const sliding = now < s.start + s.delay + DUR;
-        const rolling = s.layers.some((l) => now < layerEnd(l));
-        if (s.key === null && !sliding && s.layers.length === 0) slots.splice(i, 1);
-        else if (sliding || rolling) moving = true;
+        s.movers = s.movers.filter((m) => m.a1 > 0 || now < endOf(s));
+        const busy = now < endOf(s);
+        if (s.key === null && !busy && s.movers.length === 0) slots.splice(i, 1);
+        else if (busy) moving = true;
       }
     }
     while (this.lines.length > 0 && this.lines[this.lines.length - 1].length === 0) this.lines.pop();
@@ -204,20 +223,21 @@ export class Reel {
   }
 
   /**
-   * Draws the text at `now`: `line(r)` before each line, `column(alpha)` before each column of dots,
-   * then `dot(x, y)` for each of its dots. Cells: x from the middle of the block, y from the top of the first line.
+   * Draws the text at `now`: `column(alpha)` whenever the opacity changes, then `dot(x, y)` for each dot
+   * with it. Cells: x from the middle of the block, y from the top of the first line.
    */
-  dots(now: number, line: (r: number) => void, column: (alpha: number) => void, dot: (x: number, y: number) => void) {
+  dots(now: number, column: (alpha: number) => void, dot: (x: number, y: number) => void) {
+    let last = -1;
     this.lines.forEach((slots, r) => {
-      line(r);
       const baseline = r * (LINE_CELLS + LINE_GAP) + LINE_ASCENT;
       let pen = -this.lineWidth(r, now) / 2;
       for (const s of slots) {
-        for (const l of s.layers) {
-          const { y, a } = at(l, now);
+        const e = along(s, now);
+        for (const m of s.movers) {
+          const { y, a } = place(m, e);
           if (a <= 0.004) continue;
-          column(a);
-          for (const [dx, dy] of l.dots) dot(pen + dx, baseline + dy + y);
+          if (Math.abs(a - last) > 0.01) column((last = a));
+          dot(pen + m.dx, baseline + y);
         }
         pen += widthOf(s, now);
       }
