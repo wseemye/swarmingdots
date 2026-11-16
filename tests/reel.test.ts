@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DUR, MAX_STAGGER, Reel, widthOf } from '../src/casino/reel.ts';
+import { DUR, CASCADE_MS, Reel, widthOf } from '../src/casino/reel.ts';
 import { glyph } from '../src/morph/glyphs.ts';
 
 const adv = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!)!.advance, 0);
-const done = DUR + MAX_STAGGER + 100;
+const done = DUR + CASCADE_MS + 100;
 const dotsAt = (r: Reel, now: number) => {
   let n = 0;
-  r.dots(now, () => {}, () => n++);
+  r.dots(now, () => {}, () => {}, () => n++);
   return n;
 };
 const total = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!)!.cells.length / 2, 0);

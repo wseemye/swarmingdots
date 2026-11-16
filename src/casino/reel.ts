@@ -15,13 +15,15 @@ import { glyph } from '../morph/glyphs';
 export const LINE_CELLS = LINE_ASCENT + LINE_DESCENT;
 /** Space between lines, in cells. */
 export const LINE_GAP = 7;
-/** How long one column takes to roll, in ms. */
-export const DUR = 760;
-/** Each changed column starts this long after the one before, up to MAX_STAGGER in all. */
-export const SLOT_STAGGER = 14;
-export const MAX_STAGGER = 420;
-/** How far a dot travels: most of a line, so it rolls past the edge of its reel, in cells. */
-export const TRAVEL = LINE_CELLS * 0.8;
+/** One roll, as the odometer's (ROLL_MS): every column takes this long, in ms. */
+export const DUR = 500;
+/** Each column starts a little after the one before, the whole cascade within CASCADE_MS (the odometer's 14 and 140). */
+export const STAGGER_MS = 14;
+export const CASCADE_MS = 140;
+/** How far dots travel: 70% of the line, fading as they go, so they are never cut off (the odometer's TRAVEL). */
+export const TRAVEL = LINE_CELLS * 0.7;
+/** The window each line rolls in, a little taller than the line itself, in cells. */
+export const WINDOW_PAD = 6;
 
 /** A soft landing, as the odometer's: quick off the mark, easing gently to rest (cubic-bezier .22, 1, .36, 1). */
 const X1 = 0.22;
@@ -134,34 +136,23 @@ export class Reel {
   set(text: string, now: number) {
     const wanted = linesOf(text);
     while (this.lines.length < wanted.length) this.lines.push([]);
-    let turn = 0;
-    const delay = () => Math.min(turn++ * SLOT_STAGGER, MAX_STAGGER);
+    // As the odometer: the nth slot of the old text becomes the nth of the new, each starting a touch
+    // after the one before (every slot counts, changed or not), the whole cascade within CASCADE_MS.
+    const total = this.lines.reduce((n, slots, r) => n + Math.max(slots.length, wanted[r]?.length ?? 0), 0);
+    const stagger = total > 1 ? Math.min(STAGGER_MS, CASCADE_MS / (total - 1)) : 0;
+    let index = 0;
 
     this.lines.forEach((slots, r) => {
       const next = wanted[r] ?? [];
-      const keys = next.map(keyOf);
-      const live = slots.filter((s) => s.key !== null);
-      // Whatever the edit, the columns before and after it stay; the ones between roll.
-      let head = 0;
-      while (head < live.length && head < keys.length && live[head].key === keys[head]) head++;
-      let tail = 0;
-      while (tail < live.length - head && tail < keys.length - head && live[live.length - 1 - tail].key === keys[keys.length - 1 - tail]) tail++;
-      const old = live.slice(head, live.length - tail);
-      const added = next.slice(head, next.length - tail);
-      const addedKeys = keys.slice(head, keys.length - tail);
-
-      for (let k = 0; k < Math.max(old.length, added.length); k++) {
-        if (k < old.length && k < added.length) {
-          if (old[k].key !== addedKeys[k]) retarget(old[k], added[k], now, delay());
-        } else if (k < old.length) {
-          retarget(old[k], null, now, delay());
-        } else {
-          // A new column opens at nothing wide, just before the columns that stay after it.
-          const slot: Slot = { key: null, from: 0, to: 0, start: now, delay: 0, layers: [] };
-          retarget(slot, added[k], now, delay());
-          const after = tail > 0 ? slots.indexOf(live[live.length - tail]) : slots.length;
-          slots.splice(after, 0, slot);
-        }
+      const n = Math.max(slots.length, next.length);
+      for (let i = 0; i < n; i++, index++) {
+        const dots = i < next.length ? next[i] : null;
+        if (!slots[i]) slots[i] = { key: null, from: 0, to: 0, start: now, delay: 0, layers: [] };
+        const slot = slots[i];
+        const key = dots ? keyOf(dots) : null;
+        // A column that is the same keeps its place (and moves with the line as the others open and close).
+        if (slot.key === key) continue;
+        retarget(slot, dots, now, index * stagger);
       }
     });
   }
@@ -196,11 +187,12 @@ export class Reel {
   }
 
   /**
-   * Draws the text at `now`: `column(alpha)` before each column of dots, then `dot(x, y)` for each of
-   * its dots. Cells: x from the middle of the block, y from the top of the first line.
+   * Draws the text at `now`: `line(r)` before each line, `column(alpha)` before each column of dots,
+   * then `dot(x, y)` for each of its dots. Cells: x from the middle of the block, y from the top of the first line.
    */
-  dots(now: number, column: (alpha: number) => void, dot: (x: number, y: number) => void) {
+  dots(now: number, line: (r: number) => void, column: (alpha: number) => void, dot: (x: number, y: number) => void) {
     this.lines.forEach((slots, r) => {
+      line(r);
       const baseline = r * (LINE_CELLS + LINE_GAP) + LINE_ASCENT;
       let pen = -this.lineWidth(r, now) / 2;
       for (const s of slots) {
