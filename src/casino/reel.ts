@@ -63,14 +63,28 @@ function columns(ch: string): Dot[][] {
   }
   return hit;
 }
-const keyOf = (dots: Dot[]) => dots.map(([x, y]) => `${x},${y}`).join(' ');
+/** What a reel holds: its dots, and how many columns wide it is. */
+type Cell = { dots: Dot[]; width: number };
+const keyOf = (c: Cell) => `${c.width}|${c.dots.map(([x, y]) => `${x},${y}`).join(' ')}`;
+
+/** How many neighbouring columns of dots make one reel: Geist Pixel's strokes are two dots thick, so two roll as one. */
+export const REEL_COLUMNS = 2;
+/** A line's columns, taken REEL_COLUMNS at a time into reels (the last may be narrower). */
+function reels(columns: Dot[][]): Cell[] {
+  const out: Cell[] = [];
+  for (let i = 0; i < columns.length; i += REEL_COLUMNS) {
+    const group = columns.slice(i, i + REEL_COLUMNS);
+    out.push({ width: group.length, dots: group.flatMap((col, k) => col.map(([x, y]): Dot => [x + k, y])) });
+  }
+  return out;
+}
 
 /** One column's dots rolling from (y0, a0) to (y1, a1): their height above where they rest, in cells, and their opacity. */
 type Layer = { dots: Dot[]; start: number; out: boolean; y0: number; a0: number; y1: number; a1: number };
 export type Slot = {
   /** What it holds, as a key, or null once it is closing. */
   key: string | null;
-  /** Its width (1 cell, or 0 when closed) as it was when it last changed, what it is becoming, and when and after how long it moved. */
+  /** Its width (its columns, or 0 when closed) as it was when it last changed, what it is becoming, and when and after how long it moved. */
   from: number;
   to: number;
   start: number;
@@ -105,26 +119,29 @@ function leave(s: Slot, now: number, delay: number) {
   }
 }
 
-function retarget(s: Slot, dots: Dot[] | null, now: number, delay: number) {
+function retarget(s: Slot, cell: Cell | null, now: number, delay: number) {
+  const dots = cell?.dots ?? null;
   const width = widthOf(s, now);
   leave(s, now, delay);
   if (dots && dots.length > 0) s.layers.push({ dots, start: now + delay, out: false, y0: TRAVEL, a0: 0, y1: 0, a1: 1 });
-  s.key = dots ? keyOf(dots) : null;
+  s.key = cell ? keyOf(cell) : null;
   s.from = width;
-  s.to = dots ? 1 : 0;
+  s.to = cell ? cell.width : 0;
   s.start = now;
   s.delay = delay;
 }
 
 /** The text's columns, line by line: the characters Geist Pixel can draw, each as its columns of dots. */
-function linesOf(text: string): Dot[][][] {
+function linesOf(text: string): Cell[][] {
   return normalize(text)
     .split('\n')
     .map((line) =>
-      [...line]
-        .map((ch) => (/\s/.test(ch) ? ' ' : ch))
-        .filter((ch) => glyph(ch.codePointAt(0)!))
-        .flatMap(columns),
+      reels(
+        [...line]
+          .map((ch) => (/\s/.test(ch) ? ' ' : ch))
+          .filter((ch) => glyph(ch.codePointAt(0)!))
+          .flatMap(columns),
+      ),
     );
 }
 
@@ -146,13 +163,13 @@ export class Reel {
       const next = wanted[r] ?? [];
       const n = Math.max(slots.length, next.length);
       for (let i = 0; i < n; i++, index++) {
-        const dots = i < next.length ? next[i] : null;
+        const cell = i < next.length ? next[i] : null;
         if (!slots[i]) slots[i] = { key: null, from: 0, to: 0, start: now, delay: 0, layers: [] };
         const slot = slots[i];
-        const key = dots ? keyOf(dots) : null;
+        const key = cell ? keyOf(cell) : null;
         // A column that is the same keeps its place (and moves with the line as the others open and close).
         if (slot.key === key) continue;
-        retarget(slot, dots, now, index * stagger);
+        retarget(slot, cell, now, index * stagger);
       }
     });
   }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DUR, CASCADE_MS, Reel, widthOf } from '../src/casino/reel.ts';
+import { DUR, CASCADE_MS, REEL_COLUMNS, Reel, widthOf } from '../src/casino/reel.ts';
 import { glyph } from '../src/morph/glyphs.ts';
 
 const adv = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!)!.advance, 0);
@@ -10,12 +10,13 @@ const dotsAt = (r: Reel, now: number) => {
   r.dots(now, () => {}, () => {}, () => n++);
   return n;
 };
+const reelsOf = (s: string) => Math.ceil(adv(s) / REEL_COLUMNS);
 const total = (s: string) => [...s].reduce((n, ch) => n + glyph(ch.codePointAt(0)!)!.cells.length / 2, 0);
 
-test('every column of the text is its own slot, one cell wide', () => {
+test('the text columns are taken two at a time into reels, each two cells wide', () => {
   const r = new Reel();
   r.set('cat', 0);
-  assert.equal(r.lines[0].length, adv('cat'));
+  assert.equal(r.lines[0].length, reelsOf('cat'));
   assert.equal(r.tick(done), false);
   assert.equal(r.lineWidth(0, done), adv('cat'));
   assert.equal(dotsAt(r, done), total('cat'));
@@ -44,14 +45,14 @@ test('typing at the end opens columns; deleting closes them and they are gone on
   r.set('ab', 0);
   r.tick(done);
   r.set('abc', done);
-  assert.equal(r.lines[0].length, adv('abc'));
-  assert.equal(widthOf(r.lines[0][adv('ab')], done), 0);
+  assert.equal(r.lines[0].length, reelsOf('abc'));
+  assert.equal(widthOf(r.lines[0][reelsOf('ab')], done), 0);
   r.tick(3 * done);
   assert.equal(r.lineWidth(0, 3 * done), adv('abc'));
   r.set('ab', 3 * done);
   assert.equal(r.tick(3 * done), true);
   r.tick(6 * done);
-  assert.equal(r.lines[0].length, adv('ab'));
+  assert.equal(r.lines[0].length, reelsOf('ab'));
   assert.equal(dotsAt(r, 6 * done), total('ab'));
 });
 
@@ -77,5 +78,5 @@ test('lines roll too, and an emptied last line goes', () => {
 test('characters Geist Pixel cannot draw are left out', () => {
   const r = new Reel();
   r.set('a\u{1F600}b', 0);
-  assert.equal(r.lines[0].length, adv('ab'));
+  assert.equal(r.lines[0].length, reelsOf('ab'));
 });

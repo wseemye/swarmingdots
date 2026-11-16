@@ -29,10 +29,10 @@ watch its dots swarm into text. `/` goes there too, and the old
 `dots.wseem.com`.
 
 [`/casino`](https://dots.wseem.com/casino) is the odometer roll from wseem.com (`roll.ts`), in dots,
-with a reel per column of dots. Same mechanics: slot *i* of the old text becomes slot *i* of the new
+with a reel per two columns of dots (`REEL_COLUMNS`; Geist Pixel strokes are two dots thick). Same mechanics: slot *i* of the old text becomes slot *i* of the new
 one; the old dots rise 70% of a line out of a clipped window, fading, as the new ones rise in from
 below, in 500ms with the odometer's soft landing, each column a touch after the one before (14ms,
-the whole cascade within 140ms); columns that are the same stay put, columns open and close, and
+the whole cascade within 140ms); reels that are the same stay put, reels open and close, and
 the size and height of the text glide on the same easing. The logic is `src/casino/reel.ts` (no DOM,
 covered by `tests/reel.test.ts`), the page `src/casino/Casino.tsx`.
 
