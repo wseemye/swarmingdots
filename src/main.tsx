@@ -4,7 +4,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Shell from './Shell.tsx'
 import ToText from './ToText.tsx'
 import Editor from './morph-editor/Editor.tsx'
-import Casino from './casino/Casino.tsx'
 import FlagSwarm from './flags/FlagSwarm.tsx'
 import Intro from './text-swarm/Intro.tsx'
 import TextSwarm from './text-swarm/TextSwarm.tsx'
@@ -17,7 +16,6 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/text" element={<TextSwarm />} />
           <Route path="/morph" element={<Editor />} />
           <Route path="/intro" element={<Intro />} />
-          <Route path="/casino" element={<Casino />} />
           <Route path="/flags" element={<FlagSwarm />} />
           {/* Old links to a single flag land on the flags page. */}
           <Route path="/flags/*" element={<Navigate to="/flags" replace />} />

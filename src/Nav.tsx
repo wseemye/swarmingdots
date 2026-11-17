@@ -6,7 +6,6 @@ const REPO = 'https://github.com/waseem091/swarmingdots';
 const PAGES = [
   ['/text', 'text'],
   ['/morph', 'morph'],
-  ['/casino', 'casino'],
   ['/flags', 'flags'],
 ] as const;
 

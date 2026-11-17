@@ -17,7 +17,7 @@ npm run build
 ## Routes
 
 The site lives at [dots.wseem.com](https://dots.wseem.com), all in light mode. The
-same navbar floats at the top of every page: text, morph, casino, flags, github, with one
+same navbar floats at the top of every page: text, morph, flags, github, with one
 highlight that glides to the current page (`src/Nav.tsx`, styles in `src/shell.css`).
 An "i" button in the top left of every page opens the intro (`/intro`). The two
 editors share one panel layout and one footer (`src/EditorActions.tsx`): Replay and
@@ -27,17 +27,6 @@ The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
 watch its dots swarm into text. `/` goes there too, and the old
 `swarmingdots.vercel.app` redirects every path to the same path on
 `dots.wseem.com`.
-
-[`/casino`](https://dots.wseem.com/casino) is the odometer roll from wseem.com (`roll.ts`), with the
-dots as the digits. Type and only the dots that differ move: each slides up or down its own column
-to a place the new text needs; a dot with no place rolls up and out, fading, and a dot with no old
-one to take over rolls in from below. Dots already in place stay, so the letters never move as a
-block. Same mechanics as the odometer otherwise: slot *i* of the old text becomes slot *i* of the
-new one (a slot is `REEL_COLUMNS` = 2 dot columns, Geist Pixel's stroke width), 500ms with its soft
-landing, each changed slot starting a touch after the one before (14ms, the whole cascade within
-140ms), slots opening and closing as the text grows and shrinks, and the size of the text gliding
-on the same easing. The logic is `src/casino/reel.ts` (no DOM, covered by `tests/reel.test.ts`), the
-page `src/casino/Casino.tsx`.
 
 [`/flags`](https://dots.wseem.com/flags) swarms the dots into country flags;
 type a country's name in the field under the flag and pick it from the

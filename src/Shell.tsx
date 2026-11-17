@@ -6,7 +6,6 @@ import './shell.css';
 const TITLES: Record<string, string> = {
   '/text': 'dots',
   '/morph': 'morph · dots',
-  '/casino': 'casino · dots',
   '/intro': 'about · dots',
 };
 
