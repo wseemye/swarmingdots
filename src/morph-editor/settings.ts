@@ -25,7 +25,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   text: 'morphing pixels',
   variant: 'square',
-  fontSize: 90,
+  fontSize: 64,
   letterSpacing: 0,
   lineSpacing: 0,
   align: 'center',
@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: Settings = {
  */
 export function defaultSettings(): Settings {
   const narrow = typeof window !== 'undefined' && window.matchMedia('(max-width: 600px)').matches;
-  return { ...DEFAULT_SETTINGS, fontSize: narrow ? 72 : DEFAULT_SETTINGS.fontSize };
+  return { ...DEFAULT_SETTINGS, fontSize: narrow ? 52 : DEFAULT_SETTINGS.fontSize };
 }
 
 export const LIMITS = {

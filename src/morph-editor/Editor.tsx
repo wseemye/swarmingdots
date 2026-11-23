@@ -235,6 +235,12 @@ export default function Editor() {
             </button>
           </div>
 
+          <div className="sliders">
+            <Slider id="size" label="Font size" value={settings.fontSize} range={LIMITS.fontSize} step={1} unit="px" onChange={(fontSize) => set({ fontSize })} />
+          </div>
+        </div>
+
+        <div className="group group-style">
           <div className="field field-inline">
             <span className="picker-label" id="align-label">
               Align
@@ -253,11 +259,8 @@ export default function Editor() {
               ))}
             </div>
           </div>
-        </div>
 
-        <div className="group group-style">
           <div className="sliders">
-            <Slider id="size" label="Font size" value={settings.fontSize} range={LIMITS.fontSize} step={1} unit="px" onChange={(fontSize) => set({ fontSize })} />
             <Slider
               id="letter-spacing"
               label="Letter spacing"

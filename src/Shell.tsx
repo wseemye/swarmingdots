@@ -77,8 +77,13 @@ export default function Shell() {
     const from = frame.getBoundingClientRect().bottom;
     if (!first) {
       frame.dataset.moving = '';
+      // Nothing scrolls while things are on the move: a panel travelling past the edge would show a bar.
+      main.dataset.moving = '';
       window.clearTimeout(moving.current);
-      moving.current = window.setTimeout(() => delete frame.dataset.moving, MOVE_MS);
+      moving.current = window.setTimeout(() => {
+        delete frame.dataset.moving;
+        delete main.dataset.moving;
+      }, MOVE_MS);
     }
     frame.dataset.placed = '';
     place();

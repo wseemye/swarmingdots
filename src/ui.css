@@ -62,6 +62,11 @@
   animation: stage-in 300ms var(--ease-out) 120ms both;
 }
 
+/* Nothing scrolls while the card and the controls are on the move. */
+.shell .shell-main[data-moving] .shell-page {
+  overflow: hidden;
+}
+
 /* The page being left fades away under the next (Shell.tsx). */
 .shell .shell-page[data-leaving] {
   pointer-events: none;

@@ -173,9 +173,7 @@ export default function TextSwarm() {
             </span>
             <VariantPicker value={settings.variant} onChange={(variant) => setMotion({ variant })} labelledBy="variant-label" />
           </div>
-        </div>
 
-        <div className="group group-style">
           <div className="sliders">
             <div className="row">
               <label htmlFor="size">Font size</label>
@@ -194,7 +192,11 @@ export default function TextSwarm() {
                 <span className="unit">px</span>
               </span>
             </div>
+          </div>
+        </div>
 
+        <div className="group group-style">
+          <div className="sliders">
             <div className="row">
               <label htmlFor="spacing">Letter spacing</label>
               <input

@@ -25,6 +25,6 @@ test('bad values in a link are ignored or kept in range', () => {
 });
 
 test('the copied tag leaves out what the component does by default', () => {
-  assert.equal(snippet({ ...DEFAULT_SETTINGS, align: 'left', lineSpacing: DEFAULT_SETTINGS.fontSize / 5 }, false), '<PixelMorph text="morphing pixels" fontSize={90} />');
+  assert.equal(snippet({ ...DEFAULT_SETTINGS, align: 'left', lineSpacing: DEFAULT_SETTINGS.fontSize / 5 }, false), '<PixelMorph text="morphing pixels" fontSize={64} />');
   assert.match(snippet({ ...DEFAULT_SETTINGS, text: 'say "hi"' }, true), /text=\{"say \\"hi\\""\}[\s\S]*cycle/);
 });
