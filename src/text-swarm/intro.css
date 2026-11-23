@@ -17,7 +17,7 @@
   max-width: 560px;
 }
 
-/* Quieter than the text above it, in the same colour. */
+/* In the same colour as the text above it, at full strength. */
 .intro-byline {
   display: flex;
   flex-wrap: wrap;
@@ -27,13 +27,12 @@
   font-family: 'Geist Pixel Circle', ui-monospace, monospace;
   font-size: 15px;
   line-height: 1.4;
-  opacity: 0.6;
 }
 
 .intro-byline a {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-decoration-color: currentColor;
   text-underline-offset: 3px;
   transition: text-decoration-color 160ms var(--ease-out);
 }

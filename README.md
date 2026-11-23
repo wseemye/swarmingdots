@@ -16,12 +16,12 @@ The site lives at [dots.wseem.com](https://dots.wseem.com), in light mode. Two
 typefaces, Geist for the interface and Geist Pixel for the dots, on neutral greys with
 hairline rings, nested radii (12 round the stage, 8 round a control group, 6 on the
 controls), a strong ease-out, 150-250ms, and a press that scales to .97. Every page is
-the head (the globe, the name, a segmented control whose thumb slides to the page you
+the head (the ring of dots, the name, a segmented control whose thumb slides to the page you
 are on), a framed stage, the controls under it one tab at a time (the same control), the
 actions on the tabs' line (Replay, Reset, Copy Prompt, `src/EditorActions.tsx`), and a
 quiet foot. Everything fits one viewport; on a phone on its side the stage and the
 controls sit side by side. The system is `src/shell.css` (tokens, head, segmented
-control, foot) and `src/ui.css` (pages and controls); `src/Mark.tsx` is the globe.
+control, foot) and `src/ui.css` (pages and controls); `src/Mark.tsx` is the logo, a ring of swarming dots.
 
 The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
 watch its dots swarm into text. `/` goes there too, and the old

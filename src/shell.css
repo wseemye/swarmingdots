@@ -154,8 +154,8 @@ p {
 /* The globe (Mark.tsx), in the page's ink; hovered, a faint glow rises round it. */
 .mark {
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   color: var(--fg);
   box-shadow: 0 0 0 0 rgb(0 0 0 / 0);

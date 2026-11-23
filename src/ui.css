@@ -559,7 +559,6 @@
 .shell .intro-byline {
   font-family: inherit;
   font-size: 14px;
-  opacity: 1;
   /* The colours are the ones picked, so everything here follows them. */
   color: inherit;
 }
@@ -569,13 +568,9 @@
   color: inherit;
 }
 
-.shell .intro-byline {
-  opacity: 0.6;
-}
-
 .shell .intro-byline a {
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-decoration-color: currentColor;
   text-underline-offset: 3px;
   transition: text-decoration-color 200ms var(--ease-out);
 }
