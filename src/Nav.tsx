@@ -1,5 +1,6 @@
 import { useLocation, NavLink } from 'react-router-dom';
 import type { CSSProperties } from 'react';
+import Mark from './Mark.tsx';
 
 const REPO = 'https://github.com/waseem091/swarmingdots';
 
@@ -9,15 +10,6 @@ const PAGES = [
   ['/flags', 'Flags'],
 ] as const;
 
-/** The mark: a lattice of dots, drawn on the Lucide grid with the same stroke. */
-function Logo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
-      {[3, 10, 17].flatMap((x) => [3, 10, 17].map((y) => <rect key={`${x}-${y}`} x={x} y={y} width="4" height="4" rx="1" />))}
-    </svg>
-  );
-}
-
 /** The top bar, the same on every page: the name, what the project is, the pages, the repository. */
 export default function Nav() {
   const { pathname } = useLocation();
@@ -26,10 +18,10 @@ export default function Nav() {
   return (
     <header className="bar">
       <div className="bar-start">
-        <span className="bar-logo">
-          <Logo className="size-4" />
-        </span>
-        <h1 className="bar-title">dots</h1>
+        <NavLink to="/text" className="bar-home" aria-label="dots, home">
+          <Mark />
+          <h1 className="bar-title">dots</h1>
+        </NavLink>
         <NavLink to="/intro" className="chip chip-icon bar-about" aria-label="What is this?" title="What is this?">
           ?
         </NavLink>

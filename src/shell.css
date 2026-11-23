@@ -243,23 +243,50 @@ body {
   gap: 8px;
 }
 
-.bar-logo {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
+/* The name is set in Geist Pixel Square, as on wseem.com, beside the globe. */
+.bar-home {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--control-h);
+  color: var(--fg);
+  text-decoration: none;
 }
 
-/* Titles are the serif, regular only, so it is never set bold. */
 .bar-title {
   margin: 0;
-  font-family: 'Geist Serif', 'Times New Roman', Times, serif;
+  font-family: 'Geist Pixel Square', ui-monospace, monospace;
+  font-feature-settings: 'ss01', 'ss03', 'ss05';
   font-size: 14px;
   font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* The globe (Mark.tsx): in the page's ink; hovered, a faint glow rises round it. */
+.mark {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--fg);
+  box-shadow: 0 0 0 0 rgb(0 0 0 / 0);
+  transition: box-shadow 400ms ease;
+}
+
+.mark canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.bar-home:hover .mark,
+.bar-home:focus-visible .mark {
+  box-shadow: 0 0 12px 2px rgb(0 0 0 / 0.16);
+}
+
+.bar-home:focus-visible {
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 .bar-about {
@@ -280,8 +307,8 @@ body {
     padding: 0 12px;
   }
 
-  .bar-logo {
-    display: none;
+  .bar-home {
+    gap: 8px;
   }
 
   .seg-option {
@@ -308,7 +335,72 @@ body {
   }
 }
 
+/* ── Motion from wseem.com ── */
+
+/* The success check: it fades in, un-rotates, comes out of a blur and bobs up with a little overshoot. */
+.t-success-check {
+  display: inline-block;
+  opacity: 0;
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+}
+
+.t-success-check svg {
+  display: block;
+  overflow: visible;
+}
+
+.t-success-check[data-state='in'] {
+  animation:
+    t-check-fade 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    t-check-rotate 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    t-check-blur 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    t-check-bob 500ms cubic-bezier(0.34, 1.35, 0.64, 1) forwards;
+}
+
+@keyframes t-check-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes t-check-rotate {
+  from {
+    transform: rotate(80deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes t-check-blur {
+  from {
+    filter: blur(10px);
+  }
+  to {
+    filter: blur(0);
+  }
+}
+
+@keyframes t-check-bob {
+  from {
+    translate: 0 14px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .t-success-check {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .mark {
+    transition: none;
+  }
+
   .shell-page {
     animation: none;
   }

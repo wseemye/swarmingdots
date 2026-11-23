@@ -351,6 +351,20 @@
   font-size: 13px;
 }
 
+.shell .intro-byline a {
+  background: linear-gradient(currentColor, currentColor) no-repeat 100% 100% / 0% 1px;
+  text-decoration: none;
+  transition: background-size 467ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shell .intro-byline a:hover,
+  .shell .intro-byline a:focus-visible {
+    background-position: 0 100%;
+    background-size: 100% 1px;
+  }
+}
+
 /* ── Phones, portrait: the panel moves under the stage ── */
 @media (max-width: 760px) and (orientation: portrait) {
   .shell .stage,

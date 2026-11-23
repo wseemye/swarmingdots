@@ -1,10 +1,13 @@
 export type CopyState = 'done' | 'failed' | null;
 
+/** The check that confirms a copy: fades in, un-rotates, comes out of a blur and bobs up (from wseem.com). */
 function Tick() {
   return (
-    <svg className="ed-tick" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 8.5 6.5 12 13 4.5" />
-    </svg>
+    <span className="t-success-check" data-state="in" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 8.5 6.5 12 13 4.5" />
+      </svg>
+    </span>
   );
 }
 
