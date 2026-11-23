@@ -31,7 +31,19 @@ const DISPUTED = [
   'gs', // South Georgia and the South Sandwich Islands: the same dispute.
   'io', // British Indian Ocean Territory: sovereignty passing to Mauritius under a 2025 treaty.
 ];
-const EXCLUDE = new Set([...NOT_CURRENT, ...DISPUTED]);
+// And except those whose flag the source gets wrong, or that have none of their own.
+const NO_TRUE_FLAG = [
+  'sh', // Saint Helena, Ascension and Tristan da Cunha: the source draws the Union Flag; the territory's own is a Blue Ensign with its badge.
+  'gb-nir', // Northern Ireland: no official flag since 1972 (the Ulster Banner is not one); the Union Flag is its flag, so it would show the UK twice.
+];
+const EXCLUDE = new Set([...NOT_CURRENT, ...DISPUTED, ...NO_TRUE_FLAG]);
+
+// French overseas collectivities whose only official flag is the tricolour: the source draws a
+// local flag with no official status.
+const FLAG_OF: Record<string, string> = {
+  bl: 'fr', // Saint Barthélemy: a coat of arms on white is used locally, unofficially.
+  wf: 'fr', // Wallis and Futuna: the local flag is unofficial.
+};
 
 // Flags adopted since svg-country-flags was last updated, and one it draws in a way the renderer
 // gets wrong; see each file for its source.
@@ -41,7 +53,7 @@ const OVERRIDES = new Set(['kg', 'ss', 'sy']);
 const NAMES: Record<string, string> = {
   bn: 'Brunei',
   bo: 'Bolivia',
-  cd: 'DR Congo',
+  cd: 'Democratic Republic of the Congo',
   cg: 'Republic of the Congo',
   cv: 'Cabo Verde',
   cz: 'Czechia',
@@ -52,7 +64,11 @@ const NAMES: Record<string, string> = {
   la: 'Laos',
   md: 'Moldova',
   mk: 'North Macedonia',
-  mo: 'Macau',
+  mo: 'Macao',
+  pn: 'Pitcairn Islands',
+  ps: 'State of Palestine',
+  st: 'São Tomé and Príncipe',
+  um: 'U.S. Minor Outlying Islands',
   ru: 'Russia',
   sh: 'Saint Helena, Ascension and Tristan da Cunha',
   sj: 'Svalbard and Jan Mayen',
@@ -74,17 +90,23 @@ const ALIASES: Record<string, string[]> = {
   ae: ['UAE', 'Emirates'],
   bn: ['Brunei Darussalam'],
   bo: ['Plurinational State of Bolivia'],
-  cd: ['Democratic Republic of the Congo', 'Congo-Kinshasa', 'DRC', 'Zaire'],
+  cd: ['DR Congo', 'Congo-Kinshasa', 'DRC'],
   cg: ['Congo', 'Congo-Brazzaville'],
+  bq: ['Bonaire, Sint Eustatius and Saba'],
   ci: ['Ivory Coast'],
+  hk: ['Hong Kong SAR, China'],
+  mo: ['Macau', 'Macao SAR, China'],
+  pn: ['Pitcairn'],
+  ps: ['Palestine', 'Palestinian Territories'],
+  st: ['Sao Tome and Principe'],
+  um: ['US Minor Outlying Islands'],
   cv: ['Cape Verde'],
   cz: ['Czech Republic'],
   de: ['Deutschland'],
   gb: ['UK', 'Britain', 'Great Britain'],
-  'gb-eng': ['England'],
   ir: ['Persia'],
-  kp: ['DPRK'],
-  kr: ['Korea', 'Republic of Korea'],
+  kp: ['DPRK', "Democratic People's Republic of Korea"],
+  kr: ['Republic of Korea'],
   mk: ['Macedonia'],
   mm: ['Burma'],
   nl: ['Holland'],
@@ -182,7 +204,7 @@ async function main() {
   const list: { code: string; name: string; aliases?: string[]; ratio: number }[] = [];
   for (const code of codes) {
     const name = NAMES[code] ?? names[code.toUpperCase()];
-    const svg = readFileSync(OVERRIDES.has(code) ? join(process.cwd(), 'scripts', 'flag-overrides', `${code}.svg`) : join(PKG, 'svg', `${code}.svg`), 'utf8');
+    const svg = readFileSync(OVERRIDES.has(code) ? join(process.cwd(), 'scripts', 'flag-overrides', `${code}.svg`) : join(PKG, 'svg', `${FLAG_OF[code] ?? code}.svg`), 'utf8');
     const b = await build(svg);
     writeFileSync(join(OUT, `${code}.png`), b.png);
     list.push({ code, name, ...(ALIASES[code] ? { aliases: ALIASES[code] } : {}), ratio: Number(aspect(svg).toFixed(6)) });

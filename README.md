@@ -181,7 +181,7 @@ flag. Dots set off at random over 0.7 s and each glides for 1.4 s on
 swarm is always moving rather than all leaving and all landing together. The
 dots are drawn in one instanced WebGL call.
 
-**Every flag.** 246 flags: every country and territory in
+**Every flag.** 244 flags: every country and territory in
 [`svg-country-flags`](https://github.com/hjnilsson/country-flags) (Wikipedia's
 flags, public domain, in their official proportions and colours) except the
 Netherlands Antilles (dissolved 2010), Antarctica (no official flag), the EU,
@@ -189,7 +189,14 @@ and those where showing a flag at all takes a side because the government, the
 sovereignty or the flag itself is disputed: Afghanistan, Taiwan, Kosovo,
 Western Sahara, the Falkland Islands, South Georgia and the South Sandwich
 Islands, and the British Indian Ocean Territory (`DISPUTED` in
-`scripts/flags.ts`).
+`scripts/flags.ts`), and two the source gets wrong or that have no flag of their
+own: Saint Helena, Ascension and Tristan da Cunha (the source draws the Union
+Flag) and Northern Ireland (no official flag) (`NO_TRUE_FLAG`). Saint Barthélemy
+and Wallis and Futuna show the French tricolour, their only official flag, not
+the unofficial local flags the source draws (`FLAG_OF`). A few territories
+legally fly their sovereign's flag and so show it: Bouvet Island, Svalbard and
+Jan Mayen (Norway), Heard Island and McDonald Islands (Australia), the U.S.
+Minor Outlying Islands, and the French overseas departments and collectivities.
 That package was last updated in 2021, so `scripts/flag-overrides/` holds the
 flags adopted since (Kyrgyzstan 2023, Syria 2025, from
 [`flag-icons`](https://github.com/lipis/flag-icons), MIT, re-centred on their

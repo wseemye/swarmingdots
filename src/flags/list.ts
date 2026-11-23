@@ -212,6 +212,9 @@ export const flags: FlagEntry[] = [
   {
     "code": "bq",
     "name": "Caribbean Netherlands",
+    "aliases": [
+      "Bonaire, Sint Eustatius and Saba"
+    ],
     "ratio": 0.666667
   },
   {
@@ -306,6 +309,16 @@ export const flags: FlagEntry[] = [
     "ratio": 0.666667
   },
   {
+    "code": "cd",
+    "name": "Democratic Republic of the Congo",
+    "aliases": [
+      "DR Congo",
+      "Congo-Kinshasa",
+      "DRC"
+    ],
+    "ratio": 0.75
+  },
+  {
     "code": "dk",
     "name": "Denmark",
     "ratio": 0.756757
@@ -326,17 +339,6 @@ export const flags: FlagEntry[] = [
     "ratio": 0.666667
   },
   {
-    "code": "cd",
-    "name": "DR Congo",
-    "aliases": [
-      "Democratic Republic of the Congo",
-      "Congo-Kinshasa",
-      "DRC",
-      "Zaire"
-    ],
-    "ratio": 0.75
-  },
-  {
     "code": "ec",
     "name": "Ecuador",
     "ratio": 0.666667
@@ -354,9 +356,6 @@ export const flags: FlagEntry[] = [
   {
     "code": "gb-eng",
     "name": "England",
-    "aliases": [
-      "England"
-    ],
     "ratio": 0.6
   },
   {
@@ -523,6 +522,9 @@ export const flags: FlagEntry[] = [
   {
     "code": "hk",
     "name": "Hong Kong",
+    "aliases": [
+      "Hong Kong SAR, China"
+    ],
     "ratio": 0.666667
   },
   {
@@ -670,7 +672,11 @@ export const flags: FlagEntry[] = [
   },
   {
     "code": "mo",
-    "name": "Macau",
+    "name": "Macao",
+    "aliases": [
+      "Macau",
+      "Macao SAR, China"
+    ],
     "ratio": 0.666667
   },
   {
@@ -843,7 +849,8 @@ export const flags: FlagEntry[] = [
     "code": "kp",
     "name": "North Korea",
     "aliases": [
-      "DPRK"
+      "DPRK",
+      "Democratic People's Republic of Korea"
     ],
     "ratio": 0.5
   },
@@ -853,11 +860,6 @@ export const flags: FlagEntry[] = [
     "aliases": [
       "Macedonia"
     ],
-    "ratio": 0.5
-  },
-  {
-    "code": "gb-nir",
-    "name": "Northern Ireland",
     "ratio": 0.5
   },
   {
@@ -886,11 +888,6 @@ export const flags: FlagEntry[] = [
     "ratio": 0.625
   },
   {
-    "code": "ps",
-    "name": "Palestine",
-    "ratio": 0.5
-  },
-  {
     "code": "pa",
     "name": "Panama",
     "ratio": 0.666667
@@ -917,7 +914,10 @@ export const flags: FlagEntry[] = [
   },
   {
     "code": "pn",
-    "name": "Pitcairn",
+    "name": "Pitcairn Islands",
+    "aliases": [
+      "Pitcairn"
+    ],
     "ratio": 0.5
   },
   {
@@ -978,11 +978,6 @@ export const flags: FlagEntry[] = [
     "ratio": 0.666667
   },
   {
-    "code": "sh",
-    "name": "Saint Helena, Ascension and Tristan da Cunha",
-    "ratio": 0.5
-  },
-  {
     "code": "kn",
     "name": "Saint Kitts and Nevis",
     "ratio": 0.666667
@@ -1019,7 +1014,10 @@ export const flags: FlagEntry[] = [
   },
   {
     "code": "st",
-    "name": "Sao Tome and Principe",
+    "name": "São Tomé and Príncipe",
+    "aliases": [
+      "Sao Tome and Principe"
+    ],
     "ratio": 0.5
   },
   {
@@ -1091,7 +1089,6 @@ export const flags: FlagEntry[] = [
     "code": "kr",
     "name": "South Korea",
     "aliases": [
-      "Korea",
       "Republic of Korea"
     ],
     "ratio": 0.666667
@@ -1109,6 +1106,15 @@ export const flags: FlagEntry[] = [
   {
     "code": "lk",
     "name": "Sri Lanka",
+    "ratio": 0.5
+  },
+  {
+    "code": "ps",
+    "name": "State of Palestine",
+    "aliases": [
+      "Palestine",
+      "Palestinian Territories"
+    ],
     "ratio": 0.5
   },
   {
@@ -1213,6 +1219,14 @@ export const flags: FlagEntry[] = [
     "ratio": 0.5
   },
   {
+    "code": "um",
+    "name": "U.S. Minor Outlying Islands",
+    "aliases": [
+      "US Minor Outlying Islands"
+    ],
+    "ratio": 0.526316
+  },
+  {
     "code": "vi",
     "name": "U.S. Virgin Islands",
     "ratio": 0.666667
@@ -1261,11 +1275,6 @@ export const flags: FlagEntry[] = [
     "code": "uy",
     "name": "Uruguay",
     "ratio": 0.666667
-  },
-  {
-    "code": "um",
-    "name": "US Minor Outlying Islands",
-    "ratio": 0.526316
   },
   {
     "code": "uz",
