@@ -1,11 +1,3 @@
-/* Geist Serif (SIL Open Font License, public/fonts/OFL-Geist.txt), for the country's name. */
-@font-face {
-  font-family: 'Geist Serif';
-  src: url('/fonts/GeistSerif-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-
 /* The flags sit on a white stage, like every page; FlagSwarm.tsx greys a flag's whites so they still read. */
 .flags {
   position: relative;

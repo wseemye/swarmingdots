@@ -12,17 +12,16 @@ npm run build
 
 ## Routes
 
-The site lives at [dots.wseem.com](https://dots.wseem.com), in light mode, and is set
-in the design language of wseem.com (its Paper template): a white page, black type, one
-centred column 640px wide, Geist Pixel Square text at 14/21 (12/18 on phones), Geist
-Serif for the head, the pills and the buttons, one-pixel black outlines, and a card
-grey (`#e5e5e5`) for hovers. Every page is the head (the globe, the name, a rail of pills
-with an ink pill that slides to the page you are on), a framed stage, the controls, and a
-foot with two underlined links. Under the stage the controls are one tab at a time (the
-same rail), the actions on the tabs' line: Replay, Reset, Copy Prompt
-(`src/EditorActions.tsx`). Everything fits one viewport; on a phone on its side the
-stage and the controls sit side by side. The system is `src/shell.css` (tokens, head,
-rail, foot) and `src/ui.css` (pages and controls); `src/Mark.tsx` is the globe.
+The site lives at [dots.wseem.com](https://dots.wseem.com), in light mode. Two
+typefaces, Geist for the interface and Geist Pixel for the dots, on neutral greys with
+hairline rings, nested radii (12 round the stage, 8 round a control group, 6 on the
+controls), a strong ease-out, 150-250ms, and a press that scales to .97. Every page is
+the head (the globe, the name, a segmented control whose thumb slides to the page you
+are on), a framed stage, the controls under it one tab at a time (the same control), the
+actions on the tabs' line (Replay, Reset, Copy Prompt, `src/EditorActions.tsx`), and a
+quiet foot. Everything fits one viewport; on a phone on its side the stage and the
+controls sit side by side. The system is `src/shell.css` (tokens, head, segmented
+control, foot) and `src/ui.css` (pages and controls); `src/Mark.tsx` is the globe.
 
 The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
 watch its dots swarm into text. `/` goes there too, and the old
@@ -204,7 +203,7 @@ Every built flag has been checked against Chromium's own rendering of its SVG at
 the same size: no flag differs in more than 0.2% of its dots (anti-aliasing),
 which is how the missing South Sudan star was caught.
 
-The country's name is set in Geist Serif (`public/fonts`, SIL Open Font License). Of the grids near 60,000 dots with square cells,
+Of the grids near 60,000 dots with square cells,
 it keeps the one that puts the most dots wholly in one of the flag's own
 colours, so stripes land on whole rows: the US flag gets 345 × 182, fourteen
 rows to a stripe, and India 301 × 201, 67 to a band.

@@ -11,8 +11,8 @@ const PAGES = [
 ] as const;
 
 /**
- * The head of every page, set as the head of wseem.com is: the globe and the name on the left, in
- * the serif; on the right a rail of pills with an ink pill that slides to the page you are on.
+ * The head of every page: the globe and the name on the left; on the
+ * right a segmented control whose thumb slides to the page you are on.
  */
 export default function Nav() {
   const { pathname } = useLocation();
@@ -22,10 +22,7 @@ export default function Nav() {
     <header className="head">
       <NavLink to="/text" className="who" aria-label="Swarming Dots, home">
         <Mark />
-        <div>
-          <h1>Swarming Dots</h1>
-          <p>Type in motion</p>
-        </div>
+        <h1>Swarming Dots</h1>
       </NavLink>
 
       <nav className="rail" data-none={index < 0 || undefined} style={{ '--n': PAGES.length, '--i': Math.max(index, 0) } as CSSProperties} aria-label="Pages">
@@ -40,7 +37,7 @@ export default function Nav() {
   );
 }
 
-/** The foot of every page: two links, underlined as the site's are. */
+/** The foot of every page: two quiet links. */
 export function Foot() {
   return (
     <footer className="foot">
