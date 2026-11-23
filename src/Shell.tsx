@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import Nav from './Nav.tsx';
+import Nav, { Foot } from './Nav.tsx';
 import './shell.css';
 import './ui.css';
 
@@ -20,13 +20,16 @@ export default function Shell() {
 
   return (
     <div className="shell">
-      <Nav />
-      <main className="shell-main">
-        {/* Keyed by page, so each one fades in as it opens. */}
-        <div className="shell-page" key={pathname}>
-          <Outlet />
-        </div>
-      </main>
+      <div className="col">
+        <Nav />
+        <main className="shell-main">
+          {/* Keyed by page, so each one fades in as it opens. */}
+          <div className="shell-page" key={pathname}>
+            <Outlet />
+          </div>
+        </main>
+        <Foot />
+      </div>
     </div>
   );
 }

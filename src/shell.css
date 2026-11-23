@@ -5,35 +5,46 @@
   font-display: swap;
 }
 
-/* Six colours, nothing else: five greys and one red for warnings. Flat surfaces, one-pixel lines,
-   no shadows. The same system as NexCanvas, in light. */
+/* The design language of wseem.com (its Paper template): a white page, black type, a centred
+   column 640px wide (320px on phones). Text is Geist Pixel Square at 14/21 (12/18 on phones); the
+   head, the pills and the buttons are Geist Serif. Outlines are one black pixel; the only grey
+   is the card's (#e5e5e5); every other grey is black at an opacity. */
 :root {
   --canvas: #fff;
-  --surface: #fafafa;
-  --line: #e4e4e4;
-  --muted: #737373;
-  --fg: #111;
-  --danger: #ea1515;
+  --fg: #000;
+  --fg-rgb: 0 0 0;
+  --muted: rgb(var(--fg-rgb) / 0.55);
+  --line: rgb(var(--fg-rgb) / 0.2);
+  --card: #e5e5e5;
+  --danger: #c4210f;
 
-  /* A strong ease-out: starts fast, so the UI feels like it answers the tap. */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --pixel: 'Geist Pixel Square', ui-monospace, monospace;
+  --serif: 'Geist Serif', Georgia, 'Times New Roman', serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Controls grow on touch screens so they are easy to hit. */
-  --control-h: 32px;
-  --bar-h: 56px;
-  --panel-w: 320px;
+  /* The gap between the parts of the page, and what the screen's edge keeps clear. */
+  --gap: 14px;
+  --edge: clamp(12px, 3.5dvh, 48px);
+  --col: 640px;
+  --fs: 14px;
+  --lh: 21px;
 
-  font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family: var(--pixel);
+  font-feature-settings: 'ss01', 'ss03', 'ss05';
+  font-size: var(--fs);
+  line-height: var(--lh);
   font-synthesis: none;
-  letter-spacing: -0.0125em;
+  letter-spacing: 0.01em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   color-scheme: light;
 }
 
-@media (pointer: coarse) {
+@media (max-width: 743px) {
   :root {
-    --control-h: 36px;
+    --gap: 12px;
+    --fs: 12px;
+    --lh: 18px;
   }
 }
 
@@ -63,13 +74,30 @@ body {
   outline-offset: 2px;
 }
 
+h1,
+p {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: inherit;
+}
+
 .shell {
-  display: flex;
-  flex-direction: column;
   height: 100vh;
   height: 100dvh;
   background: var(--canvas);
   color: var(--fg);
+}
+
+/* The column: the head, the page, the foot, one viewport tall. */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: min(var(--col), 100%);
+  height: 100%;
+  margin: 0 auto;
+  padding: var(--edge) clamp(0px, calc((100vw - 288px) / 2), 16px);
 }
 
 .shell-main {
@@ -82,7 +110,7 @@ body {
   position: absolute;
   inset: 0;
   overflow: auto;
-  animation: page-in 260ms var(--ease-out) both;
+  animation: page-in 300ms var(--ease) both;
 }
 
 @keyframes page-in {
@@ -91,185 +119,41 @@ body {
   }
 }
 
-/* ── Controls ── */
-
-/* A small bordered button: icons, labels, the top bar. */
-.chip {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: var(--control-h);
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  color: var(--fg);
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    border-color 160ms var(--ease-out),
-    background-color 160ms var(--ease-out),
-    color 160ms var(--ease-out),
-    transform 160ms var(--ease-out);
-}
-
-.chip-icon {
-  width: var(--control-h);
-  padding: 0;
-}
-
-/* The one main action in a group: inverted. */
-.chip-primary,
-.chip-primary:hover {
-  border-color: var(--fg);
-  background: var(--fg);
-  color: var(--canvas);
-}
-
-.chip[aria-current='page'] {
-  border-color: var(--fg);
-  background: var(--fg);
-  color: var(--canvas);
-}
-
-.chip:active {
-  transform: scale(0.97);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .chip:hover {
-    border-color: var(--muted);
-  }
-
-  .chip-primary:hover {
-    border-color: var(--muted);
-    background: var(--muted);
-  }
-}
-
-/* Segmented choice: one block that slides to the option you pick. Set --n and --i. */
-.seg {
-  position: relative;
-  display: grid;
-  flex-shrink: 0;
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  gap: 2px;
-  height: var(--control-h);
-  padding: 2px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.seg-slide {
-  position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 2px;
-  width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n));
-  border-radius: 6px;
-  background: var(--fg);
-  transform: translateX(calc(var(--i) * (100% + 2px)));
-  transition: transform 280ms var(--ease-out);
-  pointer-events: none;
-}
-
-.seg[data-none] .seg-slide {
-  opacity: 0;
-}
-
-.seg-option {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-width: 36px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    color 180ms var(--ease-out),
-    transform 160ms var(--ease-out);
-}
-
-.seg-option[aria-checked='true'],
-.seg-option.active {
-  color: var(--canvas);
-}
-
-.seg-option:active {
-  transform: scale(0.97);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .seg-option:not([aria-checked='true'], .active):hover {
-    color: var(--fg);
-  }
-}
-
-/* ── The top bar ── */
-.bar {
-  position: relative;
-  z-index: 20;
+/* ── The head: name and role on the left, the pages on the right ── */
+.head {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  height: var(--bar-h);
-  padding: 0 16px;
-  border-bottom: 1px solid var(--line);
-  background: var(--canvas);
+  gap: 16px;
 }
 
-.bar-start,
-.bar-end {
+.who {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 8px;
-}
-
-/* The name is set in Geist Pixel Square, as on wseem.com, beside the globe. */
-.bar-home {
-  display: flex;
-  align-items: center;
   gap: 10px;
-  height: var(--control-h);
   color: var(--fg);
   text-decoration: none;
+  font-family: var(--serif);
+  font-feature-settings: normal;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-.bar-title {
-  margin: 0;
-  font-family: 'Geist Pixel Square', ui-monospace, monospace;
-  font-feature-settings: 'ss01', 'ss03', 'ss05';
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0;
+.who:focus-visible {
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
-/* The globe (Mark.tsx): in the page's ink; hovered, a faint glow rises round it. */
+/* The globe (Mark.tsx), in the page's ink; hovered, a faint glow rises round it. */
 .mark {
   flex: none;
   width: 24px;
   height: 24px;
   border-radius: 50%;
   color: var(--fg);
-  box-shadow: 0 0 0 0 rgb(0 0 0 / 0);
+  box-shadow: 0 0 0 0 rgb(var(--fg-rgb) / 0);
   transition: box-shadow 400ms ease;
 }
 
@@ -279,135 +163,144 @@ body {
   height: 100%;
 }
 
-.bar-home:hover .mark,
-.bar-home:focus-visible .mark {
-  box-shadow: 0 0 12px 2px rgb(0 0 0 / 0.16);
+.who:hover .mark,
+.who:focus-visible .mark {
+  box-shadow: 0 0 12px 2px rgb(var(--fg-rgb) / 0.16);
 }
 
-.bar-home:focus-visible {
-  outline-offset: 4px;
-  border-radius: 6px;
+/* ── A rail: a row of pills outlined in black, with an ink pill sliding to the one chosen.
+   The head's pages, the panel's tabs. Set --n and --i. ── */
+.rail,
+.shell .tabs {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--fg);
+  border-radius: 999px;
+  background: var(--canvas);
 }
 
-.bar-about {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  color: var(--muted);
+.rail-thumb,
+.shell .tabs > .slide {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--n));
+  border-radius: 999px;
+  background: var(--fg);
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform 400ms var(--ease);
+  pointer-events: none;
 }
 
-.bar-about[aria-current='page'] {
+.rail[data-none] .rail-thumb {
+  opacity: 0;
+}
+
+.rail-item,
+.shell .tab {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  height: auto;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-family: var(--serif);
+  font-feature-settings: normal;
+  letter-spacing: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 300ms ease;
+}
+
+.rail-item.active,
+.shell .tab[aria-pressed='true'] {
   color: var(--canvas);
 }
 
-@media (max-width: 479px) {
+@media (hover: hover) and (pointer: fine) {
+  .rail-item:not(.active):hover,
+  .shell .tab:not([aria-pressed='true']):hover {
+    color: var(--muted);
+  }
+}
+
+@media (max-width: 743px) {
+  .rail,
+  .shell .tabs {
+    padding: 3px;
+  }
+
+  .rail-thumb,
+  .shell .tabs > .slide {
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / var(--n));
+  }
+
+  .rail-item,
+  .shell .tab {
+    padding: 3px 10px;
+  }
+}
+
+/* ── The foot: links underlined as the landing page's are, their colour easing on hover ── */
+.foot {
+  display: flex;
+  flex-shrink: 0;
+  gap: 24px;
+}
+
+.foot-line {
+  padding-bottom: 6px;
+  color: var(--fg);
+  text-decoration: none;
+  background: linear-gradient(var(--fg), var(--fg)) no-repeat 0 calc(1.0057em + 4px) / 100% 1px;
+  transition: color 200ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .foot-line:hover {
+    color: var(--muted);
+  }
+}
+
+/* A phone on its side has no height to spare: the column widens and the foot goes. */
+@media (max-height: 520px) and (orientation: landscape) {
   :root {
-    --bar-h: 52px;
+    --edge: 6px;
+    --gap: 8px;
+    --col: 960px;
   }
 
-  .bar {
-    padding: 0 12px;
-  }
-
-  .bar-home {
-    gap: 8px;
-  }
-
-  .seg-option {
-    min-width: 0;
-    padding: 0 8px;
-  }
-}
-
-@media (max-width: 379px) {
-  .bar-title {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-}
-
-/* A phone on its side has no height to spare. */
-@media (max-height: 500px) {
-  :root {
-    --bar-h: 44px;
-    --control-h: 30px;
-  }
-}
-
-/* ── Motion from wseem.com ── */
-
-/* The success check: it fades in, un-rotates, comes out of a blur and bobs up with a little overshoot. */
-.t-success-check {
-  display: inline-block;
-  opacity: 0;
-  transform-origin: center;
-  will-change: transform, opacity, filter;
-}
-
-.t-success-check svg {
-  display: block;
-  overflow: visible;
-}
-
-.t-success-check[data-state='in'] {
-  animation:
-    t-check-fade 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
-    t-check-rotate 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
-    t-check-blur 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
-    t-check-bob 500ms cubic-bezier(0.34, 1.35, 0.64, 1) forwards;
-}
-
-@keyframes t-check-fade {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes t-check-rotate {
-  from {
-    transform: rotate(80deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-
-@keyframes t-check-blur {
-  from {
-    filter: blur(10px);
-  }
-  to {
-    filter: blur(0);
-  }
-}
-
-@keyframes t-check-bob {
-  from {
-    translate: 0 14px;
-  }
-  to {
-    translate: 0 0;
+  .foot {
+    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .t-success-check {
-    animation: none !important;
-    opacity: 1;
-  }
-
-  .mark {
-    transition: none;
-  }
-
   .shell-page {
     animation: none;
   }
 
-  .chip,
-  .seg-slide,
-  .seg-option {
+  .mark,
+  .rail-thumb,
+  .shell .tabs > .slide,
+  .rail-item,
+  .shell .tab,
+  .foot-line {
     transition: none;
   }
 }

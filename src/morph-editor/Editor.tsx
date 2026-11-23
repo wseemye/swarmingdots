@@ -172,9 +172,9 @@ export default function Editor() {
   }
 
   return (
-    <div className="editor" style={{ background: settings.background }}>
+    <div className="editor">
 
-      <div className="stage">
+      <div className="stage" style={{ background: settings.background }}>
         <PixelMorph
           as="h1"
           className="stage-text"

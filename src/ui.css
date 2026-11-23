@@ -1,25 +1,147 @@
-/* The editors' controls, in the same system as the top bar (see shell.css): flat surfaces, one-pixel
-   lines, 8px corners, 32px controls, 13px / 500 labels, no shadows. Colours come only from the six
-   tokens on :root.
+/* The pages and their controls, in the language of shell.css (wseem.com's Paper): a framed stage
+   over a few lines of controls, all one column. Pills and buttons are outlined in one black pixel,
+   set in the serif; labels are Geist Pixel Square; the panel's tabs are the head's rail.
 
    Every rule is prefixed with .shell so it outranks the editors' own sheets
    (:where(.text-swarm) / :where(.editor)), which keep only behaviour. */
+
+/* ── A page: the stage, framed, over the panel ── */
+.shell .text-swarm,
+.shell .editor,
+.shell .flags,
+.shell .intro {
+  color: var(--fg);
+  color-scheme: light;
+}
+
+.shell .text-swarm,
+.shell .editor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  height: 100%;
+  overflow: visible;
+  background: none;
+}
+
+.shell .text-swarm-stage,
+.shell .stage,
+.shell .flags,
+.shell .intro {
+  border: 1px solid var(--fg);
+  border-radius: 12px;
+}
+
+.shell .text-swarm-stage,
+.shell .stage {
+  position: relative;
+  inset: auto;
+  flex: 1 1 0;
+  min-height: 72px;
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+/* ── The panel: the tabs and the actions on one line, the open tab's controls under them ── */
+.shell .text-swarm-panel,
+.shell .panel {
+  position: static;
+  display: grid;
+  flex: none;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--gap) 12px;
+  width: auto;
+  height: auto;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--fg);
+  font-size: var(--fs);
+  line-height: var(--lh);
+  overflow: visible;
+  translate: none;
+  animation: none;
+  transition: none;
+  container-type: inline-size;
+}
+
+.shell .tabs {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
+.shell .ed-buttons {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  gap: 8px;
+  width: auto;
+  margin: 0;
+}
+
+/* Every tab's controls share one cell, so the panel is as tall as the tallest and the stage never
+   jumps; the open tab's are shown. (!important: the editors' sheets hide the others with display.) */
+.shell .group {
+  display: flex !important;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: start;
+  flex-direction: column;
+  gap: var(--gap);
+  min-height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.shell [data-tab='text'] .group-text,
+.shell [data-tab='style'] .group-style,
+.shell [data-tab='color'] .group-color,
+.shell [data-tab='motion'] .group-motion {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.shell .field {
+  gap: 6px;
+}
+
+.shell .sliders {
+  gap: 0;
+}
+
+/* Wide enough, the sliders go two to a line. */
+@container (min-width: 560px) {
+  .shell .sliders {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 32px;
+  }
+}
 
 /* ── Text ── */
 .shell .field label,
 .shell .picker-label,
 .shell .row label,
 .shell .switch-row {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
+  font-size: var(--fs);
+  font-weight: 400;
+  line-height: var(--lh);
   color: var(--fg);
 }
 
-.shell .hint {
+.shell .hint,
+.shell .unit {
   margin: 0;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--fs);
+  line-height: var(--lh);
   color: var(--muted);
 }
 
@@ -27,80 +149,33 @@
   color: var(--danger);
 }
 
-.shell .unit {
-  font-size: 12px;
-  color: var(--muted);
-}
-
 .shell .row-value output {
-  font-weight: 500;
+  font-weight: 400;
   color: var(--fg);
 }
 
-/* ── The panel: docked to the right edge, one line between it and the stage ── */
-.shell .text-swarm-panel,
-.shell .panel {
-  position: absolute;
-  z-index: 5;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  translate: none;
-  width: var(--panel-w);
-  height: auto;
-  max-height: none;
-  gap: 16px;
-  padding: 16px;
-  border: 0;
-  border-left: 1px solid var(--line);
-  border-radius: 0;
-  background: var(--canvas);
-  color: var(--fg);
-  font-size: 13px;
-  animation: none;
-  transition: none;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-}
-
-.shell .group {
-  gap: 16px;
-}
-
-.shell .field {
-  gap: 8px;
-}
-
-/* The actions sit at the foot of the panel. */
-.shell .ed-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 100%;
-  margin-top: auto;
-  gap: 8px;
-}
-
-.shell .ed-primary {
-  grid-column: 1 / -1;
-}
-
-/* ── Fields ── */
+/* ── Fields: outlined, the card's corner ── */
 .shell .field textarea,
 .shell .picker-hex,
 .shell .flags-search {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--canvas);
+  font-family: var(--pixel);
+  font-feature-settings: 'ss01', 'ss03', 'ss05';
+  font-size: var(--fs);
   color: var(--fg);
-  transition: border-color 160ms var(--ease-out);
+  transition: border-color 200ms ease;
 }
 
 .shell .field textarea {
+  min-height: 52px;
   padding: 8px 12px;
+  resize: none;
 }
 
 .shell .picker-hex {
-  height: var(--control-h);
+  height: 30px;
   padding: 0 10px;
 }
 
@@ -108,41 +183,31 @@
 .shell .picker-hex:focus-visible,
 .shell .flags-search:focus {
   outline: 0;
-  border-color: var(--muted);
+  border-color: var(--fg);
 }
 
-/* ── Segmented choices: the .seg of the top bar ── */
-.shell .tabs,
-.shell .variants,
-.shell .anchor {
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
+/* ── Typeface: a rail of samples ── */
+.shell .variants {
+  gap: 0;
+  padding: 4px;
+  border: 1px solid var(--fg);
+  border-radius: 16px;
+  background: var(--canvas);
 }
 
-.shell .variants > .slide,
-.shell .tabs > .slide {
-  top: 2px;
-  bottom: 2px;
-  left: 2px;
-  width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n));
-  border-radius: 6px;
+.shell .variants > .slide {
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--n));
+  border-radius: 12px;
   background: var(--fg);
-  transition: transform 280ms var(--ease-out);
+  transition: transform 400ms var(--ease);
 }
 
-.shell .tab,
 .shell .variant {
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.shell .tab {
-  height: calc(var(--control-h) - 6px);
+  border-radius: 12px;
+  color: var(--fg);
 }
 
 .shell .variant-sample {
@@ -150,49 +215,49 @@
 }
 
 .shell .variant-name {
-  font-size: 11px;
+  font-family: var(--serif);
+  font-feature-settings: normal;
+  font-size: var(--fs);
+  font-weight: 400;
 }
 
-.shell .tab[aria-pressed='true'],
 .shell .variant[aria-checked='true'],
 .shell .variant[aria-checked='true'] .variant-sample {
   color: var(--canvas);
 }
 
-/* ── Buttons: the .chip ── */
+/* ── Buttons: outlined pills in the serif; the main one inked ── */
 .shell .ed-button,
 .shell .pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: var(--control-h);
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
+  height: auto;
+  padding: 4px 14px;
+  border: 1px solid var(--fg);
+  border-radius: 999px;
+  background: var(--canvas);
+  font-family: var(--serif);
+  font-feature-settings: normal;
+  font-size: var(--fs);
+  font-weight: 400;
+  line-height: var(--lh);
+  letter-spacing: 0;
   color: var(--fg);
+  white-space: nowrap;
   transition:
-    border-color 160ms var(--ease-out),
-    background-color 160ms var(--ease-out),
-    color 160ms var(--ease-out),
-    transform 160ms var(--ease-out);
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 200ms var(--ease);
 }
 
 .shell .pill {
-  height: 26px;
-  padding: 0 8px;
-  font-size: 12px;
-  color: var(--muted);
+  padding: 1px 10px;
 }
 
 .shell .ed-primary,
 .shell .pill[aria-checked='true'] {
-  border-color: var(--fg);
   background: var(--fg);
   color: var(--canvas);
 }
@@ -203,18 +268,13 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .shell .ed-button:hover,
-  .shell .pill:hover {
-    border-color: var(--muted);
+  .shell .ed-button:not(.ed-primary):hover,
+  .shell .pill[aria-checked='false']:hover {
+    background: var(--card);
   }
 
   .shell .ed-primary:hover {
-    background: var(--muted);
-  }
-
-  .shell .variant:not([aria-checked='true']):hover,
-  .shell .tab:not([aria-pressed='true']):hover {
-    color: var(--fg);
+    background: rgb(var(--fg-rgb) / 0.8);
   }
 }
 
@@ -227,50 +287,76 @@
 .shell .row input[type='range']:focus-visible {
   outline: 2px solid var(--fg);
   outline-offset: 2px;
-  box-shadow: none;
 }
 
-/* ── Switch ── */
+/* ── Switch: an outlined pill, its thumb an orb ── */
 .shell .switch {
-  background: var(--line);
+  width: 38px;
+  height: 22px;
+  padding: 3px;
+  border: 1px solid var(--fg);
+  background: var(--canvas);
+}
+
+.shell .switch-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--fg);
 }
 
 .shell .switch-row[aria-checked='true'] .switch {
   background: var(--fg);
 }
 
-.shell .switch-thumb {
+.shell .switch-row[aria-checked='true'] .switch-thumb {
   background: var(--canvas);
+  transform: translateX(16px);
 }
 
-/* ── Sliders ── */
+.shell .switch-row:active .switch-thumb {
+  width: 18px;
+}
+
+.shell .switch-row[aria-checked='true']:active .switch-thumb {
+  transform: translateX(12px);
+}
+
+/* ── Sliders: a hairline and an orb ── */
 .shell .row input[type='range']::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 1px;
   background: linear-gradient(to right, var(--fg) var(--p, 50%), var(--line) var(--p, 50%));
 }
 
 .shell .row input[type='range']::-moz-range-track {
+  height: 2px;
+  border-radius: 1px;
   background: linear-gradient(to right, var(--fg) var(--p, 50%), var(--line) var(--p, 50%));
 }
 
-.shell .row input[type='range']::-webkit-slider-thumb,
-.shell .row input[type='range']::-moz-range-thumb {
+.shell .row input[type='range']::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
   background: var(--fg);
 }
 
-/* ── Colour swatches and the picker pop-over ── */
-.shell .picker-swatch {
-  width: var(--control-h);
-  height: var(--control-h);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.shell .row input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--fg);
 }
 
-.shell .picker-swatch[aria-expanded='true'] {
-  border-color: var(--fg);
+/* ── Colours: an orb and its hex; the pop-over a card ── */
+.shell .picker-swatch {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--fg);
+  border-radius: 50%;
 }
 
 .shell .picker-pop {
-  border: 1px solid var(--line);
+  border: 1px solid var(--fg);
   border-radius: 12px;
   background: var(--canvas);
   box-shadow: none;
@@ -282,8 +368,16 @@
 }
 
 /* ── Anchor grid ── */
+.shell .anchor {
+  gap: 0;
+  padding: 4px;
+  border: 1px solid var(--fg);
+  border-radius: 12px;
+  background: var(--canvas);
+}
+
 .shell .anchor-cell {
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .shell .anchor-dot {
@@ -294,50 +388,60 @@
   background: var(--fg);
 }
 
-/* ── The stage ── */
-.shell .stage,
-.shell .text-swarm-stage {
-  padding: 24px calc(var(--panel-w) + 24px) 24px 24px;
+/* ── Flags ── */
+.shell .flags {
+  height: 100%;
+  background: var(--canvas);
 }
 
-/* ── Flags ── */
 .shell .flags-search {
-  height: var(--control-h);
-  font-size: 14px;
+  height: auto;
+  padding: 4px 14px;
+  border-color: var(--fg);
+  border-radius: 999px;
+  font-size: 16px;
 }
 
 .shell .flags-options {
   padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--fg);
+  border-radius: 12px;
   background: var(--canvas);
   box-shadow: none;
 }
 
 .shell .flags-option {
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: var(--fs);
 }
 
 .shell .flags-option.is-active {
-  background: var(--surface);
+  background: var(--card);
 }
 
 .shell .flags-name {
-  font-size: 20px;
+  font-size: 18px;
 }
 
-/* ── The intro ── */
+/* ── The intro: its own stage, the bar of choices along its foot ── */
 .shell .intro {
-  padding: 40px 24px 112px;
+  height: 100%;
+  min-height: 0;
+  padding: 24px 24px 72px;
+  overflow: auto;
+}
+
+.shell .intro-body {
+  max-width: 480px;
 }
 
 .shell .intro-bar {
+  position: absolute;
+  bottom: 12px;
   gap: 12px;
-  padding: 6px 12px 6px 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  padding: 4px 12px 4px 4px;
+  border: 1px solid var(--fg);
+  border-radius: 16px;
   background: var(--canvas);
   box-shadow: none;
 }
@@ -348,117 +452,109 @@
 
 .shell .intro-byline {
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--fs);
+  opacity: 1;
 }
 
 .shell .intro-byline a {
-  background: linear-gradient(currentColor, currentColor) no-repeat 100% 100% / 0% 1px;
+  padding-bottom: 6px;
   text-decoration: none;
-  transition: background-size 467ms var(--ease-out);
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(1.0057em + 4px) / 100% 1px;
+  transition: opacity 200ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .shell .intro-byline a:hover,
-  .shell .intro-byline a:focus-visible {
-    background-position: 0 100%;
-    background-size: 100% 1px;
+  .shell .intro-byline a:hover {
+    opacity: 0.55;
   }
 }
 
-/* ── Phones, portrait: the panel moves under the stage ── */
-@media (max-width: 760px) and (orientation: portrait) {
-  .shell .stage,
-  .shell .text-swarm-stage {
-    padding: 20px 16px;
-  }
-
+/* ── Phones: one column; the actions go under the controls ── */
+@media (max-width: 560px) {
   .shell .text-swarm-panel,
   .shell .panel {
-    position: static;
-    width: auto;
-    margin: 0;
-    border-left: 0;
-    border-top: 1px solid var(--line);
-    /* No inner scroll here, so the colour popover can open over the stage. */
-    overflow: visible;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
-  .shell .intro {
-    padding: 32px 16px 112px;
-  }
-}
-
-/* ── One viewport, always ──
-   Two modes. Roomy (wide and tall): every control in the panel at once. Compact (a phone, or any
-   screen under 780px tall): the same panel, one tab at a time, sized to fit without scrolling. */
-@media (max-width: 760px), (max-height: 779px) {
-  .shell .tabs {
+  .shell .ed-buttons {
     display: grid;
-  }
-
-  .shell .panel[data-tab='text'] .group:not(.group-text),
-  .shell .panel[data-tab='style'] .group:not(.group-style),
-  .shell .panel[data-tab='color'] .group:not(.group-color),
-  .shell .text-swarm-panel[data-tab='text'] .group:not(.group-text),
-  .shell .text-swarm-panel[data-tab='style'] .group:not(.group-style),
-  .shell .text-swarm-panel[data-tab='motion'] .group:not(.group-motion) {
-    display: none;
-  }
-
-  .shell .text-swarm-panel,
-  .shell .panel {
-    gap: 12px;
-    padding: 12px 16px;
+    grid-column: 1;
+    grid-row: 3;
+    grid-template-columns: 1fr 1fr 2fr;
   }
 
   .shell .group {
-    min-height: 0;
-    gap: 12px;
-  }
-
-  .shell .field {
-    gap: 6px;
-  }
-
-  .shell .field textarea {
-    min-height: 52px;
-  }
-
-  .shell .sliders {
-    gap: 2px;
+    gap: 10px;
   }
 
   .shell .row {
-    min-height: 30px;
+    min-height: 28px;
   }
 
-  .shell .hint-count:not(.has-warning) {
-    display: none;
+  .shell .intro {
+    padding: 16px 16px 120px;
   }
-}
 
-/* Landscape phones: the panel is a column beside the stage, so it gets narrower. */
-@media (max-width: 900px) and (orientation: landscape) {
-  .shell {
-    --panel-w: 280px;
-  }
-}
-
-@media (max-width: 640px) and (orientation: landscape) {
-  .shell {
-    --panel-w: 240px;
+  .shell .intro-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: calc(100% - 24px);
   }
 }
 
-@media (max-height: 500px) {
+@media (max-width: 743px) {
+  .shell .picker-hex {
+    height: 28px;
+  }
+}
+
+/* ── A phone on its side: the stage beside a column of controls, scrolling if it must ── */
+@media (max-height: 520px) and (orientation: landscape) {
+  .shell .text-swarm,
+  .shell .editor {
+    flex-direction: row;
+  }
+
+  .shell .text-swarm-stage,
+  .shell .stage {
+    min-height: 0;
+  }
+
   .shell .text-swarm-panel,
   .shell .panel {
+    display: flex;
+    flex: 0 0 300px;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
-    padding: 8px 12px;
+    max-height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
   }
 
   .shell .group {
     gap: 8px;
+  }
+
+  .shell .group {
+    display: none !important;
+  }
+
+  .shell [data-tab='text'] .group-text,
+  .shell [data-tab='style'] .group-style,
+  .shell [data-tab='color'] .group-color,
+  .shell [data-tab='motion'] .group-motion {
+    display: flex !important;
+  }
+
+  .shell .ed-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+  }
+
+  .shell .row {
+    min-height: 26px;
   }
 
   .shell .field textarea {
@@ -466,66 +562,17 @@
     min-height: 34px;
   }
 
-  .shell .row {
-    min-height: 26px;
+  .shell .variant {
+    padding: 3px 0;
+  }
+
+  .shell .variant-sample {
+    font-size: 16px;
   }
 
   .shell .anchor {
     grid-template-columns: repeat(3, 18px);
     grid-template-rows: repeat(3, 18px);
-  }
-
-  .shell .pill {
-    height: 24px;
-  }
-
-  .shell .variant {
-    padding: 4px 0 3px;
-  }
-
-  .shell .variant-sample {
-    font-size: 18px;
-  }
-}
-
-@media (max-height: 420px) {
-  .shell .switch-row {
-    min-height: 24px;
-    margin-top: 0;
-  }
-
-  .shell .variant-sample {
-    font-size: 15px;
-  }
-
-  .shell .variants.segments .variant,
-  .shell .pairings .variant {
-    padding: 3px 0;
-  }
-
-  .shell .motion {
-    gap: 12px;
-  }
-
-  .shell .row {
-    min-height: 24px;
-  }
-}
-
-@media (max-height: 340px) {
-  .shell .text-swarm-panel,
-  .shell .panel,
-  .shell .group {
-    gap: 6px;
-  }
-
-  .shell .anchor {
-    grid-template-columns: repeat(3, 14px);
-    grid-template-rows: repeat(3, 14px);
-  }
-
-  .shell .variant-name {
-    display: none;
   }
 }
 
@@ -533,10 +580,10 @@
   .shell .ed-button,
   .shell .pill,
   .shell .variants > .slide,
-  .shell .tabs > .slide,
   .shell .field textarea,
   .shell .picker-hex,
-  .shell .flags-search {
+  .shell .flags-search,
+  .shell .intro-byline a {
     transition: none;
   }
 }

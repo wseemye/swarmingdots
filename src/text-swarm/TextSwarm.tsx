@@ -113,8 +113,8 @@ export default function TextSwarm() {
 
 
   return (
-    <div className="text-swarm" style={{ background: settings.background }}>
-      <div className="text-swarm-stage">
+    <div className="text-swarm">
+      <div className="text-swarm-stage" style={{ background: settings.background }}>
         <DotSwarmText
           key={run}
           as="h1"

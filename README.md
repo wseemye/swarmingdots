@@ -12,14 +12,17 @@ npm run build
 
 ## Routes
 
-The site lives at [dots.wseem.com](https://dots.wseem.com), in light mode. One top
-bar on every page (`src/Nav.tsx`): the name, a "?" that opens the intro (`/intro`),
-a segmented switch between text, morph and flags, and the repository. The two editors
-share one docked panel and one footer (`src/EditorActions.tsx`): Replay and Reset, then
-Copy Prompt. The design system is `src/shell.css` (six colour tokens, the `.chip` and
-`.seg` controls, the bar) and `src/ui.css` (the editors' controls): flat surfaces,
-one-pixel lines, no shadows. On screens under 780px tall, or phones, the panel shows
-one tab at a time so everything fits one viewport.
+The site lives at [dots.wseem.com](https://dots.wseem.com), in light mode, and is set
+in the design language of wseem.com (its Paper template): a white page, black type, one
+centred column 640px wide, Geist Pixel Square text at 14/21 (12/18 on phones), Geist
+Serif for the head, the pills and the buttons, one-pixel black outlines, and a card
+grey (`#e5e5e5`) for hovers. Every page is the head (the globe, the name, a rail of pills
+with an ink pill that slides to the page you are on), a framed stage, the controls, and a
+foot with two underlined links. Under the stage the controls are one tab at a time (the
+same rail), the actions on the tabs' line: Replay, Reset, Copy Prompt
+(`src/EditorActions.tsx`). Everything fits one viewport; on a phone on its side the
+stage and the controls sit side by side. The system is `src/shell.css` (tokens, head,
+rail, foot) and `src/ui.css` (pages and controls); `src/Mark.tsx` is the globe.
 
 The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
 watch its dots swarm into text. `/` goes there too, and the old
