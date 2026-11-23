@@ -370,16 +370,112 @@
   border-radius: 11px;
 }
 
-/* ── Phones: the same system, a little tighter ── */
-@media (max-width: 760px), (max-height: 900px) {
+/* ── One viewport, always ──
+   Two modes. Roomy (wide and tall): every control in one card on the right. Compact (a phone, or
+   any screen under 780px tall): the same card, one tab at a time, sized to fit without scrolling.
+   Portrait phones move the card under the stage (the editors' own sheets do that). */
+@media (max-width: 760px), (max-height: 779px) {
+  .shell .tabs {
+    display: grid;
+  }
+
+  .shell .panel[data-tab='text'] .group:not(.group-text),
+  .shell .panel[data-tab='style'] .group:not(.group-style),
+  .shell .panel[data-tab='color'] .group:not(.group-color),
+  .shell .text-swarm-panel[data-tab='text'] .group:not(.group-text),
+  .shell .text-swarm-panel[data-tab='style'] .group:not(.group-style),
+  .shell .text-swarm-panel[data-tab='motion'] .group:not(.group-motion) {
+    display: none;
+  }
+
   .shell .text-swarm-panel,
   .shell .panel {
     gap: 12px;
-    padding: 16px;
+    padding: 14px 16px;
   }
 
   .shell .group {
+    min-height: 0;
     gap: 12px;
+  }
+
+  .shell .field {
+    gap: 6px;
+  }
+
+  .shell .field textarea {
+    min-height: 52px;
+    padding: 8px 12px;
+  }
+
+  .shell .sliders {
+    gap: 2px;
+  }
+
+  .shell .row {
+    min-height: 30px;
+  }
+
+  .shell .hint-count:not(.has-warning) {
+    display: none;
+  }
+}
+
+/* Landscape phones and very short windows: the tightest spacing. */
+@media (max-height: 500px) {
+  .shell .text-swarm-panel,
+  .shell .panel {
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .shell .group {
+    gap: 8px;
+  }
+
+  .shell .tab {
+    height: 26px;
+  }
+
+  .shell .field textarea {
+    height: 34px;
+    min-height: 34px;
+    padding: 6px 12px;
+  }
+
+  .shell .row {
+    min-height: 26px;
+  }
+
+  .shell .ed-button {
+    height: 30px;
+  }
+
+  .shell .picker-hex,
+  .shell .picker-swatch {
+    height: 30px;
+  }
+
+  .shell .picker-swatch {
+    width: 30px;
+  }
+
+  .shell .anchor {
+    grid-template-columns: repeat(3, 18px);
+    grid-template-rows: repeat(3, 18px);
+  }
+
+  .shell .pill {
+    height: 24px;
+    padding: 0 10px;
+  }
+
+  .shell .variant {
+    padding: 4px 0 3px;
+  }
+
+  .shell .variant-sample {
+    font-size: 18px;
   }
 }
 
@@ -393,4 +489,111 @@
   .shell .picker-hex {
     transition: none;
   }
+}
+
+/* Landscape phones: the navbar steps left, beside the "i", so the controls get the right-hand
+   column to themselves and the two never overlap. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .shell .nav {
+    left: 52px;
+    transform: none;
+    animation-name: nav-in-left;
+  }
+
+  .shell .nav-link {
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 640px) and (orientation: landscape) {
+  .shell .text-swarm,
+  .shell .editor {
+    --panel-w: 240px;
+  }
+}
+
+@keyframes nav-in-left {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+/* The shortest screens (a phone on its side): every row gives up a few pixels. */
+@media (max-height: 420px) {
+  .shell .switch-row {
+    min-height: 24px;
+    margin-top: 0;
+  }
+
+  .shell .variant-sample {
+    font-size: 15px;
+  }
+
+  .shell .variants.segments .variant,
+  .shell .pairings .variant {
+    padding: 3px 0;
+  }
+
+  .shell .motion {
+    gap: 12px;
+  }
+
+  .shell .pills {
+    gap: 4px;
+  }
+
+  .shell .row {
+    min-height: 24px;
+  }
+}
+
+@media (max-height: 340px) {
+  .shell .text-swarm-panel,
+  .shell .panel {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+
+  .shell .group {
+    gap: 6px;
+  }
+
+  .shell .anchor {
+    grid-template-columns: repeat(3, 14px);
+    grid-template-rows: repeat(3, 14px);
+  }
+
+  .shell .variant-name {
+    display: none;
+  }
+}
+
+/* ── The flags page: the same capsule field and pop-over ── */
+.shell .flags-search {
+  height: var(--ui-h);
+  border: 0;
+  border-radius: var(--ui-r-pill);
+  background: var(--ui-well);
+  box-shadow: var(--ui-ring-well);
+  transition: box-shadow var(--ui-dur-quick) var(--ui-ease), background-color var(--ui-dur-quick) var(--ui-ease);
+}
+
+.shell .flags-search:focus {
+  background: var(--ui-bg);
+  box-shadow: 0 0 0 1px var(--ui-accent), 0 0 0 4px rgb(0 0 0 / 0.08);
+}
+
+.shell .flags-options {
+  padding: 6px;
+  border: 0;
+  border-radius: 18px;
+  box-shadow: var(--ui-shadow-pop);
+}
+
+.shell .flags-option {
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
 }
