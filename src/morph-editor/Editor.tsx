@@ -4,7 +4,7 @@ import useAutoHeight from '../useAutoHeight';
 import PixelMorph from '../morph/PixelMorph';
 import type { Align } from '../morph/layout';
 import { VARIANTS, type Variant } from '../morph/variants';
-import ColorPicker from './ColorPicker';
+import ColorPicker from '../ColorPicker';
 import { defaultSettings, LIMITS, type Settings } from './settings';
 import { prompt } from './snippet';
 import { readSettings, writeSettings } from './url';
@@ -217,12 +217,11 @@ export default function Editor() {
               value={settings.text}
               onChange={(e) => set({ text: e.target.value })}
             />
-            <p className={missing.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
-              {settings.text.length}/{LIMITS.chars}. Enter starts a new line.
-              {missing.length > 0 && (
-                <> Geist Pixel has no glyph for {missing.map((c) => `“${c}”`).join(' ')}, so {missing.length === 1 ? 'it was' : 'they were'} left out.</>
-              )}
-            </p>
+            {missing.length > 0 && (
+              <p className="hint has-warning">
+                Geist Pixel has no glyph for {missing.map((c) => `“${c}”`).join(' ')}, so {missing.length === 1 ? 'it was' : 'they were'} left out.
+              </p>
+            )}
           </div>
 
           <div className="field field-face">
@@ -230,7 +229,6 @@ export default function Editor() {
               Typeface
             </span>
             <VariantPicker value={settings.variant} onChange={choose} labelledBy="variant-label" />
-            <p className="hint hint-keys">Pick a face to morph into it, or press 1–5.</p>
             <button type="button" role="switch" className="switch-row" aria-checked={autoplay} onClick={() => setAutoplay((a) => !a)}>
               Autoplay through every face
               <span className="switch" aria-hidden="true">

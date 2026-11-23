@@ -3,10 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import EditorActions from '../EditorActions';
 import useAutoHeight from '../useAutoHeight';
 import AnchorGrid from './AnchorGrid';
-import ColorPicker from './ColorPicker';
+import ColorPicker from '../ColorPicker';
 import { ANCHORS, SWARM_BY } from './anchors';
 import DotSwarmText from './DotSwarmText';
-import { dotPx, DEFAULT_SETTINGS, type Settings } from './settings';
+import { DEFAULT_SETTINGS, type Settings } from './settings';
 import VariantPicker from './VariantPicker';
 import { PAIRINGS } from './trace';
 import { fontFile } from './variants';
@@ -162,12 +162,11 @@ export default function TextSwarm() {
               value={settings.text}
               onChange={(e) => set({ text: e.target.value })}
             />
-            <p className={skipped.length > 0 ? 'hint hint-count has-warning' : 'hint hint-count'}>
-              {settings.text.length}/{MAX_CHARS}. Enter starts a new line.
-              {skipped.length > 0 && (
-                <> The font has no glyph for {skipped.map((c) => `“${c}”`).join(' ')}, so {skipped.length === 1 ? 'it was' : 'they were'} left out.</>
-              )}
-            </p>
+            {skipped.length > 0 && (
+              <p className="hint has-warning">
+                The font has no glyph for {skipped.map((c) => `“${c}”`).join(' ')}, so {skipped.length === 1 ? 'it was' : 'they were'} left out.
+              </p>
+            )}
           </div>
 
           <div className="field">
@@ -233,8 +232,6 @@ export default function TextSwarm() {
                 <span className="unit">dots</span>
               </span>
             </div>
-
-            <p className="hint hint-dots">Each dot is {dotPx(settings.fontSize).toFixed(2)}px, and the dot count never changes.</p>
           </div>
 
           <div className="colors">
@@ -275,7 +272,6 @@ export default function TextSwarm() {
               className="variants pairings"
               role="radiogroup"
               aria-labelledby="pairing-label"
-              aria-describedby="pairing-note"
               style={{ '--n': PAIRINGS.length, '--i': PAIRINGS.indexOf(settings.pairing) } as CSSProperties}
             >
               <span className="slide" aria-hidden="true" />
@@ -292,11 +288,6 @@ export default function TextSwarm() {
                 </button>
               ))}
             </div>
-            <p className="hint hint-pairing" id="pairing-note">
-              {settings.pairing === 'scatter'
-                ? 'Each dot flies to a random place, so the brick bursts and reassembles.'
-                : 'Each word is written letter by letter, left to right; each letter starts from the grid point.'}
-            </p>
           </div>
 
           <div className="motion">

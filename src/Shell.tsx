@@ -2,6 +2,7 @@ import { useLayoutEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import Nav from './Nav.tsx';
 import './shell.css';
+import './ui.css';
 
 const TITLES: Record<string, string> = {
   '/text': 'dots',

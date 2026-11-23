@@ -9,7 +9,6 @@
     "registry": "tsx scripts/registry.ts && tsx scripts/registry-morph.ts",
     "lint": "eslint .",
     "preview": "vite preview",
-    "vectorize": "tsx scripts/vectorize.ts",
     "flags": "tsx scripts/flags.ts",
     "glyphs": "tsx scripts/glyphs.ts",
     "test": "tsx --test tests/*.test.ts"

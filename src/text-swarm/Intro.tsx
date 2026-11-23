@@ -1,5 +1,5 @@
 import { useState, useSyncExternalStore } from 'react';
-import ColorPicker from './ColorPicker';
+import ColorPicker from '../ColorPicker';
 import DotSwarmText from './DotSwarmText';
 import VariantPicker from './VariantPicker';
 import { fontFile, type Variant } from './variants';

@@ -1,0 +1,396 @@
+/* The design system, one layer for every page: cards, controls, panels.
+ *
+ * Built on the same tokens and construction as the transitions.dev library: a 24px card with a
+ * hairline ring and a faint drop, grey wells for fields, 36px capsule controls with an inset ring,
+ * 13px / 500 labels. The palette stays black and white.
+ *
+ * Every rule is prefixed with .shell so it outranks the editors' zero-specificity sheets
+ * (:where(.text-swarm) / :where(.editor)), which keep only layout and behaviour. */
+
+:root {
+  /* Surfaces */
+  --ui-bg: #fff;
+  --ui-well: #f9f9f9; /* fields, the stage inside a card */
+  --ui-fill: #f4f4f4; /* a segmented track */
+  --ui-fill-hover: #f1f1f1;
+
+  /* Ink */
+  --ui-ink: #0d0d0d;
+  --ui-ink-2: #6c6c6c;
+  --ui-ink-3: #8f8f8f;
+  --ui-accent: #111; /* the selected state, as it was */
+  --ui-accent-hover: #262626;
+  --ui-on-accent: #fff;
+
+  /* Rings: inset hairlines, never borders, so nothing shifts by a pixel */
+  --ui-ring: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+  --ui-ring-well: inset 0 0 0 1px rgb(0 0 0 / 0.04);
+  --ui-shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), inset 0 0 0 1px rgb(0 0 0 / 0.06), inset 0 -1px 0 0 rgb(0 0 0 / 0.06);
+  --ui-shadow-control: 0 1px 3px 0 rgb(0 0 0 / 0.04), inset 0 -1px 0 0 rgb(0 0 0 / 0.08), inset 0 0 0 1px rgb(0 0 0 / 0.08);
+  --ui-shadow-pop: 0 4px 42px 0 rgb(0 0 0 / 0.06), 0 2px 6px 0 rgb(0 0 0 / 0.05), 0 0 0 1px rgb(0 0 0 / 0.06);
+
+  /* Shape */
+  --ui-r-card: 24px;
+  --ui-r-well: 14px;
+  --ui-r-pill: 48px;
+  --ui-h: 36px; /* every capsule control */
+  --ui-pad: 20px;
+  --ui-gap: 16px;
+
+  /* Motion */
+  --ui-dur-quick: 150ms;
+  --ui-dur-fast: 250ms;
+  --ui-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Text ── */
+.shell .field label,
+.shell .picker-label,
+.shell .row label,
+.shell .switch-row {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--ui-ink);
+}
+
+.shell .hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ui-ink-3);
+}
+
+.shell .hint.has-warning {
+  color: #a15c00;
+}
+
+.shell .unit {
+  font-size: 13px;
+  color: var(--ui-ink-3);
+}
+
+.shell .row-value output {
+  font-weight: 500;
+  color: var(--ui-ink);
+}
+
+/* ── The panel: a card ── */
+.shell .text-swarm-panel,
+.shell .panel {
+  gap: var(--ui-gap);
+  padding: var(--ui-pad);
+  border: 0;
+  border-radius: var(--ui-r-card);
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow-card);
+  color: var(--ui-ink);
+  font-size: 13px;
+  scrollbar-width: none;
+}
+
+.shell .text-swarm-panel::-webkit-scrollbar,
+.shell .panel::-webkit-scrollbar {
+  display: none;
+}
+
+.shell .group {
+  gap: var(--ui-gap);
+}
+
+.shell .field {
+  gap: 8px;
+}
+
+/* ── Wells: text fields ── */
+.shell .field textarea,
+.shell .picker-hex {
+  border: 0;
+  border-radius: 12px;
+  background: var(--ui-well);
+  box-shadow: var(--ui-ring-well);
+  color: var(--ui-ink);
+  transition: box-shadow var(--ui-dur-quick) var(--ui-ease), background-color var(--ui-dur-quick) var(--ui-ease);
+}
+
+.shell .field textarea {
+  padding: 10px 12px;
+}
+
+.shell .picker-hex {
+  height: var(--ui-h);
+  padding: 0 12px;
+}
+
+.shell .field textarea:focus-visible,
+.shell .picker-hex:focus-visible {
+  outline: 0;
+  background: var(--ui-bg);
+  box-shadow: 0 0 0 1px var(--ui-accent), 0 0 0 4px rgb(0 0 0 / 0.08);
+}
+
+/* ── Segmented choices: a grey track, a black slide ── */
+.shell .tabs,
+.shell .variants,
+.shell .anchor {
+  gap: 2px;
+  padding: 3px;
+  border: 0;
+  border-radius: var(--ui-r-well);
+  background: var(--ui-fill);
+  box-shadow: var(--ui-ring-well);
+}
+
+.shell .variants > .slide,
+.shell .tabs > .slide {
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px - (var(--n) - 1) * 2px) / var(--n));
+  border-radius: 11px;
+  background: var(--ui-accent);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.16);
+  transition: transform 280ms var(--ui-ease);
+}
+
+.shell .tab,
+.shell .variant {
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-ink-2);
+}
+
+.shell .tab {
+  height: 30px;
+}
+
+.shell .variant-name {
+  font-size: 12px;
+}
+
+.shell .tab[aria-pressed='true'],
+.shell .variant[aria-checked='true'],
+.shell .variant[aria-checked='true'] .variant-sample {
+  color: var(--ui-on-accent);
+}
+
+/* ── Capsule controls: buttons, pills, chips ── */
+.shell .ed-button,
+.shell .chip,
+.shell .pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--ui-h);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--ui-r-pill);
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow-control);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgb(38 38 38 / 0.8);
+  transition:
+    background-color var(--ui-dur-quick) var(--ui-ease),
+    color var(--ui-dur-quick) var(--ui-ease),
+    transform var(--ui-dur-quick) var(--ui-ease);
+}
+
+.shell .pill {
+  height: 28px;
+  padding: 0 12px;
+}
+
+.shell .ed-button:active,
+.shell .chip:active,
+.shell .pill:active {
+  transform: scale(0.97);
+}
+
+.shell .ed-primary,
+.shell .pill[aria-checked='true'] {
+  background: var(--ui-accent);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.16);
+  color: var(--ui-on-accent);
+}
+
+.shell .chip-icon {
+  width: var(--ui-h);
+  padding: 0;
+}
+
+.shell .ed-buttons {
+  gap: 8px;
+}
+
+.shell .ed-button:focus-visible,
+.shell .chip:focus-visible,
+.shell .pill:focus-visible,
+.shell .variant:focus-visible,
+.shell .tab:focus-visible,
+.shell .picker-swatch:focus-visible,
+.shell .switch-row:focus-visible,
+.shell .row input[type='range']:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 2px var(--ui-bg), 0 0 0 4px var(--ui-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shell .ed-button:not(.ed-primary):hover,
+  .shell .chip:hover,
+  .shell .pill[aria-checked='false']:hover {
+    background: #f7f7f7;
+    border-color: transparent;
+    color: #080808;
+    transform: none;
+  }
+
+  .shell .ed-primary:hover {
+    background: var(--ui-accent-hover);
+  }
+
+  .shell .variant:not([aria-checked='true']):hover,
+  .shell .tab:not([aria-pressed='true']):hover {
+    color: var(--ui-ink);
+  }
+}
+
+/* ── Navbar and the info button ── */
+.shell .nav {
+  height: var(--nav-h);
+  border: 0;
+  border-radius: var(--ui-r-pill);
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow-control);
+}
+
+.shell .nav-mark,
+.shell .nav-link {
+  border-radius: var(--ui-r-pill);
+}
+
+.shell .nav-mark {
+  background: var(--ui-accent);
+}
+
+.shell .nav-link {
+  color: var(--ui-ink-2);
+}
+
+.shell .nav-link.active {
+  color: var(--ui-on-accent);
+}
+
+.shell .info-button {
+  border: 0;
+  border-radius: 50%;
+  box-shadow: var(--ui-shadow-control);
+}
+
+.shell .info-button[aria-current='page'],
+.shell .info-button:hover {
+  background: var(--ui-accent);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.16);
+  color: var(--ui-on-accent);
+}
+
+/* ── Switch ── */
+.shell .switch {
+  background: #dedede;
+  box-shadow: var(--ui-ring-well);
+}
+
+.shell .switch-row[aria-checked='true'] .switch {
+  background: var(--ui-accent);
+}
+
+.shell .switch-thumb {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+}
+
+/* ── Sliders ── */
+.shell .row input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--ui-accent) var(--p, 50%), #e8e8e8 var(--p, 50%));
+}
+
+.shell .row input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--ui-accent) var(--p, 50%), #e8e8e8 var(--p, 50%));
+}
+
+.shell .row input[type='range']::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.16), 0 1px 3px 0 rgb(0 0 0 / 0.2);
+}
+
+.shell .row input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.16), 0 1px 3px 0 rgb(0 0 0 / 0.2);
+}
+
+/* ── Colour swatches and the picker pop-over ── */
+.shell .picker-swatch {
+  width: var(--ui-h);
+  height: var(--ui-h);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: var(--ui-ring), 0 1px 3px 0 rgb(0 0 0 / 0.04);
+}
+
+.shell .picker-swatch[aria-expanded='true'] {
+  box-shadow: 0 0 0 2px var(--ui-bg), 0 0 0 4px var(--ui-accent);
+}
+
+.shell .picker-pop {
+  border: 0;
+  border-radius: 18px;
+  background: var(--ui-bg);
+  box-shadow: var(--ui-shadow-pop);
+}
+
+.shell .picker-sv,
+.shell .picker-hue {
+  border-radius: 10px;
+}
+
+/* ── Anchor grid ── */
+.shell .anchor-cell {
+  border-radius: 11px;
+}
+
+/* ── Phones: the same system, a little tighter ── */
+@media (max-width: 760px), (max-height: 900px) {
+  .shell .text-swarm-panel,
+  .shell .panel {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .shell .group {
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell .ed-button,
+  .shell .chip,
+  .shell .pill,
+  .shell .variants > .slide,
+  .shell .tabs > .slide,
+  .shell .field textarea,
+  .shell .picker-hex {
+    transition: none;
+  }
+}
