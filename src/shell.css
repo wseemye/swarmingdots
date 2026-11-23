@@ -118,14 +118,6 @@ p {
   inset: -8px;
   padding: 8px;
   overflow: auto;
-  animation: page-in 300ms var(--ease-out) both;
-}
-
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
 }
 
 /* ── The head ── */
@@ -300,10 +292,6 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shell-page {
-    animation: none;
-  }
-
   .mark,
   .rail-thumb,
   .shell .tabs > .slide,

@@ -7,10 +7,11 @@ import './intro.css';
 
 // Plain ASCII only: the font has no glyph for curly quotes or dashes, and they would be left out.
 const INTRO =
-  'Swarming Dots is a text component for React. Words arrive as a swarm of dots: ' +
-  'each one starts as a block, its dots cross into the letters of Geist Pixel, ' +
-  'and real, selectable text takes their place. Set the size, spacing, colours and ' +
-  'where the swarm starts in the editor, then copy the component into your own project, or hand a prompt to your AI assistant.';
+  'Swarming Dots is a React component that turns text into a swarm. ' +
+  'Every word starts as a loose crowd of dots, which fly into the letters of Geist Pixel ' +
+  'and then hand over to real, selectable text. ' +
+  'Pick the typeface, size, colours and where the swarm starts, ' +
+  'then copy the component into your project or give the prompt to your AI assistant.';
 
 // Matches the phone breakpoint in intro.css.
 const PHONE = '(max-width: 760px)';

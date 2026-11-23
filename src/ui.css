@@ -22,13 +22,62 @@
   background: none;
 }
 
+/* The stages are not drawn: the shell's one card (.frame) follows them (Shell.tsx). Their colour,
+   which the editors let you choose, is mirrored onto it. (!important: it is an inline style.) */
 .shell .text-swarm-stage,
 .shell .stage,
 .shell .flags,
 .shell .intro {
   border: 0;
   border-radius: var(--r-stage);
+  background: transparent !important;
+  box-shadow: none;
+}
+
+/* The card: it sits behind the page and glides to the stage of whichever page opens. */
+.shell .frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: var(--r-stage);
+  background: var(--bg);
   box-shadow: var(--ring), var(--lift);
+  pointer-events: none;
+  transition: background-color 200ms var(--ease-out);
+}
+
+.shell .frame[data-moving] {
+  transition:
+    transform 520ms var(--ease-out),
+    width 520ms var(--ease-out),
+    height 520ms var(--ease-out),
+    background-color 200ms var(--ease-out);
+}
+
+/* What is on the stage comes in once the card is nearly there. */
+.shell .text-swarm-stage > *,
+.shell .stage > *,
+.shell .flags > :not(.flags-frame),
+.shell .intro > * {
+  animation: stage-in 300ms var(--ease-out) 120ms both;
+}
+
+.shell .text-swarm-panel,
+.shell .panel {
+  animation: panel-in 320ms var(--ease-out) 80ms both;
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 .shell .text-swarm-stage,
@@ -65,7 +114,6 @@
   line-height: 20px;
   overflow: visible;
   translate: none;
-  animation: none;
   transition: none;
   container-type: inline-size;
 }
@@ -506,20 +554,29 @@
   font-family: inherit;
   font-size: 14px;
   opacity: 1;
-  color: var(--muted);
+  /* The colours are the ones picked, so everything here follows them. */
+  color: inherit;
+}
+
+.shell .intro-byline,
+.shell .intro-byline a {
+  color: inherit;
+}
+
+.shell .intro-byline {
+  opacity: 0.6;
 }
 
 .shell .intro-byline a {
-  color: var(--fg);
   text-decoration: underline;
-  text-decoration-color: var(--border-strong);
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
   text-underline-offset: 3px;
   transition: text-decoration-color 200ms var(--ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .shell .intro-byline a:hover {
-    text-decoration-color: var(--fg);
+    text-decoration-color: currentColor;
   }
 }
 
@@ -632,6 +689,20 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .shell .text-swarm-stage > *,
+  .shell .stage > *,
+  .shell .flags > :not(.flags-frame),
+  .shell .intro > *,
+  .shell .text-swarm-panel,
+  .shell .panel {
+    animation: none;
+  }
+
+  .shell .frame,
+  .shell .frame[data-moving] {
+    transition: none;
+  }
+
   .shell .group,
   .shell .ed-button,
   .shell .pill,
