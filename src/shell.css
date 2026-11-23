@@ -1,18 +1,40 @@
 @font-face {
-  font-family: 'Geist Pixel Circle';
-  src: url('/fonts/GeistPixel-Circle.woff2') format('woff2');
-  font-display: block;
+  font-family: 'Geist Serif';
+  src: url('/fonts/GeistSerif-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
 }
 
+/* Six colours, nothing else: five greys and one red for warnings. Flat surfaces, one-pixel lines,
+   no shadows. The same system as NexCanvas, in light. */
 :root {
-  /* Emil Kowalski's strong ease-out: starts fast, so the UI feels like it answers the tap. */
+  --canvas: #fff;
+  --surface: #fafafa;
+  --line: #e4e4e4;
+  --muted: #737373;
+  --fg: #111;
+  --danger: #ea1515;
+
+  /* A strong ease-out: starts fast, so the UI feels like it answers the tap. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Controls grow on touch screens so they are easy to hit. */
+  --control-h: 32px;
+  --bar-h: 56px;
+  --panel-w: 320px;
 
   font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
   font-synthesis: none;
+  letter-spacing: -0.0125em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  color-scheme: light;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --control-h: 36px;
+  }
 }
 
 *,
@@ -30,7 +52,15 @@ body,
 
 body {
   overflow: hidden;
-  background: #fff;
+  overscroll-behavior: none;
+  background: var(--canvas);
+  color: var(--fg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
 }
 
 .shell {
@@ -38,12 +68,10 @@ body {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: #fff;
-  color: #0a0a0a;
-  color-scheme: light;
+  background: var(--canvas);
+  color: var(--fg);
 }
 
-/* ── Page area ── */
 .shell-main {
   position: relative;
   flex: 1;
@@ -60,377 +88,234 @@ body {
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
 }
 
-/* ── The floating bar at the top: text, morph, flags, github ──
-   Styled like the editors' segmented pickers (Typeface, Pairing, Align): a white box with a grey
-   border, and a black highlight with white text behind the current page that glides to the next. */
-:root {
-  /* The navbar's place and height (1px border + 2px padding + 30px links, top and bottom), which
-     the "i" button sizes and centres itself on. */
-  --nav-top: 12px;
-  --nav-h: 36px;
-}
+/* ── Controls ── */
 
-.nav {
-  position: fixed;
-  z-index: 50;
-  top: var(--nav-top);
-  box-sizing: border-box;
-  height: var(--nav-h);
-  left: 50%;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-  border: 1px solid #d4d4d4;
-  border-radius: 8px;
-  background: #fff;
-  color: #111;
-  transform: translateX(-50%);
-  animation: nav-in 500ms var(--ease-out) both;
-}
-
-/* Arrives from just above, out of a blur. */
-@keyframes nav-in {
-  from {
-    opacity: 0;
-    filter: blur(4px);
-    transform: translate(-50%, -6px) scale(0.98);
-  }
-}
-
-.nav-links {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-/* The highlight behind the current page. */
-.nav-mark {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: var(--w);
-  border-radius: 6px;
-  background: #111;
-  transform: translateX(var(--x));
-  pointer-events: none;
-}
-
-.nav-mark.is-ready {
-  transition:
-    transform 320ms var(--ease-out),
-    width 320ms var(--ease-out);
-}
-
-.nav-link {
-  position: relative;
+/* A small bordered button: icons, labels, the top bar. */
+.chip {
   display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  height: 30px;
-  padding: 0 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  color: #666;
-  text-decoration: none;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    background-color 180ms var(--ease-out),
-    color 180ms var(--ease-out),
-    transform 150ms var(--ease-out);
-}
-
-.nav-link svg {
-  margin-top: -1px;
-  opacity: 0.7;
-}
-
-.nav-link.active {
-  color: #fff;
-}
-
-.nav-link:active {
-  transform: scale(0.97);
-}
-
-.nav-link:focus-visible {
-  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.2);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .nav-link:not(.active):hover {
-    background: #f0f0f0;
-    color: #111;
-  }
-}
-
-@media (max-width: 400px) {
-  .nav-link {
-    padding: 0 10px;
-  }
-}
-
-/* ── "i", top left on every page: the intro ──
-   80% of the navbar's height and centred on it, in the same white, grey border and corners;
-   black when hovered or open. */
-.info-button {
-  --size: calc(var(--nav-h) * 0.8);
-  position: fixed;
-  z-index: 50;
-  top: calc(var(--nav-top) + (var(--nav-h) - var(--size)) / 2);
-  left: 12px;
-  display: grid;
-  place-items: center;
-  width: var(--size);
-  height: var(--size);
-  border: 1px solid #d4d4d4;
-  border-radius: 7px;
-  background: #fff;
-  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
-  font-size: 12px;
-  line-height: 1;
-  color: #111;
-  text-decoration: none;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-  animation: nav-in-corner 500ms var(--ease-out) both;
-  transition:
-    background-color 180ms var(--ease-out),
-    border-color 180ms var(--ease-out),
-    color 180ms var(--ease-out),
-    transform 150ms var(--ease-out);
-}
-
-@keyframes nav-in-corner {
-  from {
-    opacity: 0;
-    filter: blur(4px);
-    transform: translateY(-6px) scale(0.96);
-  }
-}
-
-.info-button[aria-current='page'] {
-  border-color: #111;
-  background: #111;
-  color: #fff;
-}
-
-.info-button:active {
-  transform: scale(0.95);
-}
-
-.info-button:focus-visible {
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .info-button:hover {
-    border-color: #111;
-    background: #111;
-    color: #fff;
-  }
-}
-
-/* ── The editors' panels (/text and /morph): one layout for both ──
-   Each panel is exactly as tall as what it holds, so there is never empty space, and glides to
-   its new height when that changes (a tab opens, the window narrows and things wrap):
-   useAutoHeight sets the height, the transition below animates it. Wide screens: a column on the
-   right whose top lines up with the navbar's. Phones (portrait): under the stage. */
-.text-swarm .text-swarm-panel,
-.editor .panel {
-  top: var(--nav-top);
-  right: 12px;
-  max-height: calc(100% - var(--nav-top) * 2);
-  translate: none;
-  /* Long enough and even enough to be seen growing and shrinking, not just landing. */
-  transition: height 480ms cubic-bezier(0.45, 0, 0.2, 1);
-}
-
-/* The open tab's controls fade up as the panel makes room for them. */
-.text-swarm .group,
-.editor .group {
-  animation: group-in 420ms cubic-bezier(0.45, 0, 0.2, 1) 80ms both;
-}
-
-@keyframes group-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-
-.text-swarm .text-swarm-panel[data-resizing],
-.editor .panel[data-resizing] {
-  overflow: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .text-swarm .text-swarm-panel,
-  .editor .panel {
-    transition: none;
-  }
-
-  .text-swarm .group,
-  .editor .group {
-    animation: none;
-  }
-}
-
-/* The editors kept every tab as tall as the tallest, so the panel would not jump; it glides now. */
-@media (max-width: 760px) and (orientation: portrait) {
-  .text-swarm .group,
-  .editor .group {
-    min-height: 0;
-  }
-
-  /* Under the stage there is no screen height to stay inside; the stage gives way instead. */
-  .text-swarm .text-swarm-panel,
-  .editor .panel {
-    max-height: none;
-  }
-}
-
-/* ── The foot of every editor's panel (EditorActions.tsx): the same on /text and /morph ── */
-.ed-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.ed-button {
-  display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  height: 36px;
-  padding: 0 8px;
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
-  background: #fff;
+  gap: 6px;
+  height: var(--control-h);
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
   font: inherit;
   font-size: 13px;
   font-weight: 500;
-  color: #0a0a0a;
+  line-height: 1;
+  color: var(--fg);
+  text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    transform 150ms var(--ease-out);
-}
-
-.ed-button:active {
-  transform: scale(0.97);
-}
-
-.ed-primary {
-  grid-column: 1 / -1;
-  border-color: #0a0a0a;
-  background: #0a0a0a;
-  color: #fff;
-}
-
-.ed-primary span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ed-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgb(0 0 0 / 0.15);
-}
-
-.ed-tick {
-  animation: ed-tick-in 260ms var(--ease-out) both;
-}
-
-@keyframes ed-tick-in {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .ed-button:hover {
-    border-color: #a3a3a3;
-  }
-
-  .ed-primary:hover {
-    background: #262626;
-  }
-}
-
-@media (max-width: 760px), (max-height: 900px) {
-  .ed-button {
-    height: 34px;
-  }
-}
-
-/* ── The round button in the top left: "?" to the intro, "←" back to the editor ── */
-.corner-button {
-  position: absolute;
-  z-index: 10;
-  top: 12px;
-  left: 12px;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #d4d4d4;
-  border-radius: 50%;
-  background: #fff;
-  font-family: 'Geist Pixel Circle', ui-monospace, monospace;
-  font-size: 13px;
-  line-height: 1;
-  color: #111;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
   transition:
     border-color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
     transform 160ms var(--ease-out);
 }
 
-.corner-button:active {
-  transform: scale(0.94);
+.chip-icon {
+  width: var(--control-h);
+  padding: 0;
 }
 
-.corner-button:focus-visible {
-  outline: 2px solid #111;
-  outline-offset: 2px;
+/* The one main action in a group: inverted. */
+.chip-primary,
+.chip-primary:hover {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--canvas);
+}
+
+.chip[aria-current='page'] {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--canvas);
+}
+
+.chip:active {
+  transform: scale(0.97);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .corner-button:hover {
-    border-color: #999;
+  .chip:hover {
+    border-color: var(--muted);
+  }
+
+  .chip-primary:hover {
+    border-color: var(--muted);
+    background: var(--muted);
+  }
+}
+
+/* Segmented choice: one block that slides to the option you pick. Set --n and --i. */
+.seg {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: 2px;
+  height: var(--control-h);
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.seg-slide {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n));
+  border-radius: 6px;
+  background: var(--fg);
+  transform: translateX(calc(var(--i) * (100% + 2px)));
+  transition: transform 280ms var(--ease-out);
+  pointer-events: none;
+}
+
+.seg[data-none] .seg-slide {
+  opacity: 0;
+}
+
+.seg-option {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 180ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+.seg-option[aria-checked='true'],
+.seg-option.active {
+  color: var(--canvas);
+}
+
+.seg-option:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .seg-option:not([aria-checked='true'], .active):hover {
+    color: var(--fg);
+  }
+}
+
+/* ── The top bar ── */
+.bar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: var(--bar-h);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--canvas);
+}
+
+.bar-start,
+.bar-end {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-logo {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+/* Titles are the serif, regular only, so it is never set bold. */
+.bar-title {
+  margin: 0;
+  font-family: 'Geist Serif', 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.bar-about {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  color: var(--muted);
+}
+
+.bar-about[aria-current='page'] {
+  color: var(--canvas);
+}
+
+@media (max-width: 479px) {
+  :root {
+    --bar-h: 52px;
+  }
+
+  .bar {
+    padding: 0 12px;
+  }
+
+  .bar-logo {
+    display: none;
+  }
+
+  .seg-option {
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 379px) {
+  .bar-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* A phone on its side has no height to spare. */
+@media (max-height: 500px) {
+  :root {
+    --bar-h: 44px;
+    --control-h: 30px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shell-page,
-  .nav,
-  .info-button,
-  .ed-tick {
+  .shell-page {
     animation: none;
   }
 
-  .nav-link,
-  .nav-mark.is-ready,
-  .ed-button,
-  .info-button {
-    transition: none;
-  }
-
-  .corner-button {
+  .chip,
+  .seg-slide,
+  .seg-option {
     transition: none;
   }
 }

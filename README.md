@@ -12,12 +12,14 @@ npm run build
 
 ## Routes
 
-The site lives at [dots.wseem.com](https://dots.wseem.com), all in light mode. The
-same navbar floats at the top of every page: text, morph, flags, github, with one
-highlight that glides to the current page (`src/Nav.tsx`, styles in `src/shell.css`).
-An "i" button in the top left of every page opens the intro (`/intro`). The two
-editors share one panel layout and one footer (`src/EditorActions.tsx`): Replay and
-Reset, then Copy Prompt.
+The site lives at [dots.wseem.com](https://dots.wseem.com), in light mode. One top
+bar on every page (`src/Nav.tsx`): the name, a "?" that opens the intro (`/intro`),
+a segmented switch between text, morph and flags, and the repository. The two editors
+share one docked panel and one footer (`src/EditorActions.tsx`): Replay and Reset, then
+Copy Prompt. The design system is `src/shell.css` (six colour tokens, the `.chip` and
+`.seg` controls, the bar) and `src/ui.css` (the editors' controls): flat surfaces,
+one-pixel lines, no shadows. On screens under 780px tall, or phones, the panel shows
+one tab at a time so everything fits one viewport.
 
 The text swarm is at [`/text`](https://dots.wseem.com/text): type anything and
 watch its dots swarm into text. `/` goes there too, and the old
