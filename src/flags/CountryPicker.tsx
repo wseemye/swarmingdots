@@ -17,8 +17,27 @@ const fold = (s: string) =>
 
 type Props = { flags: FlagEntry[]; current?: string; onPick: (code: string) => void };
 
+const Chevron = ({ dir }: { dir: 'left' | 'right' }) => (
+  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={dir === 'left' ? 'M10 3 5 8l5 5' : 'M6 3l5 5-5 5'} />
+  </svg>
+);
+
+/**
+ * [←] [country name] [→]: the field shows the flag's country, and is typed into to find another;
+ * the arrows go to the previous and the next country in alphabetical order, round the ends.
+ */
 export default function CountryPicker({ flags, current, onPick }: Props) {
   const [query, setQuery] = useState('');
+  const [focused, setFocused] = useState(false);
+  const ordered = useMemo(() => [...flags].sort((a, b) => fold(a.name).localeCompare(fold(b.name))), [flags]);
+  const currentEntry = flags.find((f) => f.code === current);
+  const step = (by: 1 | -1) => {
+    const i = ordered.findIndex((f) => f.code === current);
+    // Before any is chosen, next is the first and previous the last.
+    const to = i < 0 ? (by === 1 ? 0 : ordered.length - 1) : (i + by + ordered.length) % ordered.length;
+    onPick(ordered[to].code);
+  };
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +108,10 @@ export default function CountryPicker({ flags, current, onPick }: Props) {
 
   return (
     <div className="flags-picker-box">
+      <button type="button" className="flags-step" aria-label="Previous country" onClick={() => step(-1)}>
+        <Chevron dir="left" />
+      </button>
+      <div className="flags-field">
       {open && (
         <ul ref={listRef} className="flags-options" id={listId} role="listbox" aria-label="Countries">
           {shown.length ? (
@@ -128,19 +151,30 @@ export default function CountryPicker({ flags, current, onPick }: Props) {
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={open && shown[highlighted] ? optionId(shown[highlighted].code) : undefined}
-        placeholder="Country name"
+        placeholder={currentEntry?.name ?? 'Country name'}
         autoComplete="off"
         spellCheck={false}
-        value={query}
+        value={focused ? query : (currentEntry?.name ?? '')}
         onChange={(e) => {
           setQuery(e.target.value);
           setActive(0);
           setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
+        onFocus={() => {
+          setFocused(true);
+          setQuery('');
+          setOpen(true);
+        }}
+        onBlur={() => {
+          setFocused(false);
+          setOpen(false);
+        }}
         onKeyDown={onKeyDown}
       />
+      </div>
+      <button type="button" className="flags-step" aria-label="Next country" onClick={() => step(1)}>
+        <Chevron dir="right" />
+      </button>
     </div>
   );
 }

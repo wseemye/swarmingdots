@@ -419,8 +419,32 @@
   background: var(--card);
 }
 
-.shell .flags-name {
-  font-size: 18px;
+/* The arrows either side of the country's name: the previous and the next, alphabetically. */
+.shell .flags-step {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--fg);
+  border-radius: 50%;
+  background: var(--canvas);
+  color: var(--fg);
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    transform 200ms var(--ease);
+}
+
+.shell .flags-step:active {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shell .flags-step:hover {
+    background: var(--card);
+  }
 }
 
 /* ── The intro: its own stage, the bar of choices along its foot ── */

@@ -34,7 +34,7 @@ const REFERENCE_RATIO = 10 / 19;
 const FILL = 0.9;
 const ROUND = 0.3;
 const MAX_FLAG_WIDTH = 1100;
-const PICKER_SPACE = 88;
+const PICKER_SPACE = 56;
 const MARGIN = 32;
 // Room for the navbar floating at the top of the page.
 const NAV_SPACE = 48;
@@ -409,9 +409,6 @@ export default function FlagSwarm() {
       {!flag && size.w > 0 && <Staircase fontSize={Math.round(Math.min(48, Math.max(28, size.w / 18)))} bottom={PICKER_SPACE + MARGIN} />}
 
       <div className="flags-picker">
-        <p className="flags-name" aria-live="polite">
-          {flag?.name ?? ''}
-        </p>
         <CountryPicker flags={flags} current={flag?.code} onPick={setCode} />
       </div>
     </div>
