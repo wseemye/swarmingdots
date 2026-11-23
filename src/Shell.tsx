@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactElement } from 'react';
+import { useLocation, useOutlet } from 'react-router-dom';
 import Nav, { Foot } from './Nav.tsx';
 import './shell.css';
 import './ui.css';
@@ -15,6 +15,12 @@ const TITLES: Record<string, string> = {
 const STAGE = '.text-swarm-stage, .stage, .flags, .intro';
 /** How long the card takes to settle on the next page's stage; keep in step with .frame in ui.css. */
 const MOVE_MS = 520;
+/** How long the page you leave takes to fade away, kept in place under the next one. */
+const LEAVE_MS = 180;
+const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
+const still = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+type Page = { key: string; el: ReactElement | null };
 
 /**
  * The shell owns one card. Each page lays out its stage and leaves it undrawn; the card sits behind
@@ -24,6 +30,20 @@ const MOVE_MS = 520;
  */
 export default function Shell() {
   const { pathname } = useLocation();
+  const outlet = useOutlet();
+  // The page being left stays under the one arriving while it fades, so nothing is cut away.
+  const [now, setNow] = useState<Page>({ key: pathname, el: outlet });
+  const [leaving, setLeaving] = useState<Page | null>(null);
+  if (now.key !== pathname) {
+    setLeaving(still() ? null : now);
+    setNow({ key: pathname, el: outlet });
+  }
+  const pages = { now, prev: leaving };
+  useEffect(() => {
+    if (!pages.prev) return;
+    const t = window.setTimeout(() => setLeaving(null), LEAVE_MS);
+    return () => window.clearTimeout(t);
+  }, [pages.prev]);
   const mainRef = useRef<HTMLElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const moving = useRef(0);
@@ -36,8 +56,9 @@ export default function Shell() {
   useLayoutEffect(() => {
     const main = mainRef.current;
     const frame = frameRef.current;
-    const stage = main?.querySelector<HTMLElement>(STAGE);
-    if (!main || !frame || !stage) return;
+    const page = main?.querySelector<HTMLElement>('.shell-page:not([data-leaving])');
+    const stage = page?.querySelector<HTMLElement>(STAGE);
+    if (!main || !frame || !page || !stage) return;
 
     const place = () => {
       const m = main.getBoundingClientRect();
@@ -50,8 +71,10 @@ export default function Shell() {
       frame.style.background = stage.style.background;
     };
 
-    // Every page after the first: the card glides there.
+    // Every page after the first: the card glides there, and the controls travel with its lower
+    // edge, so the page below the stage moves as one with it.
     const first = !('placed' in frame.dataset);
+    const from = frame.getBoundingClientRect().bottom;
     if (!first) {
       frame.dataset.moving = '';
       window.clearTimeout(moving.current);
@@ -60,6 +83,13 @@ export default function Shell() {
     frame.dataset.placed = '';
     place();
     paint();
+    const panel = page.querySelector<HTMLElement>('.panel, .text-swarm-panel');
+    const dy = from - stage.getBoundingClientRect().bottom;
+    if (!first && panel && Math.abs(dy) > 0.5 && !still()) {
+      // The same length and curve as the card, so the two stay joined all the way.
+      panel.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: MOVE_MS, easing: EASE });
+      panel.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, delay: 100, easing: EASE, fill: 'backwards' });
+    }
 
     const resize = new ResizeObserver(place);
     resize.observe(stage);
@@ -79,8 +109,13 @@ export default function Shell() {
         <main className="shell-main" ref={mainRef}>
           <div className="frame" ref={frameRef} aria-hidden="true" />
           {/* Keyed by page, so each one's contents come in as it opens. */}
-          <div className="shell-page" key={pathname}>
-            <Outlet />
+          {pages.prev && (
+            <div className="shell-page" key={pages.prev.key} data-leaving="" aria-hidden="true" inert>
+              {pages.prev.el}
+            </div>
+          )}
+          <div className="shell-page" key={pages.now.key}>
+            {pages.now.el}
           </div>
         </main>
         <Foot />

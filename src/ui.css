@@ -62,9 +62,16 @@
   animation: stage-in 300ms var(--ease-out) 120ms both;
 }
 
-.shell .text-swarm-panel,
-.shell .panel {
-  animation: panel-in 320ms var(--ease-out) 80ms both;
+/* The page being left fades away under the next (Shell.tsx). */
+.shell .shell-page[data-leaving] {
+  pointer-events: none;
+  animation: leave 180ms var(--ease-out) both;
+}
+
+@keyframes leave {
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes stage-in {
@@ -73,12 +80,6 @@
   }
 }
 
-@keyframes panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
 
 .shell .text-swarm-stage,
 .shell .stage {
@@ -693,8 +694,7 @@
   .shell .stage > *,
   .shell .flags > :not(.flags-frame),
   .shell .intro > *,
-  .shell .text-swarm-panel,
-  .shell .panel {
+  .shell .shell-page[data-leaving] {
     animation: none;
   }
 
