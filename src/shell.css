@@ -21,6 +21,8 @@
   --pixel: 'Geist Pixel Square', ui-monospace, monospace;
   --serif: 'Geist Serif', Georgia, 'Times New Roman', serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The editors' own sheets still say --ease-out. */
+  --ease-out: var(--ease);
 
   /* The gap between the parts of the page, and what the screen's edge keeps clear. */
   --gap: 14px;
